@@ -32,7 +32,7 @@ Create `src/ttl-events/ttl-events.service.ts` — the escape-hatch demo. It open
 
 - [ ] `src/ttl-events/ttl-events.service.ts` exists; `TtlEventsService` is `@Injectable()` and implements `OnModuleInit` + `OnModuleDestroy`.
 - [ ] Constructor injects `@Inject(BYMAX_CACHE_CONNECTION)` (typed `ConnectionManager`), `@Inject(BYMAX_CACHE_KEY_BUILDER)` (typed `KeyBuilder`), the `EventsGateway` (Phase 8), and `ConfigService<Env, true>`.
-- [ ] `onModuleInit` reads `db` from `REDIS_DB` (default `0`), calls `connection.createSubscriberClient()` (stored on a private field), and `await sub.subscribe(\`**keyevent@${db}**:expired\`)`.
+- [ ] `onModuleInit` reads `db` from `REDIS_DB` (default `0`), calls `connection.createSubscriberClient()` (stored on a private field), and subscribes to the keyspace channel `__keyevent@${db}__:expired`.
 - [ ] A `message` listener emits `gateway.emitExpired(key)` **only** when `key.startsWith(keys.getNamespacePrefix())`; foreign-namespace expiries are ignored.
 - [ ] `src/ttl-events/ttl-events.module.ts` declares the service and imports `EventsModule` (Phase 8); the module is registered in `AppModule`.
 - [ ] `pnpm --filter api typecheck` exits 0.
