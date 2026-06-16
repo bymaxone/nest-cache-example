@@ -8,15 +8,15 @@
 
 ## Task index
 
-| ID    | Task                                                                  | Status | Priority | Size | Depends on        |
-| ----- | --------------------------------------------------------------------- | ------ | -------- | ---- | ----------------- |
-| P16-1 | `scripts/audit-library-exports.mjs` + `.audit-ignore.json` (+ CI job) | 🔴     | High     | M    | Phases 3–14       |
-| P16-2 | Root `README.md` (centered header, badges, matrix, ASCII arch)        | 🔴     | High     | L    | Phases 3–14       |
-| P16-3 | Documented curl journeys (miss→hit, stampede, isolation)              | 🔴     | Medium   | S    | P16-2             |
-| P16-4 | Keep spec/dashboard/plan current; flip `OVERVIEW.md` to superseded    | 🔴     | Medium   | S    | Phases 3–14       |
-| P16-5 | Document the OPTIONAL `@bymax-one/nest-logger` events bridge (row #50) | 🔴     | Low      | S    | P16-1, P16-2      |
-| P16-6 | `CHANGELOG.md` `0.1.0` entry + design-system acceptance check         | 🔴     | Medium   | S    | P16-2             |
-| P16-7 | Final audit verification (`audit:exports` exit 0, matrix all ✅)       | 🔴     | High     | S    | P16-1..P16-6      |
+| ID    | Task                                                                   | Status | Priority | Size | Depends on   |
+| ----- | ---------------------------------------------------------------------- | ------ | -------- | ---- | ------------ |
+| P16-1 | `scripts/audit-library-exports.mjs` + `.audit-ignore.json` (+ CI job)  | 🔴     | High     | M    | Phases 3–14  |
+| P16-2 | Root `README.md` (centered header, badges, matrix, ASCII arch)         | 🔴     | High     | L    | Phases 3–14  |
+| P16-3 | Documented curl journeys (miss→hit, stampede, isolation)               | 🔴     | Medium   | S    | P16-2        |
+| P16-4 | Keep spec/dashboard/plan current; flip `OVERVIEW.md` to superseded     | 🔴     | Medium   | S    | Phases 3–14  |
+| P16-5 | Document the OPTIONAL `@bymax-one/nest-logger` events bridge (row #50) | 🔴     | Low      | S    | P16-1, P16-2 |
+| P16-6 | `CHANGELOG.md` `0.1.0` entry + design-system acceptance check          | 🔴     | Medium   | S    | P16-2        |
+| P16-7 | Final audit verification (`audit:exports` exit 0, matrix all ✅)       | 🔴     | High     | S    | P16-1..P16-6 |
 
 ---
 

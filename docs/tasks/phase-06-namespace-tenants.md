@@ -8,13 +8,13 @@
 
 ## Task index
 
-| ID   | Task                                                                  | Status | Priority | Size | Depends on       |
-| ---- | --------------------------------------------------------------------- | ------ | -------- | ---- | ---------------- |
-| P6-1 | `src/tenants/` module + tenant-scoped reads/writes (`KeyBuilder`)     | 🔴     | High     | M    | Phase 4          |
-| P6-2 | `DELETE /tenants/:t/cache` — clear ONE tenant (`scan` → `delMany`)    | 🔴     | High     | S    | P6-1             |
-| P6-3 | `POST /tenants/seed-foreign` — foreign-namespace seed via `getClient` | 🔴     | Medium   | S    | P6-1             |
-| P6-4 | Isolation proof — `flushNamespace()` + per-instance design note       | 🔴     | High     | S    | P6-1, P6-3       |
-| P6-5 | Phase verification (clear A leaves B; flush leaves foreign key)        | 🔴     | Medium   | S    | P6-1..P6-4       |
+| ID   | Task                                                                  | Status | Priority | Size | Depends on |
+| ---- | --------------------------------------------------------------------- | ------ | -------- | ---- | ---------- |
+| P6-1 | `src/tenants/` module + tenant-scoped reads/writes (`KeyBuilder`)     | 🔴     | High     | M    | Phase 4    |
+| P6-2 | `DELETE /tenants/:t/cache` — clear ONE tenant (`scan` → `delMany`)    | 🔴     | High     | S    | P6-1       |
+| P6-3 | `POST /tenants/seed-foreign` — foreign-namespace seed via `getClient` | 🔴     | Medium   | S    | P6-1       |
+| P6-4 | Isolation proof — `flushNamespace()` + per-instance design note       | 🔴     | High     | S    | P6-1, P6-3 |
+| P6-5 | Phase verification (clear A leaves B; flush leaves foreign key)       | 🔴     | Medium   | S    | P6-1..P6-4 |
 
 ---
 
@@ -72,7 +72,10 @@ Build the `tenants` module that backs the Namespace & Tenants page (DASHBOARD §
 >      }
 >
 >      /** Read-through fetch of a product scoped to one tenant's prefix. */
->      async getProduct(tenantId: string, id: string): Promise<{ data: Product; source: 'cache' | 'origin' }> {
+>      async getProduct(
+>        tenantId: string,
+>        id: string,
+>      ): Promise<{ data: Product; source: 'cache' | 'origin' }> {
 >        const prefix = this.tenantPrefix(tenantId)
 >        const cached = await this.cache.get<Product>(prefix, id)
 >        if (cached) return { data: cached, source: 'cache' }
@@ -89,7 +92,7 @@ Build the `tenants` module that backs the Namespace & Tenants page (DASHBOARD §
 >
 > - Follow `docs/DEVELOPMENT_PLAN.md` §2 Global Conventions (TypeScript 5.9 strict, ESM, English-only, boolean `is`/`has`/`should` naming).
 > - **No Swagger** — JSDoc on every public method; DTOs are **Zod** parsed by `ZodValidationPipe`.
-> - Do NOT hand-build the namespaced key string (no `\`cache-example:...\``); compose only through `CacheService` / `KeyBuilder`.
+> - Do NOT hand-build the namespaced key string (no `\`cache-example:...\``); compose only through `CacheService`/`KeyBuilder`.
 > - Do NOT introduce a database or a second namespace — tenants are prefixes inside the one `cache-example` namespace (spec §12.4).
 > - Do NOT add a per-call `namespace` parameter — the library has none.
 >   Verification:
@@ -121,7 +124,7 @@ Build the `tenants` module that backs the Namespace & Tenants page (DASHBOARD §
 
 ### Description
 
-Add the per-tenant clear that proves prefix scoping: clearing tenant A leaves tenant B's keys intact (DASHBOARD §8, spec §12.4). The endpoint enumerates **only** the calling tenant's keys with `CacheService.scan('tenant:{t}', '*')` — the non-blocking, cursor-based `AsyncIterable<string>` — collecting the matching ids, then deletes them in one batch with `CacheService.delMany(prefix, ids)`. This is deliberately **not** `flushNamespace()` (which would clear *every* tenant). `scan` returns **fully namespaced** keys; `delMany` is the library's batch delete returning the number of keys removed. Demonstrates matrix rows #16 (`delMany`) and #36 (`KeyBuilder` — the scan prefix is composed through the library).
+Add the per-tenant clear that proves prefix scoping: clearing tenant A leaves tenant B's keys intact (DASHBOARD §8, spec §12.4). The endpoint enumerates **only** the calling tenant's keys with `CacheService.scan('tenant:{t}', '*')` — the non-blocking, cursor-based `AsyncIterable<string>` — collecting the matching ids, then deletes them in one batch with `CacheService.delMany(prefix, ids)`. This is deliberately **not** `flushNamespace()` (which would clear _every_ tenant). `scan` returns **fully namespaced** keys; `delMany` is the library's batch delete returning the number of keys removed. Demonstrates matrix rows #16 (`delMany`) and #36 (`KeyBuilder` — the scan prefix is composed through the library).
 
 ### Acceptance Criteria
 
@@ -161,6 +164,7 @@ Add the per-tenant clear that proves prefix scoping: clearing tenant A leaves te
 >    ```
 >
 >    Recover the id segment using the library — e.g. compare against `keyBuilder.getNamespacePrefix()` / strip `keyBuilder.build(prefix, '')` — rather than a brittle hand-split, so the namespace/prefix boundary stays library-owned.
+>
 > 2. Add `DELETE /tenants/:t/cache` to `TenantsController` → `clearTenant(t)`; validate `:t` with the P6-1 Zod params DTO; JSDoc the route.
 > 3. Do not catch the cluster-mode `CacheException` — let it propagate to the `CacheExceptionFilter`.
 >    Constraints:

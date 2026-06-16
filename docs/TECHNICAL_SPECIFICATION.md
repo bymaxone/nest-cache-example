@@ -29,15 +29,15 @@
 > API. This specification supersedes it and corrects the following — the corrections are themselves
 > instructive and are demonstrated explicitly in the app:
 >
-> | Draft `OVERVIEW.md` said | Shipped library reality (this spec) |
-> |---|---|
-> | `CacheModule.forRootAsync` | **`BymaxCacheModule.forRoot` / `forRootAsync`** |
-> | `CacheService.subscribe` / `.publish` | Pub/Sub is a separate **`PubSubService`** (`publish` / `subscribe` / `psubscribe`) |
-> | A `HealthService` | Health is **`CacheService.isHealthy()` / `ping()` / `info()`** (no separate service) |
-> | "Each tenant's cache lives under its own **namespace**" | The library has **one `namespace` per module instance**. Tenants are modeled as **key prefixes** within that namespace; `flushNamespace()` clears the **whole** namespace. See §12.4 for the honest design. |
+> | Draft `OVERVIEW.md` said                                   | Shipped library reality (this spec)                                                                                                                                                                                                        |
+> | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+> | `CacheModule.forRootAsync`                                 | **`BymaxCacheModule.forRoot` / `forRootAsync`**                                                                                                                                                                                            |
+> | `CacheService.subscribe` / `.publish`                      | Pub/Sub is a separate **`PubSubService`** (`publish` / `subscribe` / `psubscribe`)                                                                                                                                                         |
+> | A `HealthService`                                          | Health is **`CacheService.isHealthy()` / `ping()` / `info()`** (no separate service)                                                                                                                                                       |
+> | "Each tenant's cache lives under its own **namespace**"    | The library has **one `namespace` per module instance**. Tenants are modeled as **key prefixes** within that namespace; `flushNamespace()` clears the **whole** namespace. See §12.4 for the honest design.                                |
 > | TTL expiry via `CacheService.subscribe` to keyspace events | `PubSubService` **namespaces** channels, so it cannot receive Redis' fixed `__keyevent@*__` channels. The TTL demo uses the **raw subscriber** via the `BYMAX_CACHE_CONNECTION` token — an intentional escape-hatch demonstration (§17.3). |
-> | RedisInsight on port `8001` | Current RedisInsight image (`redis/redisinsight`) serves on **`5540`**; `8001` is the legacy redis-stack bundle. |
-> | "Swagger UI enabled at `/api`" | **No Swagger.** Matching the sibling examples, controllers are documented with **JSDoc** and validated with **Zod**; the dashboard + a documented HTTP collection are the interactive surface (§23.4). |
+> | RedisInsight on port `8001`                                | Current RedisInsight image (`redis/redisinsight`) serves on **`5540`**; `8001` is the legacy redis-stack bundle.                                                                                                                           |
+> | "Swagger UI enabled at `/api`"                             | **No Swagger.** Matching the sibling examples, controllers are documented with **JSDoc** and validated with **Zod**; the dashboard + a documented HTTP collection are the interactive surface (§23.4).                                     |
 
 ---
 
@@ -83,8 +83,8 @@
    place.
 2. **Make the invisible visible.** Namespace isolation, TTL expiry, Pub/Sub fan-out, atomic Lua
    locks, and connection lifecycle are hard to appreciate from a README. A live dashboard renders
-   them in real time so a reader *sees* a key expire, *sees* an event fan out across browser tabs,
-   *sees* a stampede collapse into a single origin fetch.
+   them in real time so a reader _sees_ a key expire, _sees_ an event fan out across browser tabs,
+   _sees_ a stampede collapse into a single origin fetch.
 3. **Serve as the canonical integration reference** for any Bymax project (or external consumer)
    adopting the library — the copy-paste-grade wiring of `forRootAsync`, the events→logger bridge,
    the exception filter, the custom serializer, and the dual-subpath shared-types pattern.
@@ -178,22 +178,23 @@ cache-admin UI; reviewers auditing the library's API; and AI agents executing th
 
 ## 4 · The Library Under Test — `@bymax-one/nest-cache`
 
-| Property | Value |
-|---|---|
-| Package | `@bymax-one/nest-cache` |
-| Version targeted | `0.1.0` (pre-1.0) |
-| Module type | ESM (`"type": "module"`), dual ESM + CJS build (tsup) |
-| Subpaths | `.` (server — NestJS module + services) · `./shared` (zero-dependency types + constants) |
-| Runtime deps | **none** (`dependencies: {}`) |
-| Peer deps | `@nestjs/common ^11`, `@nestjs/core ^11`, `ioredis ^5`, `reflect-metadata ^0.2` |
-| Node | `>= 24` |
-| License | MIT |
+| Property         | Value                                                                                    |
+| ---------------- | ---------------------------------------------------------------------------------------- |
+| Package          | `@bymax-one/nest-cache`                                                                  |
+| Version targeted | `0.1.0` (pre-1.0)                                                                        |
+| Module type      | ESM (`"type": "module"`), dual ESM + CJS build (tsup)                                    |
+| Subpaths         | `.` (server — NestJS module + services) · `./shared` (zero-dependency types + constants) |
+| Runtime deps     | **none** (`dependencies: {}`)                                                            |
+| Peer deps        | `@nestjs/common ^11`, `@nestjs/core ^11`, `ioredis ^5`, `reflect-metadata ^0.2`          |
+| Node             | `>= 24`                                                                                  |
+| License          | MIT                                                                                      |
 
 ### 4.1 Public API inventory (server subpath `.`)
 
 The example must touch every row of this inventory; §7 maps each to where it is demonstrated.
 
 **Module & registration**
+
 - `BymaxCacheModule.forRoot(options)` — synchronous registration.
 - `BymaxCacheModule.forRootAsync(options)` — async registration via `useFactory` (the example's primary path).
 - Options types: `BymaxCacheModuleOptions`, `BymaxCacheModuleAsyncOptions`.
@@ -201,22 +202,23 @@ The example must touch every row of this inventory; §7 maps each to where it is
 
 **`CacheService`** — the typed, namespaced facade:
 
-| Group | Methods |
-|---|---|
-| Strings | `get<T>` · `getRaw` · `set<T>` · `setRaw` · `setNx<T>` |
-| Delete / existence | `del` · `delMany` · `exists` |
-| Numerics | `incr` · `decr` |
-| TTL | `expire` · `ttl` · `persist` |
-| Batch | `mget<T>` · `mset<T>` |
-| Hashes | `hget<T>` · `hset<T>` · `hgetall<T>` · `hdel` |
-| Sets | `sadd` · `srem` · `smembers` · `sismember` · `scard` |
-| Iteration | `keys` (dev only — O(N), blocks) · `scan` (cursor, async iterable; standalone/sentinel only) |
-| Escape hatch | `pipeline()` · `getClient()` (keys **not** auto-namespaced) |
-| Namespace ops | `flushNamespace()` (SCAN + UNLINK, production-guarded) |
-| Scripts | `eval(scriptName, keys, args)` (keys auto-namespaced) |
-| Health | `isHealthy()` (never throws) · `ping()` (throws on failure) · `info(section?)` |
+| Group              | Methods                                                                                      |
+| ------------------ | -------------------------------------------------------------------------------------------- |
+| Strings            | `get<T>` · `getRaw` · `set<T>` · `setRaw` · `setNx<T>`                                       |
+| Delete / existence | `del` · `delMany` · `exists`                                                                 |
+| Numerics           | `incr` · `decr`                                                                              |
+| TTL                | `expire` · `ttl` · `persist`                                                                 |
+| Batch              | `mget<T>` · `mset<T>`                                                                        |
+| Hashes             | `hget<T>` · `hset<T>` · `hgetall<T>` · `hdel`                                                |
+| Sets               | `sadd` · `srem` · `smembers` · `sismember` · `scard`                                         |
+| Iteration          | `keys` (dev only — O(N), blocks) · `scan` (cursor, async iterable; standalone/sentinel only) |
+| Escape hatch       | `pipeline()` · `getClient()` (keys **not** auto-namespaced)                                  |
+| Namespace ops      | `flushNamespace()` (SCAN + UNLINK, production-guarded)                                       |
+| Scripts            | `eval(scriptName, keys, args)` (keys auto-namespaced)                                        |
+| Health             | `isHealthy()` (never throws) · `ping()` (throws on failure) · `info(section?)`               |
 
 **Other services & classes**
+
 - `PubSubService` — `publish<T>` · `subscribe<T>` · `psubscribe<T>` (channels/patterns namespaced).
 - `ScriptManagerService` — `register(name, lua)` · `load(name)` → SHA1 · `eval(name, keys, args)`.
 - `ConnectionManager` — `getClient()` · `createSubscriberClient()`.
@@ -252,62 +254,62 @@ from here to type error codes and connection events without pulling NestJS/iored
 Keys are composed as **`{namespace}{separator}{prefix}{separator}{id}`**. With defaults
 (`namespace='app'`, `separator=':'`): `build('product', '42')` → `app:product:42`.
 
-| Option | Default | Notes |
-|---|---|---|
-| `mode` | `'standalone'` | `'standalone' \| 'sentinel' \| 'cluster'` |
-| `namespace` | `'app'` | global prefix for every key (the example uses `cache-example`) |
-| `keySeparator` | `':'` | segment separator |
-| `serializer` | `JsonSerializer` | swappable via `ISerializer` |
-| `shutdownTimeoutMs` | `5000` | graceful `quit()` timeout |
-| `allowFlushInProduction` | `false` | safety guard on `flushNamespace()` |
-| `isGlobal` | `true` | module registered `@Global()` |
-| `scripts` | `[]` | pre-registered `IScriptDefinition[]` |
-| `connection.port` | `6379` | standalone |
-| `connection.lazyConnect` | `false` | connect on `OnModuleInit` |
-| `connection.connectTimeout` | `10_000 ms` | |
-| `connection.commandTimeout` | `5_000 ms` | |
-| `connection.maxRetriesPerRequest` | `3` | do **not** pass `null` (that is BullMQ-specific); ioredis's own default is `20` |
-| `connection.enableReadyCheck` | `true` | |
-| `connection.enableOfflineQueue` | `false` | fail fast on the data-plane client |
-| `connection.retryStrategy` | `(t) => Math.min(t*50, 2000)` | bounded backoff |
-| `connection.reconnectOnError` | reconnect on `READONLY` | replica failover |
+| Option                            | Default                       | Notes                                                                           |
+| --------------------------------- | ----------------------------- | ------------------------------------------------------------------------------- |
+| `mode`                            | `'standalone'`                | `'standalone' \| 'sentinel' \| 'cluster'`                                       |
+| `namespace`                       | `'app'`                       | global prefix for every key (the example uses `cache-example`)                  |
+| `keySeparator`                    | `':'`                         | segment separator                                                               |
+| `serializer`                      | `JsonSerializer`              | swappable via `ISerializer`                                                     |
+| `shutdownTimeoutMs`               | `5000`                        | graceful `quit()` timeout                                                       |
+| `allowFlushInProduction`          | `false`                       | safety guard on `flushNamespace()`                                              |
+| `isGlobal`                        | `true`                        | module registered `@Global()`                                                   |
+| `scripts`                         | `[]`                          | pre-registered `IScriptDefinition[]`                                            |
+| `connection.port`                 | `6379`                        | standalone                                                                      |
+| `connection.lazyConnect`          | `false`                       | connect on `OnModuleInit`                                                       |
+| `connection.connectTimeout`       | `10_000 ms`                   |                                                                                 |
+| `connection.commandTimeout`       | `5_000 ms`                    |                                                                                 |
+| `connection.maxRetriesPerRequest` | `3`                           | do **not** pass `null` (that is BullMQ-specific); ioredis's own default is `20` |
+| `connection.enableReadyCheck`     | `true`                        |                                                                                 |
+| `connection.enableOfflineQueue`   | `false`                       | fail fast on the data-plane client                                              |
+| `connection.retryStrategy`        | `(t) => Math.min(t*50, 2000)` | bounded backoff                                                                 |
+| `connection.reconnectOnError`     | reconnect on `READONLY`       | replica failover                                                                |
 
 ---
 
 ## 5 · Tech Stack
 
-| Layer | Technology | Version | Why |
-|---|---|---|---|
-| Cache library | `@bymax-one/nest-cache` | `0.1.0` | the subject under demonstration |
-| API runtime | NestJS | `^11` | the library's target framework |
-| Node | Node.js | `>= 24` | library engine requirement |
-| Redis client | `ioredis` (peer of the lib) | `^5` | library's transport |
-| Real-time | `@nestjs/websockets` + `@nestjs/platform-socket.io` + `socket.io` | `^11` / `^4` | streams events to the browser |
-| Validation | `zod` | `^4` | env + DTO validation (no class-validator) |
-| Config | `@nestjs/config` | `^4` | typed `ConfigService<Env, true>` |
-| Frontend | Next.js (App Router) | `^16` | matches sibling examples |
-| UI runtime | React | `^19` | |
-| Styling | Tailwind CSS | `^4` (`@tailwindcss/postcss`) | design-system tokens |
-| Components | shadcn/ui (`new-york`) + `lucide-react` | latest | brand component recipes |
-| Fonts | `geist` (Sans + Mono) | `^1` | design-system typography |
-| Data fetching (web) | TanStack Query | `^5` | server-state cache + revalidation |
-| Live socket (web) | `socket.io-client` | `^4` | event/TTL/status feeds |
-| Toasts (web) | `sonner` | latest | glass toaster |
-| Redis | Redis | `7-alpine` (Docker) | keyspace notifications enabled |
-| Optional GUI | RedisInsight | `redis/redisinsight` (port 5540) | power-user Redis browser |
-| Package manager | pnpm (workspaces) | `>= 10.8` (pinned via `packageManager`) | matches all Bymax repos |
-| Language | TypeScript (strict) | `^5.9` | `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`, … |
-| Lint/format | ESLint 9 (flat) + Prettier | `^9` / `^3` | shared Bymax config |
-| Git hooks | Husky + commitlint + lint-staged | — | Conventional Commits, enforced locally |
-| API tests | Jest + `@nestjs/testing` + Testcontainers (`redis:7-alpine`) | `^30` | E2E against real Redis |
-| Web tests | Playwright (smoke) | latest | dashboard happy-path |
+| Layer               | Technology                                                        | Version                                 | Why                                                         |
+| ------------------- | ----------------------------------------------------------------- | --------------------------------------- | ----------------------------------------------------------- |
+| Cache library       | `@bymax-one/nest-cache`                                           | `0.1.0`                                 | the subject under demonstration                             |
+| API runtime         | NestJS                                                            | `^11`                                   | the library's target framework                              |
+| Node                | Node.js                                                           | `>= 24`                                 | library engine requirement                                  |
+| Redis client        | `ioredis` (peer of the lib)                                       | `^5`                                    | library's transport                                         |
+| Real-time           | `@nestjs/websockets` + `@nestjs/platform-socket.io` + `socket.io` | `^11` / `^4`                            | streams events to the browser                               |
+| Validation          | `zod`                                                             | `^4`                                    | env + DTO validation (no class-validator)                   |
+| Config              | `@nestjs/config`                                                  | `^4`                                    | typed `ConfigService<Env, true>`                            |
+| Frontend            | Next.js (App Router)                                              | `^16`                                   | matches sibling examples                                    |
+| UI runtime          | React                                                             | `^19`                                   |                                                             |
+| Styling             | Tailwind CSS                                                      | `^4` (`@tailwindcss/postcss`)           | design-system tokens                                        |
+| Components          | shadcn/ui (`new-york`) + `lucide-react`                           | latest                                  | brand component recipes                                     |
+| Fonts               | `geist` (Sans + Mono)                                             | `^1`                                    | design-system typography                                    |
+| Data fetching (web) | TanStack Query                                                    | `^5`                                    | server-state cache + revalidation                           |
+| Live socket (web)   | `socket.io-client`                                                | `^4`                                    | event/TTL/status feeds                                      |
+| Toasts (web)        | `sonner`                                                          | latest                                  | glass toaster                                               |
+| Redis               | Redis                                                             | `7-alpine` (Docker)                     | keyspace notifications enabled                              |
+| Optional GUI        | RedisInsight                                                      | `redis/redisinsight` (port 5540)        | power-user Redis browser                                    |
+| Package manager     | pnpm (workspaces)                                                 | `>= 10.8` (pinned via `packageManager`) | matches all Bymax repos                                     |
+| Language            | TypeScript (strict)                                               | `^5.9`                                  | `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`, … |
+| Lint/format         | ESLint 9 (flat) + Prettier                                        | `^9` / `^3`                             | shared Bymax config                                         |
+| Git hooks           | Husky + commitlint + lint-staged                                  | —                                       | Conventional Commits, enforced locally                      |
+| API tests           | Jest + `@nestjs/testing` + Testcontainers (`redis:7-alpine`)      | `^30`                                   | E2E against real Redis                                      |
+| Web tests           | Playwright (smoke)                                                | latest                                  | dashboard happy-path                                        |
 
 ---
 
 ## 6 · Repository Layout
 
 A pnpm monorepo. The library is consumed as an **external package** (never a workspace member) so
-the example validates the *published* API, exactly as a real consumer would.
+the example validates the _published_ API, exactly as a real consumer would.
 
 ```
 nest-cache-example/
@@ -399,73 +401,73 @@ reason).
 
 ### 7.1 Module, registration & DI
 
-| # | Library surface | Demonstrated in | Status |
-|---|---|---|---|
-| 1 | `BymaxCacheModule.forRootAsync` | `cache/cache.module.ts` + `app.module.ts` (primary wiring) | ✅ |
-| 2 | `BymaxCacheModule.forRoot` | E2E test module (sync wiring path) | ✅ |
-| 3 | `BymaxCacheModuleOptions` / `BymaxCacheModuleAsyncOptions` | `cache/cache.config.ts` factory return type | ✅ |
-| 4 | `BymaxCacheStandaloneConnection` | default `cache.config.ts` (env-driven URL/host) | ✅ |
-| 5 | `BymaxCacheSentinelConnection` | `cache.config.ts` (`--profile sentinel`) + §15.2 | ✅ |
-| 6 | `BymaxCacheClusterConnection` | `cache.config.ts` (`--profile cluster`) + §15.3 | ✅ |
-| 7 | `BYMAX_CACHE_OPTIONS` | `health`/`admin` read effective options (namespace, separator) | ✅ |
-| 8 | `BYMAX_CACHE_CONNECTION` (`ConnectionManager`) | `ttl-events` raw subscriber + `connection` page INFO | ✅ |
-| 9 | `BYMAX_CACHE_SCRIPT_REGISTRY` (`ScriptManagerService`) | `stampede` module (`register`/`eval`) | ✅ |
-| 10 | `BYMAX_CACHE_EVENTS` (`ICacheEvents`) | `cache/cache.events.ts` lifecycle bridge | ✅ |
-| 11 | `BYMAX_CACHE_SERIALIZER` (`ISerializer`) | `serializer-demo` (inspect injected serializer) | ✅ |
-| 12 | `BYMAX_CACHE_KEY_BUILDER` (`KeyBuilder`) | `admin` (scan patterns) + `ttl-events` (namespace prefix filter) | ✅ |
+| #   | Library surface                                            | Demonstrated in                                                  | Status |
+| --- | ---------------------------------------------------------- | ---------------------------------------------------------------- | ------ |
+| 1   | `BymaxCacheModule.forRootAsync`                            | `cache/cache.module.ts` + `app.module.ts` (primary wiring)       | ✅     |
+| 2   | `BymaxCacheModule.forRoot`                                 | E2E test module (sync wiring path)                               | ✅     |
+| 3   | `BymaxCacheModuleOptions` / `BymaxCacheModuleAsyncOptions` | `cache/cache.config.ts` factory return type                      | ✅     |
+| 4   | `BymaxCacheStandaloneConnection`                           | default `cache.config.ts` (env-driven URL/host)                  | ✅     |
+| 5   | `BymaxCacheSentinelConnection`                             | `cache.config.ts` (`--profile sentinel`) + §15.2                 | ✅     |
+| 6   | `BymaxCacheClusterConnection`                              | `cache.config.ts` (`--profile cluster`) + §15.3                  | ✅     |
+| 7   | `BYMAX_CACHE_OPTIONS`                                      | `health`/`admin` read effective options (namespace, separator)   | ✅     |
+| 8   | `BYMAX_CACHE_CONNECTION` (`ConnectionManager`)             | `ttl-events` raw subscriber + `connection` page INFO             | ✅     |
+| 9   | `BYMAX_CACHE_SCRIPT_REGISTRY` (`ScriptManagerService`)     | `stampede` module (`register`/`eval`)                            | ✅     |
+| 10  | `BYMAX_CACHE_EVENTS` (`ICacheEvents`)                      | `cache/cache.events.ts` lifecycle bridge                         | ✅     |
+| 11  | `BYMAX_CACHE_SERIALIZER` (`ISerializer`)                   | `serializer-demo` (inspect injected serializer)                  | ✅     |
+| 12  | `BYMAX_CACHE_KEY_BUILDER` (`KeyBuilder`)                   | `admin` (scan patterns) + `ttl-events` (namespace prefix filter) | ✅     |
 
 ### 7.2 `CacheService` methods
 
-| # | Method(s) | Demonstrated in | Status |
-|---|---|---|---|
-| 13 | `get<T>` / `set<T>` | `catalog` (read-through with TTL) | ✅ |
-| 14 | `getRaw` / `setRaw` | `serializer-demo` (show stored bytes vs decoded) | ✅ |
-| 15 | `setNx<T>` | `catalog` (idempotent seed) + `stampede` (lock comparison) | ✅ |
-| 16 | `del` / `delMany` | `admin` (delete key) + `tenants` (clear a tenant's keys) | ✅ |
-| 17 | `exists` | `playground` (strings panel) | ✅ |
-| 18 | `incr` / `decr` | `counters` (product views, stock decrement) | ✅ |
-| 19 | `expire` / `ttl` / `persist` | `catalog` + `explorer` (TTL ring + "pin" = persist) | ✅ |
-| 20 | `mget<T>` / `mset<T>` | `catalog` (batch fetch list) | ✅ |
-| 21 | `hget` / `hset` / `hgetall` / `hdel` | `collections` (cart as a hash) | ✅ |
-| 22 | `sadd` / `srem` / `smembers` / `sismember` / `scard` | `collections` (product tags as a set) | ✅ |
-| 23 | `scan` | `admin` / `explorer` (production-safe key listing) | ✅ |
-| 24 | `keys` | `explorer` (shown beside `scan` with an explicit O(N) blocking warning) | ✅ |
-| 25 | `pipeline()` | `admin` "bulk seed" (batched writes via `KeyBuilder`) | ✅ |
-| 26 | `getClient()` | `tenants` (seed a *foreign* namespace to prove isolation) | ✅ |
-| 27 | `flushNamespace()` | `admin` (guarded "flush all" + production-guard demo in §19) | ✅ |
-| 28 | `eval(scriptName, …)` | `stampede` (single-flight lock) | ✅ |
-| 29 | `isHealthy()` / `ping()` / `info()` | `health` + `connection` page (status badge, latency, INFO) | ✅ |
+| #   | Method(s)                                            | Demonstrated in                                                         | Status |
+| --- | ---------------------------------------------------- | ----------------------------------------------------------------------- | ------ |
+| 13  | `get<T>` / `set<T>`                                  | `catalog` (read-through with TTL)                                       | ✅     |
+| 14  | `getRaw` / `setRaw`                                  | `serializer-demo` (show stored bytes vs decoded)                        | ✅     |
+| 15  | `setNx<T>`                                           | `catalog` (idempotent seed) + `stampede` (lock comparison)              | ✅     |
+| 16  | `del` / `delMany`                                    | `admin` (delete key) + `tenants` (clear a tenant's keys)                | ✅     |
+| 17  | `exists`                                             | `playground` (strings panel)                                            | ✅     |
+| 18  | `incr` / `decr`                                      | `counters` (product views, stock decrement)                             | ✅     |
+| 19  | `expire` / `ttl` / `persist`                         | `catalog` + `explorer` (TTL ring + "pin" = persist)                     | ✅     |
+| 20  | `mget<T>` / `mset<T>`                                | `catalog` (batch fetch list)                                            | ✅     |
+| 21  | `hget` / `hset` / `hgetall` / `hdel`                 | `collections` (cart as a hash)                                          | ✅     |
+| 22  | `sadd` / `srem` / `smembers` / `sismember` / `scard` | `collections` (product tags as a set)                                   | ✅     |
+| 23  | `scan`                                               | `admin` / `explorer` (production-safe key listing)                      | ✅     |
+| 24  | `keys`                                               | `explorer` (shown beside `scan` with an explicit O(N) blocking warning) | ✅     |
+| 25  | `pipeline()`                                         | `admin` "bulk seed" (batched writes via `KeyBuilder`)                   | ✅     |
+| 26  | `getClient()`                                        | `tenants` (seed a _foreign_ namespace to prove isolation)               | ✅     |
+| 27  | `flushNamespace()`                                   | `admin` (guarded "flush all" + production-guard demo in §19)            | ✅     |
+| 28  | `eval(scriptName, …)`                                | `stampede` (single-flight lock)                                         | ✅     |
+| 29  | `isHealthy()` / `ping()` / `info()`                  | `health` + `connection` page (status badge, latency, INFO)              | ✅     |
 
 ### 7.3 Pub/Sub, scripts, key builder, serialization
 
-| # | Library surface | Demonstrated in | Status |
-|---|---|---|---|
-| 30 | `PubSubService.publish` / `subscribe` | `pubsub` (publish form → live feed across tabs) | ✅ |
-| 31 | `PubSubService.psubscribe` (`IPubSubPatternHandler`) | `pubsub` (pattern subscription toggle, e.g. `product:*`) | ✅ |
-| 32 | `Unsubscribe` (ref-counted) | `pubsub` (subscribe/unsubscribe lifecycle, double-unsub safe) | ✅ |
-| 33 | `IPubSubHandler<T>` | `pubsub` gateway handler typing | ✅ |
-| 34 | `ScriptManagerService.register` / `load` / `eval` | `stampede` (register lock script, inspect SHA via `load`) | ✅ |
-| 35 | `IScriptDefinition` | `cache/scripts/*` (declared in `options.scripts`) | ✅ |
-| 36 | `KeyBuilder.build` / `applyNamespace` / `getNamespacePrefix` | `admin` (build scan patterns) + `ttl-events` (filter) | ✅ |
-| 37 | `JsonSerializer` (default) | `serializer-demo` (default path) | ✅ |
-| 38 | `ISerializer` (custom) | `serializer-demo` (`msgpack.serializer.ts` swap) | ✅ |
-| 39 | `SerializableValue` | `serializer-demo` (typed payloads + Date/Map/Set caveat) | ✅ |
-| 40 | `CacheNamespace` / `CacheKeyPrefix` | `common/cache-keys.ts` (typed prefix constants) | ✅ |
+| #   | Library surface                                              | Demonstrated in                                               | Status |
+| --- | ------------------------------------------------------------ | ------------------------------------------------------------- | ------ |
+| 30  | `PubSubService.publish` / `subscribe`                        | `pubsub` (publish form → live feed across tabs)               | ✅     |
+| 31  | `PubSubService.psubscribe` (`IPubSubPatternHandler`)         | `pubsub` (pattern subscription toggle, e.g. `product:*`)      | ✅     |
+| 32  | `Unsubscribe` (ref-counted)                                  | `pubsub` (subscribe/unsubscribe lifecycle, double-unsub safe) | ✅     |
+| 33  | `IPubSubHandler<T>`                                          | `pubsub` gateway handler typing                               | ✅     |
+| 34  | `ScriptManagerService.register` / `load` / `eval`            | `stampede` (register lock script, inspect SHA via `load`)     | ✅     |
+| 35  | `IScriptDefinition`                                          | `cache/scripts/*` (declared in `options.scripts`)             | ✅     |
+| 36  | `KeyBuilder.build` / `applyNamespace` / `getNamespacePrefix` | `admin` (build scan patterns) + `ttl-events` (filter)         | ✅     |
+| 37  | `JsonSerializer` (default)                                   | `serializer-demo` (default path)                              | ✅     |
+| 38  | `ISerializer` (custom)                                       | `serializer-demo` (`msgpack.serializer.ts` swap)              | ✅     |
+| 39  | `SerializableValue`                                          | `serializer-demo` (typed payloads + Date/Map/Set caveat)      | ✅     |
+| 40  | `CacheNamespace` / `CacheKeyPrefix`                          | `common/cache-keys.ts` (typed prefix constants)               | ✅     |
 
 ### 7.4 Errors, events, health & shared subpath
 
-| # | Library surface | Demonstrated in | Status |
-|---|---|---|---|
-| 41 | `CacheException` (`.code`, `.details`, HTTP status) | `common/cache-exception.filter.ts` + `errors-demo` | ✅ |
-| 42 | `CACHE_ERROR_CODES` | `errors-demo` (trigger each) + filter mapping | ✅ |
-| 43 | `CACHE_ERROR_MESSAGES` (`ReadonlyMap`) | `errors-demo` (display canonical message) | ✅ |
-| 44 | `CacheErrorCode` (type) | `api-client.ts` + `errors/page.tsx` (typed handling) | ✅ |
-| 45 | `ICacheEvents` / `CacheEventName` | `cache/cache.events.ts` (lifecycle → logger + WS) | ✅ |
-| 46 | `CacheConnectionStatus` | `connection` page badge (`lib/cache-status.ts`) | ✅ |
-| 47 | `CACHE_EVENT_NAMES` | `cache.events.ts` (branch on symbolic names) | ✅ |
-| 48 | **Shared subpath** `@bymax-one/nest-cache/shared` | imported in **both** `apps/api` and `apps/web` (browser bundle) | ✅ |
-| 49 | Re-exported ioredis types (`RedisOptions`, `ClusterNode`, `SentinelAddress`, …) | `cache.config.ts` typing of connection blocks | ✅ |
-| 50 | `@bymax-one/nest-logger` events bridge (optional) | `cache.events.ts` (documented production pattern, §20.4) | ✅ |
+| #   | Library surface                                                                 | Demonstrated in                                                 | Status |
+| --- | ------------------------------------------------------------------------------- | --------------------------------------------------------------- | ------ |
+| 41  | `CacheException` (`.code`, `.details`, HTTP status)                             | `common/cache-exception.filter.ts` + `errors-demo`              | ✅     |
+| 42  | `CACHE_ERROR_CODES`                                                             | `errors-demo` (trigger each) + filter mapping                   | ✅     |
+| 43  | `CACHE_ERROR_MESSAGES` (`ReadonlyMap`)                                          | `errors-demo` (display canonical message)                       | ✅     |
+| 44  | `CacheErrorCode` (type)                                                         | `api-client.ts` + `errors/page.tsx` (typed handling)            | ✅     |
+| 45  | `ICacheEvents` / `CacheEventName`                                               | `cache/cache.events.ts` (lifecycle → logger + WS)               | ✅     |
+| 46  | `CacheConnectionStatus`                                                         | `connection` page badge (`lib/cache-status.ts`)                 | ✅     |
+| 47  | `CACHE_EVENT_NAMES`                                                             | `cache.events.ts` (branch on symbolic names)                    | ✅     |
+| 48  | **Shared subpath** `@bymax-one/nest-cache/shared`                               | imported in **both** `apps/api` and `apps/web` (browser bundle) | ✅     |
+| 49  | Re-exported ioredis types (`RedisOptions`, `ClusterNode`, `SentinelAddress`, …) | `cache.config.ts` typing of connection blocks                   | ✅     |
+| 50  | `@bymax-one/nest-logger` events bridge (optional)                               | `cache.events.ts` (documented production pattern, §20.4)        | ✅     |
 
 ---
 
@@ -509,15 +511,26 @@ cd ../nest-cache-example && pnpm link --global @bymax-one/nest-cache
 ```ts
 // apps/api — server subpath (NestJS module + services)
 import {
-  BymaxCacheModule, CacheService, PubSubService, ScriptManagerService,
-  CacheException, CACHE_ERROR_CODES, BYMAX_CACHE_CONNECTION, ConnectionManager,
-  type ISerializer, type IScriptDefinition, type ICacheEvents,
+  BymaxCacheModule,
+  CacheService,
+  PubSubService,
+  ScriptManagerService,
+  CacheException,
+  CACHE_ERROR_CODES,
+  BYMAX_CACHE_CONNECTION,
+  ConnectionManager,
+  type ISerializer,
+  type IScriptDefinition,
+  type ICacheEvents,
 } from '@bymax-one/nest-cache'
 
 // apps/api AND apps/web — shared subpath (zero-dep types + constants)
 import {
-  CACHE_ERROR_CODES, CACHE_EVENT_NAMES,
-  type CacheErrorCode, type CacheConnectionStatus, type CacheEventName,
+  CACHE_ERROR_CODES,
+  CACHE_EVENT_NAMES,
+  type CacheErrorCode,
+  type CacheConnectionStatus,
+  type CacheEventName,
   type SerializableValue,
 } from '@bymax-one/nest-cache/shared'
 ```
@@ -537,29 +550,29 @@ import {
 All env access goes through a Zod-validated, typed `ConfigService<Env, true>`. No raw `process.env`
 in feature code.
 
-| Variable | Default (dev) | Purpose |
-|---|---|---|
-| `NODE_ENV` | `development` | gates `allowFlushInProduction` behaviour |
-| `PORT` | `3001` | API HTTP/WS port |
-| `WEB_ORIGIN` | `http://localhost:3000` | CORS allow-list for the dashboard |
-| `REDIS_URL` | `redis://localhost:6379` | standalone connection (wins over discrete fields) |
-| `REDIS_HOST` / `REDIS_PORT` | `localhost` / `6379` | discrete fallback |
-| `REDIS_PASSWORD` | _(empty)_ | optional auth (never logged) |
-| `REDIS_DB` | `0` | logical DB index (also used for the `__keyevent@<db>__` channel) |
-| `CACHE_MODE` | `standalone` | `standalone \| sentinel \| cluster` |
-| `CACHE_NAMESPACE` | `cache-example` | the library `namespace` for this app |
-| `CACHE_KEY_SEPARATOR` | `:` | the library `keySeparator` |
-| `CACHE_DEFAULT_TTL` | `60` | demo default TTL (seconds) |
-| `CACHE_SERIALIZER` | `json` | `json \| msgpack` (serializer-demo + global default) |
-| `ALLOW_FLUSH_IN_PRODUCTION` | `false` | maps to `allowFlushInProduction` (kept `false`) |
-| `SHUTDOWN_TIMEOUT_MS` | `5000` | maps to `shutdownTimeoutMs` |
+| Variable                    | Default (dev)            | Purpose                                                          |
+| --------------------------- | ------------------------ | ---------------------------------------------------------------- |
+| `NODE_ENV`                  | `development`            | gates `allowFlushInProduction` behaviour                         |
+| `PORT`                      | `3001`                   | API HTTP/WS port                                                 |
+| `WEB_ORIGIN`                | `http://localhost:3000`  | CORS allow-list for the dashboard                                |
+| `REDIS_URL`                 | `redis://localhost:6379` | standalone connection (wins over discrete fields)                |
+| `REDIS_HOST` / `REDIS_PORT` | `localhost` / `6379`     | discrete fallback                                                |
+| `REDIS_PASSWORD`            | _(empty)_                | optional auth (never logged)                                     |
+| `REDIS_DB`                  | `0`                      | logical DB index (also used for the `__keyevent@<db>__` channel) |
+| `CACHE_MODE`                | `standalone`             | `standalone \| sentinel \| cluster`                              |
+| `CACHE_NAMESPACE`           | `cache-example`          | the library `namespace` for this app                             |
+| `CACHE_KEY_SEPARATOR`       | `:`                      | the library `keySeparator`                                       |
+| `CACHE_DEFAULT_TTL`         | `60`                     | demo default TTL (seconds)                                       |
+| `CACHE_SERIALIZER`          | `json`                   | `json \| msgpack` (serializer-demo + global default)             |
+| `ALLOW_FLUSH_IN_PRODUCTION` | `false`                  | maps to `allowFlushInProduction` (kept `false`)                  |
+| `SHUTDOWN_TIMEOUT_MS`       | `5000`                   | maps to `shutdownTimeoutMs`                                      |
 
 `apps/web`: `NEXT_PUBLIC_API_URL=http://localhost:3001`, `NEXT_PUBLIC_WS_URL=http://localhost:3001`.
 
 ### 9.2 The canonical wiring — `cache/cache.config.ts`
 
-This factory is the project's headline copy-paste artifact: it separates *what the options are* from
-*how the module is wired*.
+This factory is the project's headline copy-paste artifact: it separates _what the options are_ from
+_how the module is wired_.
 
 ```ts
 /**
@@ -581,9 +594,7 @@ export function buildCacheOptions(
   return {
     mode,
     connection:
-      mode === 'standalone'
-        ? { url: config.get('REDIS_URL', { infer: true }) }
-        : undefined,
+      mode === 'standalone' ? { url: config.get('REDIS_URL', { infer: true }) } : undefined,
     sentinel: mode === 'sentinel' ? buildSentinelBlock(config) : undefined,
     cluster: mode === 'cluster' ? buildClusterBlock(config) : undefined,
     namespace: config.get('CACHE_NAMESPACE', { infer: true }),
@@ -609,7 +620,7 @@ BymaxCacheModule.forRootAsync({
 ```
 
 > ⚠️ **`isGlobal` is synchronous.** Per the library's types, `forRootAsync` decides the module's
-> `global` flag *before* the async factory resolves — so `isGlobal` must be passed at the
+> `global` flag _before_ the async factory resolves — so `isGlobal` must be passed at the
 > `forRootAsync({ isGlobal, … })` call site. An `isGlobal` returned from inside `useFactory` has no
 > effect. The example documents this inline.
 
@@ -619,24 +630,24 @@ BymaxCacheModule.forRootAsync({
 
 ### 10.1 Module map & responsibilities
 
-| Module | Responsibility | Primary library surface |
-|---|---|---|
-| `config` | Zod env schema + `validateEnv()` | — |
-| `cache` | `forRootAsync` wiring, events bridge, custom serializer, Lua scripts, re-exports | `BymaxCacheModule`, `ICacheEvents`, `ISerializer`, `IScriptDefinition` |
-| `common` | `CacheExceptionFilter`, `ZodValidationPipe`, typed prefix constants | `CacheException`, `CACHE_ERROR_CODES` |
-| `catalog` | Product read-through cache | `get/set`, `setNx`, `ttl/expire/persist`, `mget/mset` |
-| `counters` | Atomic counters | `incr`, `decr` |
-| `collections` | Carts (hash) + tags (set) | `hget/hset/hgetall/hdel`, `sadd/srem/smembers/sismember/scard` |
-| `tenants` | Prefix-scoped isolation + cross-namespace proof | `del/delMany`, `scan`, `getClient`, `KeyBuilder` |
-| `admin` | Cache-admin (explorer backend) | `scan`, `keys`, `pipeline`, `flushNamespace`, `info`, `ttl` |
-| `pubsub` | Publish endpoint + WS bridge | `PubSubService.publish/subscribe/psubscribe`, `Unsubscribe` |
-| `ttl-events` | Raw keyspace-notification subscriber | `BYMAX_CACHE_CONNECTION` → `createSubscriberClient`, `KeyBuilder.getNamespacePrefix` |
-| `stampede` | Single-flight Lua lock | `ScriptManagerService`, `CacheService.eval` |
-| `serializer-demo` | JSON vs custom codec | `getRaw/setRaw`, `BYMAX_CACHE_SERIALIZER`, `SerializableValue` |
-| `errors-demo` | Trigger each `CacheException` | `CACHE_ERROR_CODES`, `CACHE_ERROR_MESSAGES` |
-| `metrics` | App-level hit/miss counters (clearly **not** a library feature) | — |
-| `health` | `/health`, `/metrics` | `isHealthy`, `ping`, `info` |
-| `events` | `EventsGateway` (socket.io) — the WS hub | — |
+| Module            | Responsibility                                                                   | Primary library surface                                                              |
+| ----------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `config`          | Zod env schema + `validateEnv()`                                                 | —                                                                                    |
+| `cache`           | `forRootAsync` wiring, events bridge, custom serializer, Lua scripts, re-exports | `BymaxCacheModule`, `ICacheEvents`, `ISerializer`, `IScriptDefinition`               |
+| `common`          | `CacheExceptionFilter`, `ZodValidationPipe`, typed prefix constants              | `CacheException`, `CACHE_ERROR_CODES`                                                |
+| `catalog`         | Product read-through cache                                                       | `get/set`, `setNx`, `ttl/expire/persist`, `mget/mset`                                |
+| `counters`        | Atomic counters                                                                  | `incr`, `decr`                                                                       |
+| `collections`     | Carts (hash) + tags (set)                                                        | `hget/hset/hgetall/hdel`, `sadd/srem/smembers/sismember/scard`                       |
+| `tenants`         | Prefix-scoped isolation + cross-namespace proof                                  | `del/delMany`, `scan`, `getClient`, `KeyBuilder`                                     |
+| `admin`           | Cache-admin (explorer backend)                                                   | `scan`, `keys`, `pipeline`, `flushNamespace`, `info`, `ttl`                          |
+| `pubsub`          | Publish endpoint + WS bridge                                                     | `PubSubService.publish/subscribe/psubscribe`, `Unsubscribe`                          |
+| `ttl-events`      | Raw keyspace-notification subscriber                                             | `BYMAX_CACHE_CONNECTION` → `createSubscriberClient`, `KeyBuilder.getNamespacePrefix` |
+| `stampede`        | Single-flight Lua lock                                                           | `ScriptManagerService`, `CacheService.eval`                                          |
+| `serializer-demo` | JSON vs custom codec                                                             | `getRaw/setRaw`, `BYMAX_CACHE_SERIALIZER`, `SerializableValue`                       |
+| `errors-demo`     | Trigger each `CacheException`                                                    | `CACHE_ERROR_CODES`, `CACHE_ERROR_MESSAGES`                                          |
+| `metrics`         | App-level hit/miss counters (clearly **not** a library feature)                  | —                                                                                    |
+| `health`          | `/health`, `/metrics`                                                            | `isHealthy`, `ping`, `info`                                                          |
+| `events`          | `EventsGateway` (socket.io) — the WS hub                                         | —                                                                                    |
 
 ### 10.2 Controller/service shape (the house style)
 
@@ -696,32 +707,32 @@ the "origin" is an in-memory store with an artificial latency so cache hits are 
 
 ### 11.1 Endpoint catalogue
 
-| Method & path | Demo | Library calls |
-|---|---|---|
-| `GET /catalog/products/:id` | read-through cache | `get` → miss → `set(ttl)` |
-| `GET /catalog/products?ids=a,b,c` | batch read | `mget` (→ `mset` on partial miss) |
-| `POST /catalog/products/:id/seed` | idempotent seed | `setNx` |
-| `GET /counters/:id/views` · `POST …/views/incr` | view counter | `incr` / `decr` |
-| `GET /collections/:id/cart` · `POST …/cart` · `DELETE …/cart/:field` | cart as hash | `hgetall` / `hset` / `hdel` |
-| `POST /collections/:id/tags` · `GET …/tags` · `DELETE …/tags/:tag` | tags as set | `sadd` / `smembers` / `sismember` / `scard` / `srem` |
-| `GET /tenants/:t/products/:id` | tenant-scoped read | prefix-scoped `get/set` |
-| `DELETE /tenants/:t/cache` | clear one tenant | `scan` + `delMany` |
-| `POST /tenants/seed-foreign` | seed a foreign namespace | `getClient()` (raw, un-namespaced) |
-| `GET /admin/keys?prefix=&pattern=&strategy=scan\|keys` | key explorer | `scan` / `keys` |
-| `GET /admin/keys/:key` | inspect value + TTL | `getRaw` + `ttl` |
-| `DELETE /admin/keys/:key` | delete | `del` |
-| `POST /admin/seed?count=N` | bulk seed | `pipeline()` |
-| `DELETE /admin/namespace` | flush whole namespace (guarded) | `flushNamespace()` |
-| `GET /admin/info?section=` | Redis INFO | `info(section?)` |
-| `POST /pubsub/publish` | publish a message | `PubSubService.publish` |
-| `POST /pubsub/subscribe` · `DELETE …/subscribe` | manage a subscription | `subscribe` / `psubscribe` / `Unsubscribe` |
-| `POST /stampede?productId=&concurrency=N` | stampede lab | `eval` (Lua lock) |
-| `POST /serializer/roundtrip?codec=json\|msgpack` | codec comparison | `setRaw`/`getRaw` + `get`/`set` |
-| `GET /serializer/active` | which codec is injected | `BYMAX_CACHE_SERIALIZER` (constructor name) |
-| `POST /serializer/caveat?codec=json\|msgpack` | `Date` lossy-vs-intact caveat | `setRaw`/`getRaw` + `get`/`set` |
-| `POST /errors/:code` | trigger a `CacheException` | per-code triggers |
-| `GET /health` | health badge | `isHealthy` + `ping` (latency) |
-| `GET /metrics` | app hit/miss | in-memory counters |
+| Method & path                                                        | Demo                            | Library calls                                        |
+| -------------------------------------------------------------------- | ------------------------------- | ---------------------------------------------------- |
+| `GET /catalog/products/:id`                                          | read-through cache              | `get` → miss → `set(ttl)`                            |
+| `GET /catalog/products?ids=a,b,c`                                    | batch read                      | `mget` (→ `mset` on partial miss)                    |
+| `POST /catalog/products/:id/seed`                                    | idempotent seed                 | `setNx`                                              |
+| `GET /counters/:id/views` · `POST …/views/incr`                      | view counter                    | `incr` / `decr`                                      |
+| `GET /collections/:id/cart` · `POST …/cart` · `DELETE …/cart/:field` | cart as hash                    | `hgetall` / `hset` / `hdel`                          |
+| `POST /collections/:id/tags` · `GET …/tags` · `DELETE …/tags/:tag`   | tags as set                     | `sadd` / `smembers` / `sismember` / `scard` / `srem` |
+| `GET /tenants/:t/products/:id`                                       | tenant-scoped read              | prefix-scoped `get/set`                              |
+| `DELETE /tenants/:t/cache`                                           | clear one tenant                | `scan` + `delMany`                                   |
+| `POST /tenants/seed-foreign`                                         | seed a foreign namespace        | `getClient()` (raw, un-namespaced)                   |
+| `GET /admin/keys?prefix=&pattern=&strategy=scan\|keys`               | key explorer                    | `scan` / `keys`                                      |
+| `GET /admin/keys/:key`                                               | inspect value + TTL             | `getRaw` + `ttl`                                     |
+| `DELETE /admin/keys/:key`                                            | delete                          | `del`                                                |
+| `POST /admin/seed?count=N`                                           | bulk seed                       | `pipeline()`                                         |
+| `DELETE /admin/namespace`                                            | flush whole namespace (guarded) | `flushNamespace()`                                   |
+| `GET /admin/info?section=`                                           | Redis INFO                      | `info(section?)`                                     |
+| `POST /pubsub/publish`                                               | publish a message               | `PubSubService.publish`                              |
+| `POST /pubsub/subscribe` · `DELETE …/subscribe`                      | manage a subscription           | `subscribe` / `psubscribe` / `Unsubscribe`           |
+| `POST /stampede?productId=&concurrency=N`                            | stampede lab                    | `eval` (Lua lock)                                    |
+| `POST /serializer/roundtrip?codec=json\|msgpack`                     | codec comparison                | `setRaw`/`getRaw` + `get`/`set`                      |
+| `GET /serializer/active`                                             | which codec is injected         | `BYMAX_CACHE_SERIALIZER` (constructor name)          |
+| `POST /serializer/caveat?codec=json\|msgpack`                        | `Date` lossy-vs-intact caveat   | `setRaw`/`getRaw` + `get`/`set`                      |
+| `POST /errors/:code`                                                 | trigger a `CacheException`      | per-code triggers                                    |
+| `GET /health`                                                        | health badge                    | `isHealthy` + `ping` (latency)                       |
+| `GET /metrics`                                                       | app hit/miss                    | in-memory counters                                   |
 
 ### 11.2 Documented journeys
 
@@ -756,7 +767,7 @@ honest **design note** where the library has a boundary worth teaching.
 ### 12.3 Namespace isolation & `flushNamespace`
 
 - **Shows:** the configured `namespace` (`cache-example`) prefixes every key; `flushNamespace()`
-  removes **only** this app's keys via `SCAN` + `UNLINK`; a key seeded under a *different* namespace
+  removes **only** this app's keys via `SCAN` + `UNLINK`; a key seeded under a _different_ namespace
   survives.
 - **APIs:** `flushNamespace`, `getClient` (to seed the foreign namespace), `KeyBuilder`.
 - **UI (`/tenants`, `/explorer`):** a "Seed foreign namespace" button writes `other-app:…` via the
@@ -796,7 +807,7 @@ honest **design note** where the library has a boundary worth teaching.
 ## 13 · Frontend Design — `apps/web`
 
 A Next.js 16 (App Router) dashboard, **visually identical** to the other Bymax example apps (§14).
-It is a *thin client* over the API: it never talks to Redis directly.
+It is a _thin client_ over the API: it never talks to Redis directly.
 
 ### 13.1 Data layer
 
@@ -819,18 +830,18 @@ export type ApiError = { code: CacheErrorCode | 'unknown'; message: string; stat
 
 ### 13.2 Pages
 
-| Route | Page | Demonstrates |
-|---|---|---|
-| `/` | Overview | KPI strip (status, hit rate, total keys, ops), hit/miss chart, namespace summary |
-| `/explorer` | Key Explorer | `scan`/`keys`, value preview (per-type), TTL ring, delete, pin (`persist`) |
-| `/playground` | Data Types | strings · numerics · hashes · sets · batch |
-| `/tenants` | Tenants | prefix isolation + foreign-namespace survives-flush |
-| `/pubsub` | Pub/Sub | live feed, publish form, pattern subscription toggle |
-| `/ttl` | TTL Live | keyspace-notification expiry feed + countdown rings |
-| `/stampede` | Stampede Lab | "Fire N requests" → single-flight timeline + hit-rate |
-| `/serializer` | Serializer Lab | JSON vs MessagePack: stored bytes vs decoded value |
-| `/errors` | Error Explorer | trigger each `CacheException`; show code + status + body |
-| `/connection` | Connection | lifecycle event feed, mode, `INFO` sections |
+| Route         | Page           | Demonstrates                                                                     |
+| ------------- | -------------- | -------------------------------------------------------------------------------- |
+| `/`           | Overview       | KPI strip (status, hit rate, total keys, ops), hit/miss chart, namespace summary |
+| `/explorer`   | Key Explorer   | `scan`/`keys`, value preview (per-type), TTL ring, delete, pin (`persist`)       |
+| `/playground` | Data Types     | strings · numerics · hashes · sets · batch                                       |
+| `/tenants`    | Tenants        | prefix isolation + foreign-namespace survives-flush                              |
+| `/pubsub`     | Pub/Sub        | live feed, publish form, pattern subscription toggle                             |
+| `/ttl`        | TTL Live       | keyspace-notification expiry feed + countdown rings                              |
+| `/stampede`   | Stampede Lab   | "Fire N requests" → single-flight timeline + hit-rate                            |
+| `/serializer` | Serializer Lab | JSON vs MessagePack: stored bytes vs decoded value                               |
+| `/errors`     | Error Explorer | trigger each `CacheException`; show code + status + body                         |
+| `/connection` | Connection     | lifecycle event feed, mode, `INFO` sections                                      |
 
 ### 13.3 Signature components
 
@@ -862,12 +873,12 @@ goal is that any two Bymax example apps look like one product.
 
 ### 14.2 The four files to copy verbatim (from a sibling `apps/web`)
 
-| File | Carries |
-|---|---|
-| `app/globals.css` | the token block (`:root` + the live `.dark` set) + base resets + keyframes |
-| `tailwind.config.ts` | `theme.extend`: brand scale, radius map, font families, glow keyframes |
-| `components.json` | shadcn `new-york`, `cssVariables: true`, `baseColor: neutral`, lucide |
-| `postcss.config.mjs` | `@tailwindcss/postcss` only (no `autoprefixer`/`postcss-import`) |
+| File                 | Carries                                                                    |
+| -------------------- | -------------------------------------------------------------------------- |
+| `app/globals.css`    | the token block (`:root` + the live `.dark` set) + base resets + keyframes |
+| `tailwind.config.ts` | `theme.extend`: brand scale, radius map, font families, glow keyframes     |
+| `components.json`    | shadcn `new-york`, `cssVariables: true`, `baseColor: neutral`, lucide      |
+| `postcss.config.mjs` | `@tailwindcss/postcss` only (no `autoprefixer`/`postcss-import`)           |
 
 > `app/layout.tsx` is **adapted** from the sibling (the Geist Sans/Mono wiring and forced `dark` on `<html>` are identical), not copied byte-for-byte — it adds the app's `<Providers>` (Query + Nuqs + Sonner), metadata, and the `nest-cache-example` wordmark. Keep the font + dark setup verbatim so chrome parity holds.
 
@@ -881,7 +892,7 @@ goal is that any two Bymax example apps look like one product.
 The canonical shell: a **64px topbar** over a **250px sidebar** + fluid `main` (`max-w-5xl`, widen to
 `max-w-7xl` on chart-heavy pages). The topbar carries the brand mark (orange-bordered stacked-layers
 glyph) + a mono orange→amber gradient wordmark `nest-cache-example`, and on the right a **Redis
-status chip** (●  ready / reconnecting / down + round-trip latency) and an avatar. The active nav
+status chip** (● ready / reconnecting / down + round-trip latency) and an avatar. The active nav
 item has a left orange border, faint orange fill, and orange text/icon. **Swap only the wordmark and
 nav items** from the reference shell.
 
@@ -890,13 +901,13 @@ nav items** from the reference shell.
 Reuse the design system's accessible "color + icon + text, never color alone" rule, mapping
 `CacheConnectionStatus` (and lifecycle `CacheEventName`) to the palette:
 
-| Status / event | Color | Meaning |
-|---|---|---|
-| `ready` | `#22c55e` green | connected, healthy |
-| `connecting` | `#60a5fa` blue | initial connect |
-| `reconnecting` | `#f59e0b` amber | transient outage, backing off |
-| `closed` / `end` | `#ef4444` red | connection gone |
-| `error` (event) | `#a855f7` purple | error lifecycle event |
+| Status / event   | Color            | Meaning                       |
+| ---------------- | ---------------- | ----------------------------- |
+| `ready`          | `#22c55e` green  | connected, healthy            |
+| `connecting`     | `#60a5fa` blue   | initial connect               |
+| `reconnecting`   | `#f59e0b` amber  | transient outage, backing off |
+| `closed` / `end` | `#ef4444` red    | connection gone               |
+| `error` (event)  | `#a855f7` purple | error lifecycle event         |
 
 ### 14.5 Acceptance criterion (from the design system)
 
@@ -945,13 +956,13 @@ The library accepts standalone, sentinel, and cluster from one options shape. Th
 In cluster mode these throw `CacheException('cache.unsupported_in_cluster')`, and the Connection page
 surfaces this:
 
-| Method | Cluster behaviour |
-|---|---|
-| `scan` | ⛔ throws `UNSUPPORTED_IN_CLUSTER` (no usable top-level `scanStream`) |
-| `flushNamespace` | ⛔ throws `UNSUPPORTED_IN_CLUSTER` |
-| `getClient` | ⛔ throws `UNSUPPORTED_IN_CLUSTER` (`Cluster` ≠ full `Redis` API) |
-| `eval` | requires ≥1 key (routes by slot); keys of one call must hash to one slot (hash tag) |
-| Pub/Sub | experimental passthrough (not rejected) |
+| Method           | Cluster behaviour                                                                   |
+| ---------------- | ----------------------------------------------------------------------------------- |
+| `scan`           | ⛔ throws `UNSUPPORTED_IN_CLUSTER` (no usable top-level `scanStream`)               |
+| `flushNamespace` | ⛔ throws `UNSUPPORTED_IN_CLUSTER`                                                  |
+| `getClient`      | ⛔ throws `UNSUPPORTED_IN_CLUSTER` (`Cluster` ≠ full `Redis` API)                   |
+| `eval`           | requires ≥1 key (routes by slot); keys of one call must hash to one slot (hash tag) |
+| Pub/Sub          | experimental passthrough (not rejected)                                             |
 
 > 🎓 The Connection page lets the reader switch `CACHE_MODE` (with the matching Docker profile up)
 > and watch the same admin actions succeed in standalone and **fail with a clear, typed error** in
@@ -1122,23 +1133,23 @@ export class CacheExceptionFilter implements ExceptionFilter {
 
 ### 19.2 Canonical error-code → HTTP table
 
-| Code | HTTP | Triggered in the demo by |
-|---|---|---|
-| `cache.connection_failed` | 500 | (observed if Redis is down at boot) |
-| `cache.command_timeout` | 504 | `errors-demo` with a tiny `commandTimeout` + slow op |
-| `cache.connection_lost` | 503 | dropping the connection mid-op |
-| `cache.serialization_failed` | 500 | `set` of a value the codec cannot encode |
-| `cache.deserialization_failed` | 500 | reading a deliberately corrupted key |
-| `cache.invalid_key` | 400 | empty prefix/id |
-| `cache.invalid_namespace` | 500 | misconfigured namespace (config-time) |
-| `cache.script_not_registered` | 500 | `eval` of an unknown script name |
-| `cache.script_execution_failed` | 500 | a Lua runtime error |
-| `cache.script_registry_missing` | 500 | `eval` with no script manager wired |
-| `cache.flush_disabled_in_production` | 403 | `flushNamespace()` with `NODE_ENV=production` |
-| `cache.unsupported_in_cluster` | 500 | `scan`/`flushNamespace`/`getClient` in cluster mode |
-| `cache.cluster_misconfigured` | 500 | `mode: 'cluster'` without `cluster.nodes` |
-| `cache.sentinel_misconfigured` | 500 | `mode: 'sentinel'` without sentinels/name |
-| `cache.shutdown_timeout` | 500 | `quit()` exceeds `shutdownTimeoutMs` |
+| Code                                 | HTTP | Triggered in the demo by                             |
+| ------------------------------------ | ---- | ---------------------------------------------------- |
+| `cache.connection_failed`            | 500  | (observed if Redis is down at boot)                  |
+| `cache.command_timeout`              | 504  | `errors-demo` with a tiny `commandTimeout` + slow op |
+| `cache.connection_lost`              | 503  | dropping the connection mid-op                       |
+| `cache.serialization_failed`         | 500  | `set` of a value the codec cannot encode             |
+| `cache.deserialization_failed`       | 500  | reading a deliberately corrupted key                 |
+| `cache.invalid_key`                  | 400  | empty prefix/id                                      |
+| `cache.invalid_namespace`            | 500  | misconfigured namespace (config-time)                |
+| `cache.script_not_registered`        | 500  | `eval` of an unknown script name                     |
+| `cache.script_execution_failed`      | 500  | a Lua runtime error                                  |
+| `cache.script_registry_missing`      | 500  | `eval` with no script manager wired                  |
+| `cache.flush_disabled_in_production` | 403  | `flushNamespace()` with `NODE_ENV=production`        |
+| `cache.unsupported_in_cluster`       | 500  | `scan`/`flushNamespace`/`getClient` in cluster mode  |
+| `cache.cluster_misconfigured`        | 500  | `mode: 'cluster'` without `cluster.nodes`            |
+| `cache.sentinel_misconfigured`       | 500  | `mode: 'sentinel'` without sentinels/name            |
+| `cache.shutdown_timeout`             | 500  | `quit()` exceeds `shutdownTimeoutMs`                 |
 
 ### 19.3 The Error Explorer
 
@@ -1210,12 +1221,12 @@ two-library Bymax integration reference.
 
 All ports bound to `127.0.0.1`. Default `up` starts Redis only; profiles add the rest.
 
-| Service | Image | Port | Profile | Notes |
-|---|---|---|---|---|
-| `redis` | `redis:7-alpine` | `6379` | _(default)_ | mounts `docker/redis/redis.conf` |
-| `redisinsight` | `redis/redisinsight` | `5540` | `tools` | native Redis browser |
-| `redis-cluster-*` | `redis:7-alpine` | `7000-7005` | `cluster` | 3 masters + 3 replicas |
-| `redis-master`/`replica`/`sentinel-*` | `redis:7-alpine` | `26379-26381` | `sentinel` | 1 master + 2 replicas + 3 sentinels |
+| Service                               | Image                | Port          | Profile     | Notes                               |
+| ------------------------------------- | -------------------- | ------------- | ----------- | ----------------------------------- |
+| `redis`                               | `redis:7-alpine`     | `6379`        | _(default)_ | mounts `docker/redis/redis.conf`    |
+| `redisinsight`                        | `redis/redisinsight` | `5540`        | `tools`     | native Redis browser                |
+| `redis-cluster-*`                     | `redis:7-alpine`     | `7000-7005`   | `cluster`   | 3 masters + 3 replicas              |
+| `redis-master`/`replica`/`sentinel-*` | `redis:7-alpine`     | `26379-26381` | `sentinel`  | 1 master + 2 replicas + 3 sentinels |
 
 ```bash
 pnpm infra:up                         # redis only
@@ -1237,11 +1248,11 @@ appendonly no
 
 ### 21.3 Ports
 
-| Service | Port |
-|---|---|
-| Web (Next.js) | `3000` |
+| Service                | Port   |
+| ---------------------- | ------ |
+| Web (Next.js)          | `3000` |
 | API (NestJS HTTP + WS) | `3001` |
-| Redis | `6379` |
+| Redis                  | `6379` |
 | RedisInsight (profile) | `5540` |
 
 ### 21.4 Local run
@@ -1260,13 +1271,13 @@ pnpm dev                             # api (3001) + web (3000) in parallel
 The example is **not** coverage/mutation-gated (those are the library's gates). It ships a focused,
 high-signal suite.
 
-| Layer | Tool | Scope |
-|---|---|---|
+| Layer                | Tool                                                         | Scope                                                                                                                                                                                            |
+| -------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | API E2E (real Redis) | Jest + `@nestjs/testing` + Testcontainers (`redis:7-alpine`) | boots the app against a real Redis; exercises the headline flows: read-through + TTL, namespace isolation + `flushNamespace`, Pub/Sub fan-out, the Lua single-flight, each `CacheException` path |
-| API E2E (fast) | `ioredis-mock` (where real Redis isn't needed) | data-structure round-trips, serializer comparison |
-| Web smoke | Playwright | dashboard loads, status badge turns green, an explorer scan renders, a publish round-trips |
-| Web unit | Vitest + Testing Library | `lib/cache-status.ts` mapping, the **shared-subpath import** resolves in a browser context (matrix #48) |
-| Static | `tsc --noEmit`, ESLint (flat), Prettier `--check` | strict types + lint clean |
+| API E2E (fast)       | `ioredis-mock` (where real Redis isn't needed)               | data-structure round-trips, serializer comparison                                                                                                                                                |
+| Web smoke            | Playwright                                                   | dashboard loads, status badge turns green, an explorer scan renders, a publish round-trips                                                                                                       |
+| Web unit             | Vitest + Testing Library                                     | `lib/cache-status.ts` mapping, the **shared-subpath import** resolves in a browser context (matrix #48)                                                                                          |
+| Static               | `tsc --noEmit`, ESLint (flat), Prettier `--check`            | strict types + lint clean                                                                                                                                                                        |
 
 > 🎓 The Testcontainers pattern (real `redis:7-alpine` per `beforeAll`, `EVALSHA`/`NOSCRIPT` and
 > keyspace-notification paths exercised against a genuine server) mirrors the **library's** own E2E
@@ -1338,7 +1349,7 @@ teaches.
 - 🔒 **Lua from trusted source only.** Scripts are declared in code (`IScriptDefinition`), never built
   from request input.
 - 🔒 **Loopback-bound Docker.** All container ports bind `127.0.0.1`.
-- 🔒 **CORS** restricted to `WEB_ORIGIN`; the API is otherwise unauthenticated *by design* (NG2) and
+- 🔒 **CORS** restricted to `WEB_ORIGIN`; the API is otherwise unauthenticated _by design_ (NG2) and
   must not be exposed publicly.
 
 ---
@@ -1349,31 +1360,31 @@ High-level phases; the future `docs/DEVELOPMENT_PLAN.md` expands each into a sta
 per-phase `docs/tasks/phase-NN-*.md` files (JIRA-style: task table, acceptance criteria, agent
 prompt, completion protocol), matching the sibling examples.
 
-| Phase | Title | Key deliverables | Features unlocked (matrix #) |
-|---|---|---|---|
-| 0 | Repo scaffold | pnpm workspace, tsconfig/eslint/prettier/husky, docker-compose (Redis + `redis.conf`), CLAUDE/AGENTS/README stub, LICENSE | tooling |
-| 1 | API foundation | `forRootAsync` wiring, env schema, events bridge, exception filter, health endpoint, EventsGateway skeleton | 1–4, 7–8, 10, 29, 41–47 |
-| 2 | Catalog + data structures | catalog, counters, collections; admin scan/keys/info; metrics | 13–24, 36, 40 |
-| 3 | Namespace, admin & serializer | tenants (prefix + foreign-namespace), `pipeline`, `flushNamespace`, serializer-demo + `MsgPackSerializer` | 11, 25–27, 37–39 |
-| 4 | Pub/Sub & TTL events | `PubSubService` bridge, pattern subs, raw keyspace subscriber | 8, 12, 30–33 |
-| 5 | Stampede (Lua) | script registry, `acquireLock`, eval, timeline API | 9, 28, 34–35 |
-| 6 | Web shell & design system | Next.js app, copy the four design-system files, shell, status badge, shared-subpath import, api-client, socket | 14, 44, 46, 48 |
-| 7 | Web feature pages | explorer, playground, tenants, pubsub, ttl, stampede, serializer, errors, connection | 49 + UI for all above |
-| 8 | Topologies & errors | sentinel/cluster Docker profiles + config; Error Explorer; cluster-restriction demos | 5–6, 42–43; cluster table §15.4 |
-| 9 | Polish & audit | README (badges, journeys, coverage), `audit:exports` CI check, E2E + Playwright smoke, RedisInsight profile, optional nest-logger bridge | 50; G6 |
+| Phase | Title                         | Key deliverables                                                                                                                         | Features unlocked (matrix #)    |
+| ----- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| 0     | Repo scaffold                 | pnpm workspace, tsconfig/eslint/prettier/husky, docker-compose (Redis + `redis.conf`), CLAUDE/AGENTS/README stub, LICENSE                | tooling                         |
+| 1     | API foundation                | `forRootAsync` wiring, env schema, events bridge, exception filter, health endpoint, EventsGateway skeleton                              | 1–4, 7–8, 10, 29, 41–47         |
+| 2     | Catalog + data structures     | catalog, counters, collections; admin scan/keys/info; metrics                                                                            | 13–24, 36, 40                   |
+| 3     | Namespace, admin & serializer | tenants (prefix + foreign-namespace), `pipeline`, `flushNamespace`, serializer-demo + `MsgPackSerializer`                                | 11, 25–27, 37–39                |
+| 4     | Pub/Sub & TTL events          | `PubSubService` bridge, pattern subs, raw keyspace subscriber                                                                            | 8, 12, 30–33                    |
+| 5     | Stampede (Lua)                | script registry, `acquireLock`, eval, timeline API                                                                                       | 9, 28, 34–35                    |
+| 6     | Web shell & design system     | Next.js app, copy the four design-system files, shell, status badge, shared-subpath import, api-client, socket                           | 14, 44, 46, 48                  |
+| 7     | Web feature pages             | explorer, playground, tenants, pubsub, ttl, stampede, serializer, errors, connection                                                     | 49 + UI for all above           |
+| 8     | Topologies & errors           | sentinel/cluster Docker profiles + config; Error Explorer; cluster-restriction demos                                                     | 5–6, 42–43; cluster table §15.4 |
+| 9     | Polish & audit                | README (badges, journeys, coverage), `audit:exports` CI check, E2E + Playwright smoke, RedisInsight profile, optional nest-logger bridge | 50; G6                          |
 
 ---
 
 ## 26 · What This Project Intentionally Excludes
 
-| Excluded | Why |
-|---|---|
-| Database (PostgreSQL/Prisma) | would obscure the cache focus; in-memory origin is enough (G5) |
-| Authentication / JWT | out of scope — use `@bymax-one/nest-auth` (NG2) |
-| Production deployment (K8s, CD) | local dev reference, not a prod template (NG1) |
-| 100% coverage / mutation gates | those are the **library's** gates; the example ships a smoke suite (NG4) |
-| Persistent metrics (Prometheus/Grafana) | RedisInsight covers Redis-level metrics; a metrics stack would bloat the example |
-| Swagger / OpenAPI | matches the Bymax example convention; JSDoc + dashboard + curl journeys instead (§23.4) |
+| Excluded                                | Why                                                                                     |
+| --------------------------------------- | --------------------------------------------------------------------------------------- |
+| Database (PostgreSQL/Prisma)            | would obscure the cache focus; in-memory origin is enough (G5)                          |
+| Authentication / JWT                    | out of scope — use `@bymax-one/nest-auth` (NG2)                                         |
+| Production deployment (K8s, CD)         | local dev reference, not a prod template (NG1)                                          |
+| 100% coverage / mutation gates          | those are the **library's** gates; the example ships a smoke suite (NG4)                |
+| Persistent metrics (Prometheus/Grafana) | RedisInsight covers Redis-level metrics; a metrics stack would bloat the example        |
+| Swagger / OpenAPI                       | matches the Bymax example convention; JSDoc + dashboard + curl journeys instead (§23.4) |
 
 ---
 

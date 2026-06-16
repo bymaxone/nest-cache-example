@@ -8,12 +8,12 @@
 
 ## Task index
 
-| ID   | Task                                                                  | Status | Priority | Size | Depends on       |
-| ---- | --------------------------------------------------------------------- | ------ | -------- | ---- | ---------------- |
-| P9-1 | `TtlEventsService` — raw subscriber → `__keyevent@{db}__:expired` → emit `cache:expired` | 🔴 | High | M | Phase 8, Phase 1 |
-| P9-2 | `onModuleDestroy` quits the dedicated subscriber connection           | 🔴     | High     | S    | P9-1             |
-| P9-3 | Short-TTL seed endpoint for the demo (reuses catalog `set(ttl)`)      | 🔴     | Medium   | S    | P9-1             |
-| P9-4 | Phase verification + inline "why not `PubSubService`" note            | 🔴     | Medium   | S    | P9-1, P9-2, P9-3 |
+| ID   | Task                                                                                     | Status | Priority | Size | Depends on       |
+| ---- | ---------------------------------------------------------------------------------------- | ------ | -------- | ---- | ---------------- |
+| P9-1 | `TtlEventsService` — raw subscriber → `__keyevent@{db}__:expired` → emit `cache:expired` | 🔴     | High     | M    | Phase 8, Phase 1 |
+| P9-2 | `onModuleDestroy` quits the dedicated subscriber connection                              | 🔴     | High     | S    | P9-1             |
+| P9-3 | Short-TTL seed endpoint for the demo (reuses catalog `set(ttl)`)                         | 🔴     | Medium   | S    | P9-1             |
+| P9-4 | Phase verification + inline "why not `PubSubService`" note                               | 🔴     | Medium   | S    | P9-1, P9-2, P9-3 |
 
 ---
 
@@ -32,7 +32,7 @@ Create `src/ttl-events/ttl-events.service.ts` — the escape-hatch demo. It open
 
 - [ ] `src/ttl-events/ttl-events.service.ts` exists; `TtlEventsService` is `@Injectable()` and implements `OnModuleInit` + `OnModuleDestroy`.
 - [ ] Constructor injects `@Inject(BYMAX_CACHE_CONNECTION)` (typed `ConnectionManager`), `@Inject(BYMAX_CACHE_KEY_BUILDER)` (typed `KeyBuilder`), the `EventsGateway` (Phase 8), and `ConfigService<Env, true>`.
-- [ ] `onModuleInit` reads `db` from `REDIS_DB` (default `0`), calls `connection.createSubscriberClient()` (stored on a private field), and `await sub.subscribe(\`__keyevent@${db}__:expired\`)`.
+- [ ] `onModuleInit` reads `db` from `REDIS_DB` (default `0`), calls `connection.createSubscriberClient()` (stored on a private field), and subscribes to the keyspace channel `__keyevent@${db}__:expired`.
 - [ ] A `message` listener emits `gateway.emitExpired(key)` **only** when `key.startsWith(keys.getNamespacePrefix())`; foreign-namespace expiries are ignored.
 - [ ] `src/ttl-events/ttl-events.module.ts` declares the service and imports `EventsModule` (Phase 8); the module is registered in `AppModule`.
 - [ ] `pnpm --filter api typecheck` exits 0.
@@ -53,12 +53,7 @@ Create `src/ttl-events/ttl-events.service.ts` — the escape-hatch demo. It open
 > 1. Create `/apps/api/src/ttl-events/ttl-events.service.ts`. Mirror the canonical shape from spec §17.3:
 >
 >    ```ts
->    import {
->      Inject,
->      Injectable,
->      type OnModuleDestroy,
->      type OnModuleInit,
->    } from '@nestjs/common'
+>    import { Inject, Injectable, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common'
 >    import { ConfigService } from '@nestjs/config'
 >    import {
 >      BYMAX_CACHE_CONNECTION,
@@ -112,6 +107,7 @@ Create `src/ttl-events/ttl-events.service.ts` — the escape-hatch demo. It open
 >    ```
 >
 >    Adjust the `Env` import to the actual config type/path used by `apps/api` (the same one `health`/`admin` use). If the connection can be a cluster, the `as Redis` cast is acceptable here for the standalone demo — note that keyspace notifications + this single-channel subscribe are a standalone/sentinel concern (cluster fan-out is out of scope for the demo).
+>
 > 2. Create `/apps/api/src/ttl-events/ttl-events.module.ts`: a `@Module` that `imports: [EventsModule]` (the Phase 8 module that exports `EventsGateway`) and `providers: [TtlEventsService]`. No controller yet (the seed endpoint lands in P9-3).
 > 3. Register `TtlEventsModule` in `/apps/api/src/app.module.ts`.
 > 4. Run `pnpm --filter api typecheck`.

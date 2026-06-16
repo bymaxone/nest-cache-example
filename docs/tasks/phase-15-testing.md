@@ -8,14 +8,14 @@
 
 ## Task index
 
-| ID    | Task                                                                     | Status | Priority | Size | Depends on |
-| ----- | ------------------------------------------------------------------------ | ------ | -------- | ---- | ---------- |
-| P15-1 | `apps/api` test toolchain — Jest + `@nestjs/testing` + Testcontainers     | 🔴     | High     | M    | P4–P14     |
-| P15-2 | E2E specs (real Redis) — read-through + TTL, namespace, sync `forRoot`    | 🔴     | High     | M    | P15-1      |
-| P15-3 | E2E specs (real Redis) — Pub/Sub fan-out, Lua single-flight, error paths  | 🔴     | High     | M    | P15-1      |
-| P15-4 | Fast specs with `ioredis-mock` (round-trips + serializer comparison)      | 🔴     | Medium   | S    | P15-1      |
-| P15-5 | `apps/web` — Vitest unit (`cache-status` + shared subpath) + Playwright   | 🔴     | Medium   | M    | P15-1      |
-| P15-6 | CI wiring stub + phase verification gate                                  | 🔴     | Medium   | S    | P15-1..P15-5 |
+| ID    | Task                                                                     | Status | Priority | Size | Depends on   |
+| ----- | ------------------------------------------------------------------------ | ------ | -------- | ---- | ------------ |
+| P15-1 | `apps/api` test toolchain — Jest + `@nestjs/testing` + Testcontainers    | 🔴     | High     | M    | P4–P14       |
+| P15-2 | E2E specs (real Redis) — read-through + TTL, namespace, sync `forRoot`   | 🔴     | High     | M    | P15-1        |
+| P15-3 | E2E specs (real Redis) — Pub/Sub fan-out, Lua single-flight, error paths | 🔴     | High     | M    | P15-1        |
+| P15-4 | Fast specs with `ioredis-mock` (round-trips + serializer comparison)     | 🔴     | Medium   | S    | P15-1        |
+| P15-5 | `apps/web` — Vitest unit (`cache-status` + shared subpath) + Playwright  | 🔴     | Medium   | M    | P15-1        |
+| P15-6 | CI wiring stub + phase verification gate                                 | 🔴     | Medium   | S    | P15-1..P15-5 |
 
 > **Phase rule — read before any task.** This repo is an **example app, not the library**: it is **NOT coverage/mutation-gated**. **Do NOT add Stryker** and **do NOT set a 100% `coverageThreshold`** (those gates belong to `@bymax-one/nest-cache`; see `DEVELOPMENT_PLAN.md` Appendix C + spec NG4 / §22). The bar here is a **focused, high-signal E2E smoke against a genuine Redis** (Testcontainers `redis:7-alpine`) that **doubles as integration coverage for the published library** + a web build/Playwright smoke. Hard constraints, every task:
 >
@@ -89,6 +89,7 @@ Stand up the `apps/api` E2E test toolchain that every later spec builds on: **Je
 >    ```
 >    (`--runInBand`: one container at a time keeps Docker usage predictable.)
 > 4. Create `apps/api/test/helpers/redis-container.ts`:
+>
 >    ```ts
 >    import { RedisContainer, type StartedRedisContainer } from '@testcontainers/redis'
 >
@@ -99,6 +100,7 @@ Stand up the `apps/api` E2E test toolchain that every later spec builds on: **Je
 >        .start()
 >    }
 >    ```
+>
 > 5. Create `apps/api/test/helpers/test-app.ts` — a `Test.createTestingModule` factory that imports the real `AppModule`, overriding only the cache connection/env so it points at the started container's `getConnectionUrl()` (host+port). Return the compiled `INestApplication` (or the testing module + `CacheService`).
 > 6. Create `apps/api/test/smoke.e2e-spec.ts`: in `beforeAll` start the container + build the app; assert `await cache.ping()` resolves (latency ≥ 0) and `await cache.isHealthy()` is `true`; in `afterAll` close the app then stop the container.
 > 7. Run `pnpm --filter @nest-cache-example/api test:e2e` with Docker running — the smoke must pass.
@@ -267,7 +269,7 @@ The second real-Redis E2E batch: **Pub/Sub fan-out** (publish once; every subscr
 
 ### Description
 
-The fast lane: pure-in-memory specs that need **no real server**, using **`ioredis-mock`** for sub-second feedback (spec §22 "API E2E (fast)"). Cover the **data-structure round-trips** (string/numeric/hash/set/batch through `CacheService`) and the **serializer comparison** (JSON vs MessagePack: `setRaw`/`getRaw` raw bytes vs `get` decoded value, including the JSON `Date → ISO string` caveat). These are deliberately *not* Testcontainers-backed — they exercise library data shaping, not Redis server semantics.
+The fast lane: pure-in-memory specs that need **no real server**, using **`ioredis-mock`** for sub-second feedback (spec §22 "API E2E (fast)"). Cover the **data-structure round-trips** (string/numeric/hash/set/batch through `CacheService`) and the **serializer comparison** (JSON vs MessagePack: `setRaw`/`getRaw` raw bytes vs `get` decoded value, including the JSON `Date → ISO string` caveat). These are deliberately _not_ Testcontainers-backed — they exercise library data shaping, not Redis server semantics.
 
 ### Acceptance Criteria
 
@@ -284,7 +286,7 @@ The fast lane: pure-in-memory specs that need **no real server**, using **`iored
 ### Agent Execution Prompt
 
 > Role: Senior TypeScript / NestJS engineer writing fast unit-ish specs.
-> Context: Task P15-4 of `docs/DEVELOPMENT_PLAN.md` §Phase 15 (spec §22 "API E2E (fast) — `ioredis-mock` where real Redis isn't needed: data-structure round-trips, serializer comparison"; §16 serialization, NG4). `ioredis-mock` is a drop-in `ioredis` replacement that runs in-process — perfect where Redis *server* behaviour (keyspace events, Lua reload, real TTL expiry) is **not** under test. The data-structure groups and the serializer surface come from `@bymax-one/nest-cache`; `MsgPackSerializer` is the example's custom codec (Phase 7).
+> Context: Task P15-4 of `docs/DEVELOPMENT_PLAN.md` §Phase 15 (spec §22 "API E2E (fast) — `ioredis-mock` where real Redis isn't needed: data-structure round-trips, serializer comparison"; §16 serialization, NG4). `ioredis-mock` is a drop-in `ioredis` replacement that runs in-process — perfect where Redis _server_ behaviour (keyspace events, Lua reload, real TTL expiry) is **not** under test. The data-structure groups and the serializer surface come from `@bymax-one/nest-cache`; `MsgPackSerializer` is the example's custom codec (Phase 7).
 > Objective: Author two fast, Docker-free specs — data-structure round-trips and the JSON-vs-MessagePack serializer comparison — backed by `ioredis-mock`.
 > Steps:
 >
@@ -356,7 +358,11 @@ The frontend bar (spec §22 "Web smoke" + "Web unit"; Appendix C `web-smoke`). *
 >    import react from '@vitejs/plugin-react'
 >    export default defineConfig({
 >      plugins: [react()],
->      test: { environment: 'jsdom', globals: true, include: ['lib/**/*.test.ts', 'lib/**/*.test.tsx'] },
+>      test: {
+>        environment: 'jsdom',
+>        globals: true,
+>        include: ['lib/**/*.test.ts', 'lib/**/*.test.tsx'],
+>      },
 >      // NO coverage thresholds — example-app bar (Appendix C).
 >    })
 >    ```
@@ -368,7 +374,7 @@ The frontend bar (spec §22 "Web smoke" + "Web unit"; Appendix C `web-smoke`). *
 >
 > - Follow §2 + Appendix C. **Pin `vitest@^3`** (do not float). Import shared types via `@bymax-one/nest-cache/shared` — never source/`dist`; the point of the #48 test is that the **published** subpath resolves in a browser context.
 > - Do **NOT** add a 100% `coverage.thresholds` and do **NOT** add Stryker — `apps/web` is held to a build + happy-path smoke, not coverage.
-> - Keep the Playwright smoke a *smoke* (the four assertions above), not an exhaustive UI suite; do not flake on real-time timing (await the feed item).
+> - Keep the Playwright smoke a _smoke_ (the four assertions above), not an exhaustive UI suite; do not flake on real-time timing (await the feed item).
 >   Verification:
 > - `pnpm --filter @nest-cache-example/web test` — expected: Vitest passes (mapping + the #48 shared-subpath import resolves under jsdom).
 > - `pnpm --filter @nest-cache-example/web test:e2e` — expected: the Playwright smoke passes against a running stack.
@@ -430,7 +436,7 @@ Wire a CI stub with the four jobs this phase proves — **`lint` + `typecheck` +
 >    - `pnpm --filter @nest-cache-example/web test:e2e` (Playwright smoke) against a running stack.
 >    - `pnpm --filter @nest-cache-example/web build`.
 >    - `pnpm lint` and `pnpm typecheck`.
->    Constraints:
+>      Constraints:
 >
 > - Follow §2 + Appendix C. **No Stryker, no 100% `coverageThreshold`** anywhere in CI or config — the example-app bar is lint + typecheck + E2E smoke + web build.
 > - Do not skip hooks or use `--no-verify`; do not lower any threshold to go green.

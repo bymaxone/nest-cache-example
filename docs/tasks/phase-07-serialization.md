@@ -8,12 +8,12 @@
 
 ## Task index
 
-| ID   | Task                                                                       | Status | Priority | Size | Depends on   |
-| ---- | -------------------------------------------------------------------------- | ------ | -------- | ---- | ------------ |
-| P7-1 | `src/cache/msgpack.serializer.ts` — `MsgPackSerializer implements ISerializer` | 🔴 | Medium   | S    | Phase 3      |
-| P7-2 | Wire `CACHE_SERIALIZER` selection into `src/cache/cache.config.ts`         | 🔴     | High     | S    | P7-1         |
-| P7-3 | `src/serializer-demo/` — `POST /serializer/roundtrip` (raw vs decoded)     | 🔴     | High     | M    | P7-1, P7-2   |
-| P7-4 | `SerializableValue` caveat payload (`Date`) + phase verification          | 🔴     | Medium   | S    | P7-1..P7-3   |
+| ID   | Task                                                                           | Status | Priority | Size | Depends on |
+| ---- | ------------------------------------------------------------------------------ | ------ | -------- | ---- | ---------- |
+| P7-1 | `src/cache/msgpack.serializer.ts` — `MsgPackSerializer implements ISerializer` | 🔴     | Medium   | S    | Phase 3    |
+| P7-2 | Wire `CACHE_SERIALIZER` selection into `src/cache/cache.config.ts`             | 🔴     | High     | S    | P7-1       |
+| P7-3 | `src/serializer-demo/` — `POST /serializer/roundtrip` (raw vs decoded)         | 🔴     | High     | M    | P7-1, P7-2 |
+| P7-4 | `SerializableValue` caveat payload (`Date`) + phase verification               | 🔴     | Medium   | S    | P7-1..P7-3 |
 
 ---
 
@@ -51,6 +51,7 @@ Build the custom codec that the rest of the phase demonstrates against the libra
 >
 > 1. Add the dependency to the `apps/api` package (runtime, not dev): `pnpm --filter @nest-cache-example/api add @msgpack/msgpack` (use the workspace's actual `apps/api` package name).
 > 2. Create `apps/api/src/cache/msgpack.serializer.ts`:
+>
 >    ```ts
 >    import { decode, encode } from '@msgpack/msgpack'
 >    import type { ISerializer } from '@bymax-one/nest-cache'
@@ -66,6 +67,7 @@ Build the custom codec that the rest of the phase demonstrates against the libra
 >      }
 >    }
 >    ```
+>
 > 3. Do NOT register the serializer anywhere yet — selection/wiring is P7-2. This task only ships the class + the dependency.
 >    Constraints:
 >
@@ -204,6 +206,7 @@ Build the backend for the Serializer Lab (DASHBOARD §12): a module that stores 
 > 1. Scaffold `apps/api/src/serializer-demo/` with `serializer-demo.module.ts` / `.controller.ts` / `.service.ts` and `dto/roundtrip.dto.ts`. Register `SerializerDemoModule` in `app.module.ts`.
 > 2. DTO: `export const roundtripQuerySchema = z.object({ codec: z.enum(['json', 'msgpack']).default('json') })` and a body schema that accepts an arbitrary JSON object (the payload). Parse via the shared `ZodValidationPipe`.
 > 3. Service — inject `CacheService` and the active serializer:
+>
 >    ```ts
 >    import { Inject, Injectable } from '@nestjs/common'
 >    import { BYMAX_CACHE_SERIALIZER, CacheService, type ISerializer } from '@bymax-one/nest-cache'
@@ -216,7 +219,12 @@ Build the backend for the Serializer Lab (DASHBOARD §12): a module that stores 
 >      ) {}
 >
 >      /** Store `payload`, then read it back as the raw stored string AND the decoded value. */
->      async roundtrip(payload: unknown): Promise<{ raw: string | null; decoded: unknown; rawBytes: number; rawBypass: string | null }> {
+>      async roundtrip(payload: unknown): Promise<{
+>        raw: string | null
+>        decoded: unknown
+>        rawBytes: number
+>        rawBypass: string | null
+>      }> {
 >        await this.cache.set('serializer:demo', 'last', payload)
 >        const raw = await this.cache.getRaw('serializer:demo', 'last')
 >        const decoded = await this.cache.get('serializer:demo', 'last')
@@ -233,6 +241,7 @@ Build the backend for the Serializer Lab (DASHBOARD §12): a module that stores 
 >      }
 >    }
 >    ```
+>
 > 4. Controller: `POST /serializer/roundtrip` (validates `codec`, calls `roundtrip`, returns `{ codec, raw, decoded, rawBytes, rawBypass }`) and `GET /serializer/active` (returns `{ serializer: this.service.activeSerializer() }`). JSDoc each method.
 >    Constraints:
 >
@@ -268,7 +277,7 @@ Build the backend for the Serializer Lab (DASHBOARD §12): a module that stores 
 
 ### Description
 
-Teach the `SerializableValue` caveat and close the phase. JSON does not preserve a `Date` — it round-trips **lossily**, becoming an ISO **string** — whereas MessagePack preserves it intact (spec §16.1 caveat box; DASHBOARD §12 "⚠ Date became an ISO string"). This task adds a dedicated, well-known caveat payload containing a `Date` and an endpoint that round-trips it so the lossy-vs-intact difference is demonstrable, and documents the honest typing: `SerializableValue` (exported from `@bymax-one/nest-cache/shared`) is the type the library's `get`/`set` are designed for, and it deliberately **excludes** `Date`, `Map`, `Set`, `BigInt`, and `undefined` — i.e. the caveat payload is intentionally *outside* `SerializableValue`, which is exactly why it round-trips lossily under the default codec. Then run the Phase 7 "definition of done" gate: typecheck/lint/build green, both codecs exercised, and the matrix rows demonstrated. Demonstrates matrix row #39 (`SerializableValue` + the `Date`/`Map`/`Set` caveat).
+Teach the `SerializableValue` caveat and close the phase. JSON does not preserve a `Date` — it round-trips **lossily**, becoming an ISO **string** — whereas MessagePack preserves it intact (spec §16.1 caveat box; DASHBOARD §12 "⚠ Date became an ISO string"). This task adds a dedicated, well-known caveat payload containing a `Date` and an endpoint that round-trips it so the lossy-vs-intact difference is demonstrable, and documents the honest typing: `SerializableValue` (exported from `@bymax-one/nest-cache/shared`) is the type the library's `get`/`set` are designed for, and it deliberately **excludes** `Date`, `Map`, `Set`, `BigInt`, and `undefined` — i.e. the caveat payload is intentionally _outside_ `SerializableValue`, which is exactly why it round-trips lossily under the default codec. Then run the Phase 7 "definition of done" gate: typecheck/lint/build green, both codecs exercised, and the matrix rows demonstrated. Demonstrates matrix row #39 (`SerializableValue` + the `Date`/`Map`/`Set` caveat).
 
 ### Acceptance Criteria
 
@@ -296,7 +305,11 @@ Teach the `SerializableValue` caveat and close the phase. JSON does not preserve
 > 1. Create `apps/api/src/serializer-demo/serializer-demo.fixtures.ts` exporting the caveat payload, e.g.:
 >    ```ts
 >    /** A payload that round-trips LOSSILY under JSON (Date → ISO string) and intact under MessagePack. */
->    export const caveatPayload = { id: 42, when: new Date('2026-06-01T00:00:00.000Z'), tags: ['a', 'b'] }
+>    export const caveatPayload = {
+>      id: 42,
+>      when: new Date('2026-06-01T00:00:00.000Z'),
+>      tags: ['a', 'b'],
+>    }
 >    ```
 > 2. In the service, add a `caveat()` method that stores `caveatPayload`, reads it back via `getRaw` + `get`, and computes `dateSurvived: (decoded as { when?: unknown }).when instanceof Date`; include a note string keyed off the active codec.
 > 3. In the controller, add `POST /serializer/caveat?codec=json|msgpack` (validate `codec` with the same Zod enum) returning `{ codec, raw, decoded, dateSurvived, note }`.

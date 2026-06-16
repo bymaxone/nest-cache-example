@@ -1,0 +1,41 @@
+{
+  "name": "nest-cache-example",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.8.0",
+  "license": "MIT",
+  "author": "Bymax One",
+  "engines": {
+    "node": ">=24",
+    "pnpm": ">=10.8"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel --if-present run dev",
+    "build": "pnpm -r --if-present run build",
+    "typecheck": "pnpm -r --if-present run typecheck",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "pnpm -r --if-present run test",
+    "test:e2e": "pnpm -r --if-present run test:e2e",
+    "audit:exports": "node scripts/audit-library-exports.mjs",
+    "infra:up": "docker compose up -d --wait",
+    "infra:down": "docker compose down",
+    "infra:nuke": "docker compose down -v",
+    "infra:logs": "docker compose logs -f",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.0.2",
+    "@commitlint/config-conventional": "^21.0.2",
+    "@eslint/js": "^9.39.4",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.6.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.7",
+    "prettier": "^3",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.61.1"
+  }
+}

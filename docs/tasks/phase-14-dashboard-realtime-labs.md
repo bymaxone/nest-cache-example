@@ -8,16 +8,16 @@
 
 ## Task index
 
-| ID    | Task                                                                          | Status | Priority | Size | Depends on            |
-| ----- | ----------------------------------------------------------------------------- | ------ | -------- | ---- | --------------------- |
+| ID    | Task                                                                           | Status | Priority | Size | Depends on            |
+| ----- | ------------------------------------------------------------------------------ | ------ | -------- | ---- | --------------------- |
 | P14-1 | `components/realtime/EventFeed` (ring-buffer, follow-mode) + `use-follow-mode` | 🔴     | High     | M    | Phase 12              |
 | P14-2 | `app/pubsub/page.tsx` — publish form + subscription manager + live `EventFeed` | 🔴     | High     | M    | Phase 8, P14-1        |
 | P14-3 | `components/realtime/TtlRing` (custom SVG) + `CountdownWall`                   | 🔴     | High     | M    | Phase 12              |
-| P14-4 | `app/ttl/page.tsx` — countdown wall + expiry `EventFeed`; fade + toast        | 🔴     | High     | M    | Phase 9, P14-1, P14-3 |
+| P14-4 | `app/ttl/page.tsx` — countdown wall + expiry `EventFeed`; fade + toast         | 🔴     | High     | M    | Phase 9, P14-1, P14-3 |
 | P14-5 | `components/labs/StampedeTimeline` (SVG swimlane) + `app/stampede/page.tsx`    | 🔴     | Medium   | M    | Phase 10, Phase 12    |
-| P14-6 | `app/serializer/page.tsx` — JSON vs msgpack + `SerializableValue` banner      | 🔴     | Medium   | M    | Phase 7, Phase 12     |
-| P14-7 | `app/errors/page.tsx` — all 15 codes + response panel (typed via `/shared`)   | 🔴     | Medium   | M    | Phase 11, Phase 12    |
-| P14-8 | `app/connection/page.tsx` — status badge + lifecycle feed + mode + `INFO`     | 🔴     | Medium   | M    | Phase 11, P14-1       |
+| P14-6 | `app/serializer/page.tsx` — JSON vs msgpack + `SerializableValue` banner       | 🔴     | Medium   | M    | Phase 7, Phase 12     |
+| P14-7 | `app/errors/page.tsx` — all 15 codes + response panel (typed via `/shared`)    | 🔴     | Medium   | M    | Phase 11, Phase 12    |
+| P14-8 | `app/connection/page.tsx` — status badge + lifecycle feed + mode + `INFO`      | 🔴     | Medium   | M    | Phase 11, P14-1       |
 | P14-9 | Phase verification (fan-out · expiry · stampede · errors · lifecycle)          | 🔴     | Medium   | S    | P14-1..P14-8          |
 
 ---

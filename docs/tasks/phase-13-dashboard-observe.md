@@ -8,16 +8,16 @@
 
 ## Task index
 
-| ID    | Task                                                                  | Status | Priority | Size | Depends on              |
-| ----- | --------------------------------------------------------------------- | ------ | -------- | ---- | ----------------------- |
-| P13-1 | `components/charts/` — Recharts panel set (8 components)              | 🔴     | High     | L    | Phase 5, Phase 12       |
-| P13-2 | `app/page.tsx` — Overview (golden signals + breakdowns)              | 🔴     | High     | L    | P13-1, P13-7            |
-| P13-3 | `app/explorer/page.tsx` — filter rail + strategy toggle + `KeyTable` | 🔴     | High     | L    | P13-7                   |
-| P13-4 | `KeyDetailDrawer` — Value/Raw/TTL/Metadata + actions + flush         | 🔴     | High     | M    | P13-3                   |
-| P13-5 | `app/playground/page.tsx` — one card per data structure             | 🔴     | Medium   | M    | P13-7                   |
-| P13-6 | `app/tenants/page.tsx` — `TenantSplit` + isolation-proof flow       | 🔴     | Medium   | M    | P13-3, P13-7            |
-| P13-7 | TanStack Query hooks — `useKeys` / `useMetrics` / `useInfo`         | 🔴     | High     | M    | Phase 5, Phase 12       |
-| P13-8 | Phase verification (golden signals · scan · op-appears · isolation) | 🔴     | Medium   | S    | P13-1..P13-7            |
+| ID    | Task                                                                 | Status | Priority | Size | Depends on        |
+| ----- | -------------------------------------------------------------------- | ------ | -------- | ---- | ----------------- |
+| P13-1 | `components/charts/` — Recharts panel set (8 components)             | 🔴     | High     | L    | Phase 5, Phase 12 |
+| P13-2 | `app/page.tsx` — Overview (golden signals + breakdowns)              | 🔴     | High     | L    | P13-1, P13-7      |
+| P13-3 | `app/explorer/page.tsx` — filter rail + strategy toggle + `KeyTable` | 🔴     | High     | L    | P13-7             |
+| P13-4 | `KeyDetailDrawer` — Value/Raw/TTL/Metadata + actions + flush         | 🔴     | High     | M    | P13-3             |
+| P13-5 | `app/playground/page.tsx` — one card per data structure              | 🔴     | Medium   | M    | P13-7             |
+| P13-6 | `app/tenants/page.tsx` — `TenantSplit` + isolation-proof flow        | 🔴     | Medium   | M    | P13-3, P13-7      |
+| P13-7 | TanStack Query hooks — `useKeys` / `useMetrics` / `useInfo`          | 🔴     | High     | M    | Phase 5, Phase 12 |
+| P13-8 | Phase verification (golden signals · scan · op-appears · isolation)  | 🔴     | Medium   | S    | P13-1..P13-7      |
 
 ---
 

@@ -10,13 +10,13 @@
 
 ## Task index
 
-| ID   | Task                                                                        | Status | Priority | Size | Depends on       |
-| ---- | --------------------------------------------------------------------------- | ------ | -------- | ---- | ---------------- |
-| P1-1 | `docker-compose.yml` — `redis:7-alpine` service (healthcheck, volume, conf) | 🔴     | High     | S    | Phase 0          |
-| P1-2 | `docker/redis/redis.conf` — keyspace notifications + dev no-persistence     | 🔴     | High     | XS   | P1-1             |
-| P1-3 | Optional Docker profiles (`tools` / `cluster` / `sentinel`) — config only   | 🔴     | Medium   | M    | P1-1, P1-2       |
-| P1-4 | `.env.example` (api + web) — every spec §9 variable                         | 🔴     | High     | S    | Phase 0          |
-| P1-5 | Verification gate (`pnpm infra:up` healthy · keyspace · `--profile tools`)  | 🔴     | High     | S    | P1-1..P1-4       |
+| ID   | Task                                                                        | Status | Priority | Size | Depends on |
+| ---- | --------------------------------------------------------------------------- | ------ | -------- | ---- | ---------- |
+| P1-1 | `docker-compose.yml` — `redis:7-alpine` service (healthcheck, volume, conf) | 🔴     | High     | S    | Phase 0    |
+| P1-2 | `docker/redis/redis.conf` — keyspace notifications + dev no-persistence     | 🔴     | High     | XS   | P1-1       |
+| P1-3 | Optional Docker profiles (`tools` / `cluster` / `sentinel`) — config only   | 🔴     | Medium   | M    | P1-1, P1-2 |
+| P1-4 | `.env.example` (api + web) — every spec §9 variable                         | 🔴     | High     | S    | Phase 0    |
+| P1-5 | Verification gate (`pnpm infra:up` healthy · keyspace · `--profile tools`)  | 🔴     | High     | S    | P1-1..P1-4 |
 
 ---
 
@@ -54,6 +54,7 @@ Create the workspace-root `docker-compose.yml` whose **default** `up` starts the
 > Steps:
 >
 > 1. Create `/docker-compose.yml`:
+>
 >    ```yaml
 >    services:
 >      redis:
@@ -76,6 +77,7 @@ Create the workspace-root `docker-compose.yml` whose **default** `up` starts the
 >    volumes:
 >      redis-data:
 >    ```
+>
 > 2. Do NOT add a top-level `version:` key (Compose v2 ignores it and warns).
 > 3. The `docker/redis/redis.conf` file is authored in P1-2; the mount path is contractual now. If you run `docker compose up` before P1-2 lands, Redis will fail to read a missing conf — that is expected until P1-2 exists. Validating with `docker compose config` does not require the conf file.
 > 4. Do NOT add the `redisinsight`, cluster, or sentinel services here — those are profile-gated and land in P1-3.
@@ -279,6 +281,7 @@ Author the two `.env.example` templates that document every runtime variable the
 > Steps:
 >
 > 1. Create `/apps/api/.env.example`:
+>
 >    ```dotenv
 >    # ── App ────────────────────────────────────────────────────────────────
 >    NODE_ENV=development              # gates allowFlushInProduction behaviour
@@ -301,6 +304,7 @@ Author the two `.env.example` templates that document every runtime variable the
 >    ALLOW_FLUSH_IN_PRODUCTION=false   # maps to allowFlushInProduction (kept false)
 >    SHUTDOWN_TIMEOUT_MS=5000          # maps to shutdownTimeoutMs
 >    ```
+>
 > 2. Create `/apps/web/.env.example`:
 >    ```dotenv
 >    NEXT_PUBLIC_API_URL=http://localhost:3001   # NestJS REST base URL

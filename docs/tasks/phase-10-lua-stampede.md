@@ -167,6 +167,7 @@ Build the stampede feature module — a controller + service that fire **N concu
 >    ```
 >
 >    For this task it is enough to return per-contender `{ token, won: won === 1 }`; the winner/loser fetch+wait+hit logic is P10-3 (leave a clear `// P10-3:` seam).
+>
 > 3. Create `apps/api/src/stampede/stampede.controller.ts` with `@Controller('stampede')` and a `@Post()` handler that parses the query through `stampedeQuerySchema` (a `ZodValidationPipe` or `schema.parse(req.query)` — match the repo's existing Zod-pipe convention from earlier phases) and delegates to the service. Add an inline comment: keys are namespaced by `eval` (`cache-example:stampede:{id}`); the Lua body is declared in code, never from request input (spec §18, §24).
 > 4. Create `apps/api/src/stampede/stampede.module.ts` (declares the controller + service) and import it in `apps/api/src/app.module.ts`.
 > 5. Run `pnpm --filter @nest-cache-example/api typecheck` and `... lint`.

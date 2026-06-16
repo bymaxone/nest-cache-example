@@ -8,17 +8,17 @@
 
 ## Task index
 
-| ID   | Task                                                            | Status | Priority | Size | Depends on       |
-| ---- | --------------------------------------------------------------- | ------ | -------- | ---- | ---------------- |
-| P4-1 | `ProductOriginStore` — in-memory "database" with artificial latency | 🔴 | High     | S    | Phase 3          |
-| P4-2 | Catalog read-through — `GET /catalog/products/:id` (`get`→miss→`set(ttl)`) | 🔴 | High | M  | P4-1             |
-| P4-3 | Catalog batch — `GET /catalog/products?ids=a,b,c` (`mget`/`mset`) | 🔴 | High   | S    | P4-2             |
-| P4-4 | Catalog idempotent seed (`setNx`) + `exists` — `POST /catalog/products/:id/seed` | 🔴 | Medium | S | P4-2       |
-| P4-5 | `counters/` — `incr`/`decr` (view counter, stock decrement)     | 🔴     | Medium   | S    | Phase 3          |
-| P4-6 | `collections/` carts as HASHES (`hset`/`hget`/`hgetall`/`hdel`) | 🔴     | Medium   | M    | Phase 3          |
-| P4-7 | `collections/` tags as SETS (`sadd`/`srem`/`smembers`/`sismember`/`scard`) | 🔴 | Medium | M | P4-6           |
-| P4-8 | `MetricsService` (per-prefix hit/miss) + interceptor + `GET /metrics` | 🔴 | High  | M    | P4-2             |
-| P4-9 | TTL ops on catalog keys (`expire`/`ttl`/`persist`) + phase verification | 🔴 | Medium | S | P4-2..P4-8     |
+| ID   | Task                                                                             | Status | Priority | Size | Depends on |
+| ---- | -------------------------------------------------------------------------------- | ------ | -------- | ---- | ---------- |
+| P4-1 | `ProductOriginStore` — in-memory "database" with artificial latency              | 🔴     | High     | S    | Phase 3    |
+| P4-2 | Catalog read-through — `GET /catalog/products/:id` (`get`→miss→`set(ttl)`)       | 🔴     | High     | M    | P4-1       |
+| P4-3 | Catalog batch — `GET /catalog/products?ids=a,b,c` (`mget`/`mset`)                | 🔴     | High     | S    | P4-2       |
+| P4-4 | Catalog idempotent seed (`setNx`) + `exists` — `POST /catalog/products/:id/seed` | 🔴     | Medium   | S    | P4-2       |
+| P4-5 | `counters/` — `incr`/`decr` (view counter, stock decrement)                      | 🔴     | Medium   | S    | Phase 3    |
+| P4-6 | `collections/` carts as HASHES (`hset`/`hget`/`hgetall`/`hdel`)                  | 🔴     | Medium   | M    | Phase 3    |
+| P4-7 | `collections/` tags as SETS (`sadd`/`srem`/`smembers`/`sismember`/`scard`)       | 🔴     | Medium   | M    | P4-6       |
+| P4-8 | `MetricsService` (per-prefix hit/miss) + interceptor + `GET /metrics`            | 🔴     | High     | M    | P4-2       |
+| P4-9 | TTL ops on catalog keys (`expire`/`ttl`/`persist`) + phase verification          | 🔴     | Medium   | S    | P4-2..P4-8 |
 
 ---
 
@@ -64,7 +64,7 @@ Create the in-memory "origin" store that stands in for a real database. Every re
 >    - `async find(id: string): Promise<Product | null>` — `await` a delay of `ORIGIN_LATENCY_MS`, then return the row or `null`. Use a small private `delay(ms)` helper returning `new Promise<void>((resolve) => setTimeout(resolve, ms))` (do NOT block the event loop with a busy-wait).
 >    - `async findMany(ids: string[]): Promise<Array<Product | null>>` — one delay for the whole batch (a batch DB read is one round-trip), then map ids → rows/`null`, preserving input order.
 >    - JSDoc every public member.
->    Constraints:
+>      Constraints:
 >
 > - Follow `docs/DEVELOPMENT_PLAN.md` §2 Global Conventions (TypeScript strict, ESM, English-only comments, JSDoc on every exported/public member, thin layers).
 > - Do NOT use `class-validator` or Swagger anywhere in the repo (DTOs are Zod; docs are JSDoc).
@@ -639,7 +639,7 @@ Expose TTL lifecycle operations on catalog keys — `expire` (extend/set a TTL),
 >    - Prove the read-through: `GET /catalog/products/p1` twice — first a miss (slower), second a hit (faster); `GET /metrics` shows the hit + miss recorded for `product`.
 >    - Prove TTL: seed/get a product, `POST …/expire {ttlSeconds:5}` → `true`, `GET …/ttl` → ~5 then counts down; `POST …/persist` → `true`, `GET …/ttl` → `-1`. For an unknown id, `GET …/ttl` → `-2`.
 >    - Confirm set members are stored raw (P4-7) and that this is documented.
->    Constraints:
+>      Constraints:
 >
 > - Follow `docs/DEVELOPMENT_PLAN.md` §2 Global Conventions.
 > - Zod DTO only; NO class-validator, NO Swagger.

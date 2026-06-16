@@ -8,14 +8,14 @@
 
 ## Task index
 
-| ID   | Task                                                                  | Status | Priority | Size | Depends on       |
-| ---- | --------------------------------------------------------------------- | ------ | -------- | ---- | ---------------- |
-| P8-1 | `src/pubsub/` module + `POST /pubsub/publish` (`publish`, sub count)  | 🔴     | High     | M    | Phase 3          |
-| P8-2 | `EventsGateway` server-side `subscribe` → re-emit `cache:event`       | 🔴     | High     | M    | P8-1             |
-| P8-3 | Pattern subscription via `psubscribe` (`product:*`) wired to gateway  | 🔴     | Medium   | S    | P8-2             |
-| P8-4 | Subscription management endpoints (ref-counted `Unsubscribe`)         | 🔴     | Medium   | M    | P8-2             |
-| P8-5 | Handler-error isolation (swallowed + `reason: 'handler_error'`)       | 🔴     | Medium   | S    | P8-2             |
-| P8-6 | Phase verification (two-tab fan-out · pattern match · namespacing)    | 🔴     | Medium   | S    | P8-1..P8-5       |
+| ID   | Task                                                                 | Status | Priority | Size | Depends on |
+| ---- | -------------------------------------------------------------------- | ------ | -------- | ---- | ---------- |
+| P8-1 | `src/pubsub/` module + `POST /pubsub/publish` (`publish`, sub count) | 🔴     | High     | M    | Phase 3    |
+| P8-2 | `EventsGateway` server-side `subscribe` → re-emit `cache:event`      | 🔴     | High     | M    | P8-1       |
+| P8-3 | Pattern subscription via `psubscribe` (`product:*`) wired to gateway | 🔴     | Medium   | S    | P8-2       |
+| P8-4 | Subscription management endpoints (ref-counted `Unsubscribe`)        | 🔴     | Medium   | M    | P8-2       |
+| P8-5 | Handler-error isolation (swallowed + `reason: 'handler_error'`)      | 🔴     | Medium   | S    | P8-2       |
+| P8-6 | Phase verification (two-tab fan-out · pattern match · namespacing)   | 🔴     | Medium   | S    | P8-1..P8-5 |
 
 ---
 
@@ -84,6 +84,7 @@ The publish entry point for the `/pubsub` page (DASHBOARD §9). Scaffold a `src/
 >    ```
 >
 >    The exact library signature (spec §4 / §17.1): `publish<T>(channel: string, message: T): Promise<number>` — the returned number is the subscriber count.
+>
 > 3. `src/pubsub/pubsub.controller.ts` — `@Controller('pubsub')`, thin: `@Post('publish')` `publish(@Body(new ZodValidationPipe(publishSchema)) body: PublishDto)` → `const subscribers = await this.bridge.publish(body.channel, body.message); return { channel: body.channel, subscribers }`. JSDoc the class + method (note the channel is namespaced by the library).
 > 4. `src/pubsub/pubsub.module.ts` — `@Module({ controllers: [PubSubController], providers: [PubSubBridgeService], exports: [PubSubBridgeService] })`. Do NOT add `PubSubService` to `providers` — it is global from `BymaxCacheModule` (P3-6). Import `EventsModule` here too (it exports `EventsGateway`) so P8-2 can inject the gateway with no further edits.
 > 5. Register `PubSubModule` in `src/app.module.ts` `imports`.
@@ -122,7 +123,7 @@ The publish entry point for the `/pubsub` page (DASHBOARD §9). Scaffold a `src/
 
 ### Description
 
-The fan-out core (spec §17.2, DASHBOARD §18). The server subscribes **once** to a demo channel via `PubSubService.subscribe<T>(channel, handler)` and, inside the handler, calls `EventsGateway.emitMessage(channel, payload)` — which re-emits `cache:event` to every connected browser (the `emitMessage` skeleton already exists from P3-5). The result: a `POST /pubsub/publish` from one tab arrives as a `cache:event` socket message in *all* open tabs. The handler is typed as the library's `IPubSubHandler<T> = (message: T, channel: string) => void | Promise<void>` (matrix #33). Bootstrap the default `product-events` subscription on module init so the demo works out of the box; the returned `Unsubscribe` is stored for P8-4's lifecycle management and torn down on `onModuleDestroy`.
+The fan-out core (spec §17.2, DASHBOARD §18). The server subscribes **once** to a demo channel via `PubSubService.subscribe<T>(channel, handler)` and, inside the handler, calls `EventsGateway.emitMessage(channel, payload)` — which re-emits `cache:event` to every connected browser (the `emitMessage` skeleton already exists from P3-5). The result: a `POST /pubsub/publish` from one tab arrives as a `cache:event` socket message in _all_ open tabs. The handler is typed as the library's `IPubSubHandler<T> = (message: T, channel: string) => void | Promise<void>` (matrix #33). Bootstrap the default `product-events` subscription on module init so the demo works out of the box; the returned `Unsubscribe` is stored for P8-4's lifecycle management and torn down on `onModuleDestroy`.
 
 ### Acceptance Criteria
 
@@ -159,6 +160,7 @@ The fan-out core (spec §17.2, DASHBOARD §18). The server subscribes **once** t
 >    ```
 >
 >    The exact library signatures (spec §4 / §17.1): `subscribe<T>(channel: string, handler: IPubSubHandler<T>): Promise<Unsubscribe>`; `Unsubscribe = () => Promise<void>`.
+>
 > 4. `async onModuleInit()`: subscribe to the default demo channel — `const unsubscribe = await this.pubsub.subscribe<unknown>('product-events', this.forward); this.subs.set('product-events', { unsubscribe, refs: 1 })`. JSDoc that the gateway then fans every message out to all tabs (spec §17.2).
 > 5. `async onModuleDestroy()`: iterate `this.subs.values()` and `await s.unsubscribe()`; clear the map. (Idempotent — see P8-5/§17.1.)
 > 6. Implement `OnModuleInit, OnModuleDestroy` on the class.
@@ -168,7 +170,7 @@ The fan-out core (spec §17.2, DASHBOARD §18). The server subscribes **once** t
 > - The handler MUST be typed `IPubSubHandler<unknown>` (matrix #33) — NO `any`, NO custom inline signature.
 > - Re-emit ONLY through `EventsGateway.emitMessage` (channel `cache:event`); do NOT add a new socket channel.
 > - Do NOT block the handler — `emitMessage` is fire-and-forget (the feed is server→client; the browser publishes via REST, spec §18).
-> - Keep the subscription single (subscribe once on init) — the ref-counted lifecycle for *user* subscriptions lands in P8-4.
+> - Keep the subscription single (subscribe once on init) — the ref-counted lifecycle for _user_ subscriptions lands in P8-4.
 >   Verification:
 > - `pnpm --filter @nest-cache-example/api typecheck` — expected: exit 0.
 > - `pnpm --filter @nest-cache-example/api lint` — expected: exit 0.
@@ -234,6 +236,7 @@ The pattern half of the demo (DASHBOARD §9, matrix #31). In addition to the exa
 >    ```
 >
 >    The exact library signature (spec §4 / §17.1): `psubscribe<T>(pattern: string, handler: IPubSubPatternHandler<T>): Promise<Unsubscribe>`.
+>
 > 3. In `onModuleInit`, after the exact subscription: `const punsub = await this.pubsub.psubscribe<unknown>('product:*', this.forwardPattern); this.subs.set('product:*', { unsubscribe: punsub, refs: 1 })`. The existing `onModuleDestroy` loop already tears it down.
 >    Constraints:
 >
@@ -338,11 +341,12 @@ The lifecycle demo (spec §17.2, DASHBOARD §9; matrix #32). Expose `POST /pubsu
 >    ```
 >
 >    The exact library contract (spec §17.1–§17.2): `Unsubscribe` is **idempotent + ref-counted** — `UNSUBSCRIBE` only fires on the last listener; calling it twice is safe.
+>
 > 4. `pubsub.controller.ts`: `@Post('subscribe')` `subscribe(@Body(new ZodValidationPipe(subscribeSchema)) body)` → `const refs = await this.bridge.addSubscription(body.channel, body.pattern); return { channel: body.channel, refs, pattern: body.pattern }`. `@Delete('subscribe')` mirrors it via `removeSubscription`. JSDoc both, restating the ref-count rule.
 >    Constraints:
 >
 > - Follow `docs/DEVELOPMENT_PLAN.md` §2 Global Conventions.
-> - The ref count is the *app's* mirror of the library's internal ref-counting — the point of the demo is that the two agree. Do NOT call the library `Unsubscribe` while `refs > 0`.
+> - The ref count is the _app's_ mirror of the library's internal ref-counting — the point of the demo is that the two agree. Do NOT call the library `Unsubscribe` while `refs > 0`.
 > - `DELETE` on an unknown channel MUST NOT throw (idempotent — return `refs: 0`).
 > - Reuse the `forward` / `forwardPattern` handlers from P8-2/P8-3; **no Swagger**; thin controller.
 >   Verification:

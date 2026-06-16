@@ -33,27 +33,27 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 >
 > **All 17 phase files are scaffolded** under [`docs/tasks/`](tasks/) — the per-phase totals below are firm.
 >
-> **Overall progress: 0 / 107 tasks done (0%)**
+> **Overall progress: 8 / 107 tasks done (7%)**
 
-| #   | Phase                                   | Tasks file                          | Size | Done / Total | %   | Status |
-| --- | --------------------------------------- | ----------------------------------- | ---- | ------------ | --- | ------ |
-| 0   | Repository Foundation & Tooling         | `phase-00-repo-foundation.md`       | M    | 0 / 8        | 0%  | 🔴     |
-| 1   | Local Redis Stack & Docker              | `phase-01-redis-stack.md`           | M    | 0 / 5        | 0%  | 🔴     |
-| 2   | Library Consumption & Workspace Bootstrap | `phase-02-library-consumption.md` | S    | 0 / 3        | 0%  | 🔴     |
-| 3   | `apps/api` Skeleton + Cache Module Wiring | `phase-03-api-skeleton-wiring.md` | L    | 0 / 9        | 0%  | 🔴     |
-| 4   | Domain & Core Data Structures           | `phase-04-domain-data-structures.md`| L    | 0 / 9        | 0%  | 🔴     |
-| 5   | Cache Admin API (Explorer backend)      | `phase-05-cache-admin-api.md`       | M    | 0 / 6        | 0%  | 🔴     |
-| 6   | Namespace Isolation & Tenants           | `phase-06-namespace-tenants.md`     | M    | 0 / 5        | 0%  | 🔴     |
-| 7   | Serialization (default + custom)        | `phase-07-serialization.md`         | S    | 0 / 4        | 0%  | 🔴     |
-| 8   | Pub/Sub + WebSocket Bridge              | `phase-08-pubsub-websocket.md`      | M    | 0 / 6        | 0%  | 🔴     |
-| 9   | TTL Events (keyspace notifications)     | `phase-09-ttl-events.md`            | S    | 0 / 4        | 0%  | 🔴     |
-| 10  | Lua Scripts & Cache Stampede            | `phase-10-lua-stampede.md`          | M    | 0 / 5        | 0%  | 🔴     |
-| 11  | Connection Topologies & Error Surface   | `phase-11-topologies-errors.md`     | M    | 0 / 6        | 0%  | 🔴     |
-| 12  | `apps/web` Skeleton + Design System     | `phase-12-web-skeleton-design.md`   | L    | 0 / 7        | 0%  | 🔴     |
-| 13  | Dashboard — Observe pages               | `phase-13-dashboard-observe.md`     | L    | 0 / 8        | 0%  | 🔴     |
-| 14  | Dashboard — Real-time & Labs pages      | `phase-14-dashboard-realtime-labs.md`| L   | 0 / 9        | 0%  | 🔴     |
-| 15  | Testing — E2E smoke + Web smoke         | `phase-15-testing.md`               | M    | 0 / 6        | 0%  | 🔴     |
-| 16  | Docs, README & Export Audit             | `phase-16-docs-readme-audit.md`     | M    | 0 / 7        | 0%  | 🔴     |
+| #   | Phase                                     | Tasks file                            | Size | Done / Total | %    | Status |
+| --- | ----------------------------------------- | ------------------------------------- | ---- | ------------ | ---- | ------ |
+| 0   | Repository Foundation & Tooling           | `phase-00-repo-foundation.md`         | M    | 8 / 8        | 100% | 🟢     |
+| 1   | Local Redis Stack & Docker                | `phase-01-redis-stack.md`             | M    | 0 / 5        | 0%   | 🔴     |
+| 2   | Library Consumption & Workspace Bootstrap | `phase-02-library-consumption.md`     | S    | 0 / 3        | 0%   | 🔴     |
+| 3   | `apps/api` Skeleton + Cache Module Wiring | `phase-03-api-skeleton-wiring.md`     | L    | 0 / 9        | 0%   | 🔴     |
+| 4   | Domain & Core Data Structures             | `phase-04-domain-data-structures.md`  | L    | 0 / 9        | 0%   | 🔴     |
+| 5   | Cache Admin API (Explorer backend)        | `phase-05-cache-admin-api.md`         | M    | 0 / 6        | 0%   | 🔴     |
+| 6   | Namespace Isolation & Tenants             | `phase-06-namespace-tenants.md`       | M    | 0 / 5        | 0%   | 🔴     |
+| 7   | Serialization (default + custom)          | `phase-07-serialization.md`           | S    | 0 / 4        | 0%   | 🔴     |
+| 8   | Pub/Sub + WebSocket Bridge                | `phase-08-pubsub-websocket.md`        | M    | 0 / 6        | 0%   | 🔴     |
+| 9   | TTL Events (keyspace notifications)       | `phase-09-ttl-events.md`              | S    | 0 / 4        | 0%   | 🔴     |
+| 10  | Lua Scripts & Cache Stampede              | `phase-10-lua-stampede.md`            | M    | 0 / 5        | 0%   | 🔴     |
+| 11  | Connection Topologies & Error Surface     | `phase-11-topologies-errors.md`       | M    | 0 / 6        | 0%   | 🔴     |
+| 12  | `apps/web` Skeleton + Design System       | `phase-12-web-skeleton-design.md`     | L    | 0 / 7        | 0%   | 🔴     |
+| 13  | Dashboard — Observe pages                 | `phase-13-dashboard-observe.md`       | L    | 0 / 8        | 0%   | 🔴     |
+| 14  | Dashboard — Real-time & Labs pages        | `phase-14-dashboard-realtime-labs.md` | L    | 0 / 9        | 0%   | 🔴     |
+| 15  | Testing — E2E smoke + Web smoke           | `phase-15-testing.md`                 | M    | 0 / 6        | 0%   | 🔴     |
+| 16  | Docs, README & Export Audit               | `phase-16-docs-readme-audit.md`       | M    | 0 / 7        | 0%   | 🔴     |
 
 ### How to update this dashboard
 
@@ -102,33 +102,34 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 **Critical path:** `0 → 1 → 3 → 4 → 5 → 13 → 14 → 15 → 16` (the API foundation, the admin/data API the dashboard reads, then the UI, then verification + docs).
 
 **Parallelization.**
+
 - **Backend feature fan-out:** once Phase 3 (wiring + gateway + exception filter) lands, Phases **7, 8, 10, 11** are independent and can proceed in parallel; **9** follows **8** (it reuses the gateway pattern). **4 → 5 → 6** is a short sequential chain (domain → admin → tenants).
 - **Frontend** can start its skeleton (Phase 12) right after Phase 3 against mocked endpoints, but its **Observe** pages (13) need the domain + admin APIs (4, 5) and its **Real-time/Labs** pages (14) need 7–11.
-- **Quality track** (15–16) starts once the apps are feature-complete; but each feature phase's Definition of Done already requires its own happy-path proof, so Phase 15 is *consolidation*, not "write all tests at the end."
+- **Quality track** (15–16) starts once the apps are feature-complete; but each feature phase's Definition of Done already requires its own happy-path proof, so Phase 15 is _consolidation_, not "write all tests at the end."
 
 ---
 
 ## 2. Global Conventions
 
-| Concern              | Convention                                                                                                  |
-| -------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Package manager      | `pnpm@10.8.0` (exact pin in `packageManager` + every CI `pnpm/action-setup@v4`), workspaces `apps/*`            |
-| Runtime              | Node `>=24` (`.nvmrc` = `24`, `engines.node >=24`, setup-node `node-version: '24'`, `cache: pnpm`)           |
-| Install              | `pnpm install --frozen-lockfile` everywhere; `.npmrc` → `frozen-lockfile=true`                              |
-| Language             | TypeScript 5.9 strict + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes`; ESM everywhere           |
-| Lint / format        | ESLint 9 flat config (`recommendedTypeChecked`, scoped to `*.ts`/`*.tsx`) + Prettier 3 (`printWidth 100`, `singleQuote`, `semi: false`) |
-| Pre-commit           | husky `prepare: husky`; `.husky/pre-commit` → `pnpm exec lint-staged`; `.husky/commit-msg` → `commitlint`    |
-| Commits              | Conventional Commits (`commitlint.config.mjs` = `config-conventional`); `.gitmessage` with cache scopes      |
-| Boolean naming       | prefix `is` / `has` / `should` / `can` (e.g. `isHealthy`, `hasTtl`, `shouldFlush`)                            |
-| **Cache key model**  | `{namespace}{separator}{prefix}{separator}{id}`; this app's `namespace` = **`cache-example`**, separator `:` |
-| **API docs**         | **No Swagger.** Controllers documented with JSDoc (`@param`/`@returns`/`@throws` + route line); DTOs = Zod    |
-| Datastore           | **Redis only** (no Postgres/Prisma); origin data is in-memory with artificial latency                       |
-| Real-time            | `@nestjs/platform-socket.io` gateway; one socket, 3 channels (`cache:connection`/`event`/`expired`)          |
-| Charts (web)         | Recharts v3 via shadcn primitives; `TtlRing` + `StampedeTimeline` are custom SVG                            |
-| Library dependency   | `@bymax-one/nest-cache` via local `file:../../../nest-cache` until published, then `^0.1.0`                  |
-| Subpaths             | `.` (server) in `apps/api`; **`./shared`** (zero-dep) in **both** `apps/api` and `apps/web` (browser bundle) |
-| Dep automation       | `renovate.json` (weekend schedule; pin `@bymax-one/nest-cache`, group docker/actions)                       |
-| **Test bar**         | E2E smoke (Testcontainers `redis:7-alpine` + `ioredis-mock`) + web build/Playwright smoke + export audit — **not** 100% coverage/mutation (Appendix C) |
+| Concern             | Convention                                                                                                                                             |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Package manager     | `pnpm@10.8.0` (exact pin in `packageManager` + every CI `pnpm/action-setup@v4`), workspaces `apps/*`                                                   |
+| Runtime             | Node `>=24` (`.nvmrc` = `24`, `engines.node >=24`, setup-node `node-version: '24'`, `cache: pnpm`)                                                     |
+| Install             | `pnpm install --frozen-lockfile` everywhere; `.npmrc` → `frozen-lockfile=true`                                                                         |
+| Language            | TypeScript 5.9 strict + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes`; ESM everywhere                                                      |
+| Lint / format       | ESLint 9 flat config (`recommendedTypeChecked`, scoped to `*.ts`/`*.tsx`) + Prettier 3 (`printWidth 100`, `singleQuote`, `semi: false`)                |
+| Pre-commit          | husky `prepare: husky`; `.husky/pre-commit` → `pnpm exec lint-staged`; `.husky/commit-msg` → `commitlint`                                              |
+| Commits             | Conventional Commits (`commitlint.config.mjs` = `config-conventional`); `.gitmessage` with cache scopes                                                |
+| Boolean naming      | prefix `is` / `has` / `should` / `can` (e.g. `isHealthy`, `hasTtl`, `shouldFlush`)                                                                     |
+| **Cache key model** | `{namespace}{separator}{prefix}{separator}{id}`; this app's `namespace` = **`cache-example`**, separator `:`                                           |
+| **API docs**        | **No Swagger.** Controllers documented with JSDoc (`@param`/`@returns`/`@throws` + route line); DTOs = Zod                                             |
+| Datastore           | **Redis only** (no Postgres/Prisma); origin data is in-memory with artificial latency                                                                  |
+| Real-time           | `@nestjs/platform-socket.io` gateway; one socket, 3 channels (`cache:connection`/`event`/`expired`)                                                    |
+| Charts (web)        | Recharts v3 via shadcn primitives; `TtlRing` + `StampedeTimeline` are custom SVG                                                                       |
+| Library dependency  | `@bymax-one/nest-cache` via local `file:../../../nest-cache` until published, then `^0.1.0`                                                            |
+| Subpaths            | `.` (server) in `apps/api`; **`./shared`** (zero-dep) in **both** `apps/api` and `apps/web` (browser bundle)                                           |
+| Dep automation      | `renovate.json` (weekend schedule; pin `@bymax-one/nest-cache`, group docker/actions)                                                                  |
+| **Test bar**        | E2E smoke (Testcontainers `redis:7-alpine` + `ioredis-mock`) + web build/Playwright smoke + export audit — **not** 100% coverage/mutation (Appendix C) |
 
 ---
 
@@ -453,18 +454,18 @@ Maintained by `scripts/audit-library-exports.mjs` (Phase 16) and surfaced as the
 
 The example-app bar — **lighter than the library's on purpose** (the 100% coverage + 100% mutation gates belong to `@bymax-one/nest-cache`; see [`Bymax-Lib-Standards`] and the library's own `docs/`). Replicating those here would add noise without protecting a published API.
 
-| Gate                | Tool / config                                              | Threshold                          | Enforced in            |
-| ------------------- | ---------------------------------------------------------- | ---------------------------------- | ---------------------- |
-| Lint                | ESLint 9 flat (`eslint .`)                                 | zero errors                        | CI `lint` (Phase 15/16)|
-| Typecheck           | `tsc --noEmit` per package                                 | zero errors                        | CI `typecheck`         |
-| API E2E             | Jest + `@nestjs/testing` + Testcontainers (`redis:7-alpine`) | headline flows pass              | CI `e2e` (Phase 15)    |
-| API fast specs      | `ioredis-mock`                                             | data-structure round-trips pass    | CI `e2e`               |
-| Web build           | `next build`                                               | succeeds                           | CI `web-build`         |
-| Web smoke           | Playwright + Vitest (`lib/**`)                             | happy-path passes                  | CI `web-smoke`         |
-| Export usage        | `scripts/audit-library-exports.mjs` + `.audit-ignore.json` | every export demonstrated          | CI `export-usage-check`|
-| Pre-commit          | husky + lint-staged                                        | prettier + eslint --fix on staged  | local                  |
-| Commit message      | commitlint (`config-conventional`)                         | Conventional Commits               | local `commit-msg`     |
+| Gate           | Tool / config                                                | Threshold                         | Enforced in             |
+| -------------- | ------------------------------------------------------------ | --------------------------------- | ----------------------- |
+| Lint           | ESLint 9 flat (`eslint .`)                                   | zero errors                       | CI `lint` (Phase 15/16) |
+| Typecheck      | `tsc --noEmit` per package                                   | zero errors                       | CI `typecheck`          |
+| API E2E        | Jest + `@nestjs/testing` + Testcontainers (`redis:7-alpine`) | headline flows pass               | CI `e2e` (Phase 15)     |
+| API fast specs | `ioredis-mock`                                               | data-structure round-trips pass   | CI `e2e`                |
+| Web build      | `next build`                                                 | succeeds                          | CI `web-build`          |
+| Web smoke      | Playwright + Vitest (`lib/**`)                               | happy-path passes                 | CI `web-smoke`          |
+| Export usage   | `scripts/audit-library-exports.mjs` + `.audit-ignore.json`   | every export demonstrated         | CI `export-usage-check` |
+| Pre-commit     | husky + lint-staged                                          | prettier + eslint --fix on staged | local                   |
+| Commit message | commitlint (`config-conventional`)                           | Conventional Commits              | local `commit-msg`      |
 
-> **Why no coverage/mutation wall (audit note).** Per spec NG4 and the Bymax lib standard, an **example app** demonstrates and integration-tests a library; it does not re-prove the library's internal correctness. The **E2E smoke suite against a real Redis** is the right bar — it validates the *published* package end to end (and doubles as integration coverage for the library). If a future maintainer wants a coverage signal, add a non-blocking `test:cov` report, but **do not** gate the example on 100% — that bar is reserved for `@bymax-one/nest-cache`.
+> **Why no coverage/mutation wall (audit note).** Per spec NG4 and the Bymax lib standard, an **example app** demonstrates and integration-tests a library; it does not re-prove the library's internal correctness. The **E2E smoke suite against a real Redis** is the right bar — it validates the _published_ package end to end (and doubles as integration coverage for the library). If a future maintainer wants a coverage signal, add a non-blocking `test:cov` report, but **do not** gate the example on 100% — that bar is reserved for `@bymax-one/nest-cache`.
 >
 > **Toolchain caveats.** ① Run `pnpm/action-setup@v4` **before** `actions/setup-node@v5` when using `cache: pnpm`. ② Testcontainers needs a Docker daemon in CI (use the service or a runner with Docker). ③ Keyspace-notification E2E (Phase 9) requires the test Redis to start with `--notify-keyspace-events Ex`. ④ Pin a Vitest major rather than `latest`.

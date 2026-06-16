@@ -8,11 +8,11 @@
 
 ## Task index
 
-| ID   | Task                                                                       | Status | Priority | Size | Depends on |
-| ---- | -------------------------------------------------------------------------- | ------ | -------- | ---- | ---------- |
-| P2-1 | `apps/api` consumes the library (local link + peers) + dual-subpath probe  | 🔴     | High     | S    | Phase 0    |
-| P2-2 | `apps/web` consumes the library + `./shared`-only (zero-dep) probe         | 🔴     | High     | S    | Phase 0    |
-| P2-3 | Verification: both subpaths type-resolve in both apps (`pnpm typecheck`)   | 🔴     | High     | XS   | P2-1, P2-2 |
+| ID   | Task                                                                      | Status | Priority | Size | Depends on |
+| ---- | ------------------------------------------------------------------------- | ------ | -------- | ---- | ---------- |
+| P2-1 | `apps/api` consumes the library (local link + peers) + dual-subpath probe | 🔴     | High     | S    | Phase 0    |
+| P2-2 | `apps/web` consumes the library + `./shared`-only (zero-dep) probe        | 🔴     | High     | S    | Phase 0    |
+| P2-3 | Verification: both subpaths type-resolve in both apps (`pnpm typecheck`)  | 🔴     | High     | XS   | P2-1, P2-2 |
 
 ---
 
@@ -65,6 +65,7 @@ Wire `apps/api` to consume `@bymax-one/nest-cache` as a **versioned external pac
 >    Preserve any deps Phase 1 already added; merge, don't clobber. (The `file:../../../nest-cache` path is relative to `apps/api/` → repo-root parent → the sibling `nest-cache` checkout. If your local layout differs, adjust the relative segments so it points at the library root that contains its built `dist/`.)
 > 2. Confirm the library is built so the link resolves through `dist/` + `exports`: run `pnpm --dir ../nest-cache build` if a `dist/` is not present. The example must resolve the **published** artifact (`dist/` + `package.json#exports`), never the library's `src/`.
 > 3. Create `apps/api/src/library-probe.ts` — a typed, runtime-inert dual-subpath probe that imports from **both** the server subpath and the shared subpath and references each symbol so the compiler proves resolution:
+>
 >    ```ts
 >    /**
 >     * Compile-time resolution probe (Phase 2 / matrix #48 + #49).
@@ -86,6 +87,7 @@ Wire `apps/api` to consume `@bymax-one/nest-cache` as a **versioned external pac
 >      sharedCodeCount: probedSharedCodes.length,
 >    } as const
 >    ```
+>
 > 4. Run `pnpm install` from the repo root to materialize the link and the peers, then typecheck `apps/api`.
 >    Constraints:
 >
@@ -159,6 +161,7 @@ Wire `apps/web` (the Next.js dashboard) to consume `@bymax-one/nest-cache` via t
 >    ```
 >    Preserve the Next/React deps Phase 1 added; merge, don't clobber. Use the same relative `file:` path shape as `apps/api` (it points at the sibling `nest-cache` library root that contains its built `dist/`).
 > 2. Create `apps/web/lib/cache-shared-probe.ts` — a probe that imports **only** from the shared subpath and references each symbol:
+>
 >    ```ts
 >    /**
 >     * Browser-path resolution probe (Phase 2 / matrix #48, the zero-dep half).
@@ -186,7 +189,9 @@ Wire `apps/web` (the Next.js dashboard) to consume `@bymax-one/nest-cache` via t
 >      sample: probedValue,
 >    } as const
 >    ```
+>
 >    (If `CacheConnectionStatus` does not include the literal `'ready'` in the shipped types, substitute any valid member of that union — consult §4.2 / the library's `dist/shared/index.d.ts`.)
+>
 > 3. Run `pnpm install` from the repo root, then typecheck `apps/web`.
 >    Constraints:
 >

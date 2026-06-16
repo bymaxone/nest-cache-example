@@ -2,43 +2,43 @@
 
 > **Source:** [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#phase-0--repository-foundation--tooling) §Phase 0
 > **Total tasks:** 8
-> **Progress:** 🔴 0 / 8 done (0%)
+> **Progress:** 🟢 8 / 8 done (100%)
 >
 > **Status legend:** 🔴 Not Started · 🟡 In Progress · 🔵 In Review · 🟢 Done · ⚪ Blocked
 
 ## Task index
 
-| ID   | Task                                                                  | Status | Priority | Size | Depends on       |
-| ---- | --------------------------------------------------------------------- | ------ | -------- | ---- | ---------------- |
-| P0-1 | Root `package.json` + `pnpm-workspace.yaml` (full script set)         | 🔴     | High     | S    | —                |
-| P0-2 | Node/pnpm pinning (`.nvmrc`, `.npmrc`, `engines`)                     | 🔴     | High     | XS   | P0-1             |
-| P0-3 | Root `tsconfig.base.json` (strict)                                    | 🔴     | High     | S    | P0-1             |
-| P0-4 | ESLint 9 flat config (`eslint.config.mjs`)                            | 🔴     | High     | S    | P0-1, P0-3       |
-| P0-5 | Prettier 3 (`.prettierrc.mjs`, `.prettierignore`)                     | 🔴     | High     | XS   | P0-1             |
-| P0-6 | Husky + lint-staged + commitlint                                      | 🔴     | High     | S    | P0-1, P0-4, P0-5 |
-| P0-7 | Governance + automation files (`.gitignore`, `renovate.json`, agent docs) | 🔴 | Medium   | S    | P0-1             |
-| P0-8 | Verification gate (`install` + `typecheck` + `lint` + `format:check`) | 🔴     | High     | S    | P0-1..P0-7       |
+| ID   | Task                                                                      | Status | Priority | Size | Depends on       |
+| ---- | ------------------------------------------------------------------------- | ------ | -------- | ---- | ---------------- |
+| P0-1 | Root `package.json` + `pnpm-workspace.yaml` (full script set)             | 🟢     | High     | S    | —                |
+| P0-2 | Node/pnpm pinning (`.nvmrc`, `.npmrc`, `engines`)                         | 🟢     | High     | XS   | P0-1             |
+| P0-3 | Root `tsconfig.base.json` (strict)                                        | 🟢     | High     | S    | P0-1             |
+| P0-4 | ESLint 9 flat config (`eslint.config.mjs`)                                | 🟢     | High     | S    | P0-1, P0-3       |
+| P0-5 | Prettier 3 (`.prettierrc.mjs`, `.prettierignore`)                         | 🟢     | High     | XS   | P0-1             |
+| P0-6 | Husky + lint-staged + commitlint                                          | 🟢     | High     | S    | P0-1, P0-4, P0-5 |
+| P0-7 | Governance + automation files (`.gitignore`, `renovate.json`, agent docs) | 🟢     | Medium   | S    | P0-1             |
+| P0-8 | Verification gate (`install` + `typecheck` + `lint` + `format:check`)     | 🟢     | High     | S    | P0-1..P0-7       |
 
 ---
 
 ## P0-1 — Root `package.json` + `pnpm-workspace.yaml` (full script set)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `—`
 
 ### Description
 
-Create the workspace-root `package.json` and `pnpm-workspace.yaml` that register `apps/*`. This manifest anchors every later phase; the quality/infra scripts declared here are dispatched via `pnpm -r` / `pnpm --filter` and consumed by CI later. The full script surface is defined now (even though the targets land in later phases) so the contract is stable and nothing ever references a missing script. **Note (vs. the library + sibling examples):** this is an *example app* — there are **no `mutation*` scripts** (no Stryker gate; see `DEVELOPMENT_PLAN.md` Appendix C).
+Create the workspace-root `package.json` and `pnpm-workspace.yaml` that register `apps/*`. This manifest anchors every later phase; the quality/infra scripts declared here are dispatched via `pnpm -r` / `pnpm --filter` and consumed by CI later. The full script surface is defined now (even though the targets land in later phases) so the contract is stable and nothing ever references a missing script. **Note (vs. the library + sibling examples):** this is an _example app_ — there are **no `mutation*` scripts** (no Stryker gate; see `DEVELOPMENT_PLAN.md` Appendix C).
 
 ### Acceptance Criteria
 
-- [ ] Root `package.json` exists with `"name": "nest-cache-example"`, `"private": true`, `"type": "module"`.
-- [ ] Declares `"packageManager": "pnpm@10.8.0"` (or the current pinned 10.x).
-- [ ] Scripts defined: `dev`, `build`, `typecheck`, `lint`, `format`, `format:check`, `test`, `test:e2e`, `audit:exports`, `infra:up`, `infra:down`, `infra:nuke`, `infra:logs`, `prepare`.
-- [ ] `pnpm-workspace.yaml` registers `apps/*` (and only `apps/*`).
-- [ ] `pnpm install` completes with zero errors on the empty workspace.
+- [x] Root `package.json` exists with `"name": "nest-cache-example"`, `"private": true`, `"type": "module"`.
+- [x] Declares `"packageManager": "pnpm@10.8.0"` (or the current pinned 10.x).
+- [x] Scripts defined: `dev`, `build`, `typecheck`, `lint`, `format`, `format:check`, `test`, `test:e2e`, `audit:exports`, `infra:up`, `infra:down`, `infra:nuke`, `infra:logs`, `prepare`.
+- [x] `pnpm-workspace.yaml` registers `apps/*` (and only `apps/*`).
+- [x] `pnpm install` completes with zero errors on the empty workspace.
 
 ### Files to create / modify
 
@@ -109,7 +109,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P0-2 — Node/pnpm Pinning (`.nvmrc`, `.npmrc`, `engines`)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** XS (<30 min)
 - **Depends on:** `P0-1`
@@ -120,10 +120,10 @@ Pin the Node.js major to `24` and enforce frozen-lockfile installs. `@bymax-one/
 
 ### Acceptance Criteria
 
-- [ ] `.nvmrc` exists and contains exactly `24` (no trailing `.x`).
-- [ ] `.npmrc` exists with `frozen-lockfile=true`.
-- [ ] Root `package.json` has `"engines": { "node": ">=24", "pnpm": ">=10.8" }`.
-- [ ] `nvm use` in the repo root selects Node 24.
+- [x] `.nvmrc` exists and contains exactly `24` (no trailing `.x`).
+- [x] `.npmrc` exists with `frozen-lockfile=true`.
+- [x] Root `package.json` has `"engines": { "node": ">=24", "pnpm": ">=10.8" }`.
+- [x] `nvm use` in the repo root selects Node 24.
 
 ### Files to create / modify
 
@@ -172,7 +172,7 @@ Pin the Node.js major to `24` and enforce frozen-lockfile installs. `@bymax-one/
 
 ## P0-3 — Root `tsconfig.base.json` (strict)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `P0-1`
@@ -183,10 +183,10 @@ Create the canonical TypeScript base config inherited by every app `tsconfig.jso
 
 ### Acceptance Criteria
 
-- [ ] `tsconfig.base.json` at repo root.
-- [ ] `compilerOptions` sets `strict: true`, `noUncheckedIndexedAccess: true`, `exactOptionalPropertyTypes: true`, `noImplicitOverride: true`, `noImplicitReturns: true`, `noFallthroughCasesInSwitch: true`, `target: "ES2023"`, `lib: ["ES2023"]`, `module: "ESNext"`, `moduleResolution: "Bundler"`, `esModuleInterop: true`, `resolveJsonModule: true`, `skipLibCheck: true`, `forceConsistentCasingInFileNames: true`, `isolatedModules: true`, `verbatimModuleSyntax: true`.
-- [ ] No `include`/`exclude` (base config is pure options).
-- [ ] Root `package.json` adds `devDependencies: { "typescript": "^5.9.0" }`.
+- [x] `tsconfig.base.json` at repo root.
+- [x] `compilerOptions` sets `strict: true`, `noUncheckedIndexedAccess: true`, `exactOptionalPropertyTypes: true`, `noImplicitOverride: true`, `noImplicitReturns: true`, `noFallthroughCasesInSwitch: true`, `target: "ES2023"`, `lib: ["ES2023"]`, `module: "ESNext"`, `moduleResolution: "Bundler"`, `esModuleInterop: true`, `resolveJsonModule: true`, `skipLibCheck: true`, `forceConsistentCasingInFileNames: true`, `isolatedModules: true`, `verbatimModuleSyntax: true`.
+- [x] No `include`/`exclude` (base config is pure options).
+- [x] Root `package.json` adds `devDependencies: { "typescript": "^5.9.0" }`.
 
 ### Files to create / modify
 
@@ -248,7 +248,7 @@ Create the canonical TypeScript base config inherited by every app `tsconfig.jso
 
 ## P0-4 — ESLint 9 Flat Config (`eslint.config.mjs`)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `P0-1`, `P0-3`
@@ -259,12 +259,12 @@ Wire ESLint v9 flat config. `@typescript-eslint/recommended-type-checked` must b
 
 ### Acceptance Criteria
 
-- [ ] `eslint.config.mjs` at repo root using flat config.
-- [ ] Integrates `@eslint/js`, `typescript-eslint` (`recommendedTypeChecked`, **scoped** to TS files), `eslint-config-prettier`, `globals`.
-- [ ] Ignores `**/dist`, `**/.next`, `**/coverage`, `**/node_modules`, `**/*.d.ts`.
-- [ ] Test files (`**/*.spec.ts`, `**/*.e2e-spec.ts`, `**/test/**`) relax `@typescript-eslint/no-unsafe-*` + `no-explicit-any`.
-- [ ] Root `package.json` has the ESLint devDependencies; `"lint": "eslint ."` (added in P0-1).
-- [ ] `pnpm lint` exits 0 on the empty workspace.
+- [x] `eslint.config.mjs` at repo root using flat config.
+- [x] Integrates `@eslint/js`, `typescript-eslint` (`recommendedTypeChecked`, **scoped** to TS files), `eslint-config-prettier`, `globals`.
+- [x] Ignores `**/dist`, `**/.next`, `**/coverage`, `**/node_modules`, `**/*.d.ts`.
+- [x] Test files (`**/*.spec.ts`, `**/*.e2e-spec.ts`, `**/test/**`) relax `@typescript-eslint/no-unsafe-*` + `no-explicit-any`.
+- [x] Root `package.json` has the ESLint devDependencies; `"lint": "eslint ."` (added in P0-1).
+- [x] `pnpm lint` exits 0 on the empty workspace.
 
 ### Files to create / modify
 
@@ -341,7 +341,7 @@ Wire ESLint v9 flat config. `@typescript-eslint/recommended-type-checked` must b
 
 ## P0-5 — Prettier 3 (`.prettierrc.mjs` + `.prettierignore`)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** XS (<30 min)
 - **Depends on:** `P0-1`
@@ -352,11 +352,11 @@ Add Prettier 3 with an ESM config and matching ignore file — the single source
 
 ### Acceptance Criteria
 
-- [ ] `.prettierrc.mjs` exports a config object via `export default`.
-- [ ] Settings: `printWidth: 100`, `singleQuote: true`, `trailingComma: 'all'`, `semi: false`, `arrowParens: 'always'`, `endOfLine: 'lf'`.
-- [ ] `.prettierignore` covers `dist`, `.next`, `coverage`, `node_modules`, `pnpm-lock.yaml`.
-- [ ] Root `package.json` has `format` + `format:check` scripts (from P0-1).
-- [ ] `pnpm format:check` exits 0.
+- [x] `.prettierrc.mjs` exports a config object via `export default`.
+- [x] Settings: `printWidth: 100`, `singleQuote: true`, `trailingComma: 'all'`, `semi: false`, `arrowParens: 'always'`, `endOfLine: 'lf'`.
+- [x] `.prettierignore` covers `dist`, `.next`, `coverage`, `node_modules`, `pnpm-lock.yaml`.
+- [x] Root `package.json` has `format` + `format:check` scripts (from P0-1).
+- [x] `pnpm format:check` exits 0.
 
 ### Files to create / modify
 
@@ -415,7 +415,7 @@ Add Prettier 3 with an ESM config and matching ignore file — the single source
 
 ## P0-6 — Husky + lint-staged + commitlint
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `P0-1`, `P0-4`, `P0-5`
@@ -426,12 +426,12 @@ Wire Git hooks so every commit runs `lint-staged` (pre-commit) and `commitlint` 
 
 ### Acceptance Criteria
 
-- [ ] `husky` installed; `.husky/pre-commit` runs `pnpm exec lint-staged`.
-- [ ] `.husky/commit-msg` runs `pnpm exec commitlint --edit "$1"`.
-- [ ] `commitlint.config.mjs` extends `@commitlint/config-conventional`.
-- [ ] `lint-staged.config.mjs` runs `prettier --write` + `eslint --fix` on staged `*.{ts,tsx,js,jsx,mjs,cjs}` and `prettier --write` on `*.{json,md,yml,yaml}`.
-- [ ] Root `package.json` has `"prepare": "husky"` (from P0-1); `pnpm install` creates `.husky/_/`.
-- [ ] `echo "chore: bootstrap" | pnpm exec commitlint` exits 0; `echo "bad message" | pnpm exec commitlint` exits non-zero.
+- [x] `husky` installed; `.husky/pre-commit` runs `pnpm exec lint-staged`.
+- [x] `.husky/commit-msg` runs `pnpm exec commitlint --edit "$1"`.
+- [x] `commitlint.config.mjs` extends `@commitlint/config-conventional`.
+- [x] `lint-staged.config.mjs` runs `prettier --write` + `eslint --fix` on staged `*.{ts,tsx,js,jsx,mjs,cjs}` and `prettier --write` on `*.{json,md,yml,yaml}`.
+- [x] Root `package.json` has `"prepare": "husky"` (from P0-1); `pnpm install` creates `.husky/_/`.
+- [x] `echo "chore: bootstrap" | pnpm exec commitlint` exits 0; `echo "bad message" | pnpm exec commitlint` exits non-zero.
 
 ### Files to create / modify
 
@@ -487,7 +487,7 @@ Wire Git hooks so every commit runs `lint-staged` (pre-commit) and `commitlint` 
 
 ## P0-7 — Governance + Automation Files
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P0-1`
@@ -498,14 +498,14 @@ Create the repo-wide ignore/editor/automation/governance files: `.gitignore`, `.
 
 ### Acceptance Criteria
 
-- [ ] `.gitignore` covers `node_modules/`, `dist/`, `.next/`, `coverage/`, `*.tsbuildinfo`, `logs/`, `.env`, `.env.*` (but allow-lists `!.env.example`), `*.log`, `.DS_Store`; does NOT ignore `pnpm-lock.yaml`.
-- [ ] `.editorconfig` sets LF, UTF-8, 2-space indent, final newline, trim trailing whitespace (except `*.md`).
-- [ ] `.gitmessage` documents the Conventional-Commit format + cache scopes (`api`, `web`, `cache`, `docker`, `deps`, `docs`, `config`).
-- [ ] `renovate.json` extends `config:recommended` (+ `:semanticCommits`), schedules on weekends, and pins/groups `@bymax-one/nest-cache` + docker + github-actions.
-- [ ] `LICENSE` is MIT with `Copyright (c) <year> Bymax One`.
-- [ ] `README.md` stub links to `docs/TECHNICAL_SPECIFICATION.md` + `docs/DEVELOPMENT_PLAN.md` + `docs/DASHBOARD.md` and states the repo is in scaffolding (full README is Phase 16).
-- [ ] `CHANGELOG.md` is Keep-a-Changelog with an empty `## [Unreleased]`.
-- [ ] `CLAUDE.md` + `AGENTS.md` stubs exist (one-paragraph project summary + "see docs/" pointer + non-negotiables: English-only, Conventional Commits, no Swagger, no `@ts-ignore`).
+- [x] `.gitignore` covers `node_modules/`, `dist/`, `.next/`, `coverage/`, `*.tsbuildinfo`, `logs/`, `.env`, `.env.*` (but allow-lists `!.env.example`), `*.log`, `.DS_Store`; does NOT ignore `pnpm-lock.yaml`.
+- [x] `.editorconfig` sets LF, UTF-8, 2-space indent, final newline, trim trailing whitespace (except `*.md`).
+- [x] `.gitmessage` documents the Conventional-Commit format + cache scopes (`api`, `web`, `cache`, `docker`, `deps`, `docs`, `config`).
+- [x] `renovate.json` extends `config:recommended` (+ `:semanticCommits`), schedules on weekends, and pins/groups `@bymax-one/nest-cache` + docker + github-actions.
+- [x] `LICENSE` is MIT with `Copyright (c) <year> Bymax One`.
+- [x] `README.md` stub links to `docs/TECHNICAL_SPECIFICATION.md` + `docs/DEVELOPMENT_PLAN.md` + `docs/DASHBOARD.md` and states the repo is in scaffolding (full README is Phase 16).
+- [x] `CHANGELOG.md` is Keep-a-Changelog with an empty `## [Unreleased]`.
+- [x] `CLAUDE.md` + `AGENTS.md` stubs exist (one-paragraph project summary + "see docs/" pointer + non-negotiables: English-only, Conventional Commits, no Swagger, no `@ts-ignore`).
 
 ### Files to create / modify
 
@@ -519,6 +519,7 @@ Create the repo-wide ignore/editor/automation/governance files: `.gitignore`, `.
 > Steps:
 >
 > 1. `/.editorconfig`:
+>
 >    ```ini
 >    root = true
 >
@@ -533,6 +534,7 @@ Create the repo-wide ignore/editor/automation/governance files: `.gitignore`, `.
 >    [*.md]
 >    trim_trailing_whitespace = false
 >    ```
+>
 > 2. `/.gitignore` covering: `node_modules/`, `dist/`, `build/`, `.next/`, `coverage/`, `*.tsbuildinfo`, `logs/`, `.turbo/`, `.env`, `.env.*`, `!.env.example`, `*.log`, `.DS_Store`, `Thumbs.db`. Do NOT ignore `pnpm-lock.yaml`.
 > 3. `/.gitmessage` — a commented template documenting `<type>(<scope>): <subject>` (≤72 chars), body lines ≤100, types `feat|fix|docs|refactor|perf|test|build|ci|chore|revert`, scopes `api|web|cache|docker|deps|docs|config`.
 > 4. `/renovate.json`:
@@ -542,7 +544,11 @@ Create the repo-wide ignore/editor/automation/governance files: `.gitignore`, `.
 >      "extends": ["config:recommended", ":semanticCommits"],
 >      "schedule": ["every weekend"],
 >      "packageRules": [
->        { "matchPackageNames": ["@bymax-one/nest-cache"], "rangeStrategy": "pin", "groupName": "bymax-one" },
+>        {
+>          "matchPackageNames": ["@bymax-one/nest-cache"],
+>          "rangeStrategy": "pin",
+>          "groupName": "bymax-one"
+>        },
 >        { "matchManagers": ["dockerfile", "docker-compose"], "groupName": "docker" },
 >        { "matchManagers": ["github-actions"], "groupName": "github-actions" }
 >      ]
@@ -577,7 +583,7 @@ Create the repo-wide ignore/editor/automation/governance files: `.gitignore`, `.
 
 ## P0-8 — Verification Gate (`install` + `typecheck` + `lint` + `format:check`)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `P0-1`, `P0-2`, `P0-3`, `P0-4`, `P0-5`, `P0-6`, `P0-7`
@@ -588,11 +594,11 @@ Phase 0 "Definition of done" gate per `DEVELOPMENT_PLAN.md`: prove the scaffolde
 
 ### Acceptance Criteria
 
-- [ ] `pnpm install --frozen-lockfile` exits 0 (lockfile committed).
-- [ ] `pnpm typecheck` exits 0 (no app packages yet → no-op via `--if-present`).
-- [ ] `pnpm lint` exits 0.
-- [ ] `pnpm format:check` exits 0.
-- [ ] A `chore:`-prefixed commit passes the Husky `pre-commit` + `commit-msg` hooks (exercised without `--no-verify`).
+- [x] `pnpm install --frozen-lockfile` exits 0 (lockfile committed).
+- [x] `pnpm typecheck` exits 0 (no app packages yet → no-op via `--if-present`).
+- [x] `pnpm lint` exits 0.
+- [x] `pnpm format:check` exits 0.
+- [x] A `chore:`-prefixed commit passes the Husky `pre-commit` + `commit-msg` hooks (exercised without `--no-verify`).
 
 ### Files to create / modify
 
@@ -636,4 +642,11 @@ When this task is 🟢, Phase 0 is 8/8 — switch the Phase 0 row in `DEVELOPMEN
 
 ## Completion log
 
-_(Agents append one line per finished task, newest at the bottom.)_
+- P0-1 ✅ 2026-06-16 — workspace root `package.json` + `pnpm-workspace.yaml` created; `pnpm-lock.yaml` materialized
+- P0-2 ✅ 2026-06-16 — `.nvmrc` (24), `.npmrc` (frozen-lockfile), `engines` field added to package.json
+- P0-3 ✅ 2026-06-16 — `tsconfig.base.json` created with full strict + ESNext + verbatimModuleSyntax settings; TypeScript 5.9.3 installed
+- P0-4 ✅ 2026-06-16 — `eslint.config.mjs` flat config wired with type-checked rules scoped to TS files; `pnpm lint` exits 0
+- P0-5 ✅ 2026-06-16 — `.prettierrc.mjs` + `.prettierignore` created; docs formatted; `pnpm format:check` exits 0
+- P0-6 ✅ 2026-06-16 — husky hooks wired (pre-commit → lint-staged, commit-msg → commitlint); both validated
+- P0-7 ✅ 2026-06-16 — `.gitignore`, `.editorconfig`, `.gitmessage`, `renovate.json`, `LICENSE`, `README.md`, `CHANGELOG.md`, `CLAUDE.md`, `AGENTS.md` created
+- P0-8 ✅ 2026-06-16 — all four DoD gates pass: install, typecheck, lint, format:check; commit-msg hook validated
