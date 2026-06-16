@@ -2,7 +2,7 @@
 
 > **Source:** [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#phase-5--cache-admin-api-explorer-backend) §Phase 5
 > **Total tasks:** 6
-> **Progress:** 🔴 0 / 6 done (0%)
+> **Progress:** 🟢 6 / 6 done (100%)
 >
 > **Status legend:** 🔴 Not Started · 🟡 In Progress · 🔵 In Review · 🟢 Done · ⚪ Blocked
 
@@ -10,18 +10,18 @@
 
 | ID   | Task                                                                 | Status | Priority | Size | Depends on |
 | ---- | -------------------------------------------------------------------- | ------ | -------- | ---- | ---------- |
-| P5-1 | `GET /admin/keys` — cursor-paged listing (`scan` \| `keys` strategy) | 🔴     | High     | M    | Phase 3    |
-| P5-2 | Single-key ops — inspect / delete / persist / expire                 | 🔴     | High     | M    | P5-1       |
-| P5-3 | `POST /admin/seed?count=N` — bulk seed via `pipeline()`              | 🔴     | Medium   | S    | P5-1       |
-| P5-4 | `DELETE /admin/namespace` — guarded `flushNamespace()`               | 🔴     | High     | S    | P5-1       |
-| P5-5 | `GET /admin/info` + `GET /admin/keyspace` (INFO parser + breakdowns) | 🔴     | High     | M    | P5-1       |
-| P5-6 | `KeyQuery` Zod DTO + phase verification                              | 🔴     | Medium   | S    | P5-1..P5-5 |
+| P5-1 | `GET /admin/keys` — cursor-paged listing (`scan` \| `keys` strategy) | 🟢     | High     | M    | Phase 3    |
+| P5-2 | Single-key ops — inspect / delete / persist / expire                 | 🟢     | High     | M    | P5-1       |
+| P5-3 | `POST /admin/seed?count=N` — bulk seed via `pipeline()`              | 🟢     | Medium   | S    | P5-1       |
+| P5-4 | `DELETE /admin/namespace` — guarded `flushNamespace()`               | 🟢     | High     | S    | P5-1       |
+| P5-5 | `GET /admin/info` + `GET /admin/keyspace` (INFO parser + breakdowns) | 🟢     | High     | M    | P5-1       |
+| P5-6 | `KeyQuery` Zod DTO + phase verification                              | 🟢     | Medium   | S    | P5-1..P5-5 |
 
 ---
 
 ## P5-1 — `GET /admin/keys` — cursor-paged listing (`scan` | `keys` strategy)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90 min–½ day)
 - **Depends on:** `Phase 3`
@@ -32,13 +32,13 @@ Build the key-browser endpoint that backs the Explorer's main list (DASHBOARD §
 
 ### Acceptance Criteria
 
-- [ ] `src/admin/admin.module.ts`, `src/admin/admin.controller.ts`, `src/admin/admin.service.ts` exist; `AdminModule` imported by `app.module.ts`.
-- [ ] `GET /admin/keys` accepts `?prefix=&pattern=&tenant=&strategy=scan|keys&cursor=&limit=` and validates them via the `KeyQuery` Zod schema (parsed by `ZodValidationPipe`; the schema itself lands in P5-6 — until then a local inline Zod object is acceptable and is replaced in P5-6).
-- [ ] `strategy=scan` (default): consumes `CacheService.scan(matchPrefix, pattern ?? '*', limit ?? 200)` (the `AsyncIterable<string>`), accumulating up to `limit` keys, and returns `{ keys: string[], cursor: string | null, strategy: 'scan' }` (`cursor` is the opaque continuation token, `null` when exhausted).
-- [ ] `strategy=keys`: calls `CacheService.keys(matchPrefix, pattern ?? '*')`, returns `{ keys: string[], cursor: null, strategy: 'keys', warning: 'O(N) command — blocks the Redis server, dev only' }`.
-- [ ] The match prefix is composed as `tenant ? \`tenant:${tenant}:${prefix ?? ''}\` : (prefix ?? '')`; keys are returned **fully namespaced** (the library applies `cache-example:` — never re-prefixed by hand).
-- [ ] In **cluster** mode `scan` surfaces the library's `CacheException('cache.unsupported_in_cluster')` unchanged (the `CacheExceptionFilter` from Phase 3 maps it to the structured body); the controller does not swallow it.
-- [ ] Every public controller/service method carries JSDoc (no Swagger decorators anywhere).
+- [x] `src/admin/admin.module.ts`, `src/admin/admin.controller.ts`, `src/admin/admin.service.ts` exist; `AdminModule` imported by `app.module.ts`.
+- [x] `GET /admin/keys` accepts `?prefix=&pattern=&tenant=&strategy=scan|keys&cursor=&limit=` and validates them via the `KeyQuery` Zod schema (parsed by `ZodValidationPipe`; the schema itself lands in P5-6 — until then a local inline Zod object is acceptable and is replaced in P5-6).
+- [x] `strategy=scan` (default): consumes `CacheService.scan(matchPrefix, pattern ?? '*', limit ?? 200)` (the `AsyncIterable<string>`), accumulating up to `limit` keys, and returns `{ keys: string[], cursor: string | null, strategy: 'scan' }` (`cursor` is the opaque continuation token, `null` when exhausted).
+- [x] `strategy=keys`: calls `CacheService.keys(matchPrefix, pattern ?? '*')`, returns `{ keys: string[], cursor: null, strategy: 'keys', warning: 'O(N) command — blocks the Redis server, dev only' }`.
+- [x] The match prefix is composed as `tenant ? \`tenant:${tenant}:${prefix ?? ''}\` : (prefix ?? '')`; keys are returned **fully namespaced** (the library applies `cache-example:` — never re-prefixed by hand).
+- [x] In **cluster** mode `scan` surfaces the library's `CacheException('cache.unsupported_in_cluster')` unchanged (the `CacheExceptionFilter` from Phase 3 maps it to the structured body); the controller does not swallow it.
+- [x] Every public controller/service method carries JSDoc (no Swagger decorators anywhere).
 
 ### Files to create / modify
 
@@ -121,7 +121,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P5-2 — Single-key ops — inspect / delete / persist / expire
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90 min–½ day)
 - **Depends on:** `P5-1`
@@ -132,14 +132,14 @@ The detail-drawer backend (DASHBOARD §6 "Detail drawer"). `GET /admin/keys/:key
 
 ### Acceptance Criteria
 
-- [ ] `GET /admin/keys/:key` returns `{ key, type, value, raw, ttl, memoryBytes }` where `value` is decoded per type (`get` | `hgetall` | `smembers`), `raw` is the verbatim stored string via `getClient().get(fullKey)` (the raw escape hatch — not the namespaced `getRaw` facade), `ttl` is `ttl` (seconds; `-1` persisted, `-2` missing), and `memoryBytes` is `MEMORY USAGE <key>` via `getClient()`.
-- [ ] Key type is resolved with a `TYPE <key>` probe (raw client) and dispatched: `string → get`, `hash → hgetall`, `set → smembers`; unknown/none → `404` (or a `{ value: null }` shape — the prompt pins it).
-- [ ] `DELETE /admin/keys/:key` calls `del` and returns `{ deleted: number }`.
-- [ ] `POST /admin/keys/:key/persist` calls `persist` and returns the resulting `{ ttl: -1 }`.
-- [ ] `POST /admin/keys/:key/expire` accepts `{ seconds }` (Zod body), calls `expire`, returns the new `{ ttl }`.
-- [ ] Namespace handling is correct and documented: the `:key` arrives fully-namespaced; the service either strips `KeyBuilder.getNamespacePrefix()` before the namespaced facade calls **or** uses the raw client consistently — no double-namespacing (a key is never written as `cache-example:cache-example:…`).
-- [ ] In **cluster** mode the `MEMORY USAGE` path (which needs `getClient()`) surfaces `cache.unsupported_in_cluster` via the filter.
-- [ ] JSDoc on every public method; no Swagger.
+- [x] `GET /admin/keys/:key` returns `{ key, type, value, raw, ttl, memoryBytes }` where `value` is decoded per type (`get` | `hgetall` | `smembers`), `raw` is the verbatim stored string via `getClient().get(fullKey)` (the raw escape hatch — not the namespaced `getRaw` facade), `ttl` is `ttl` (seconds; `-1` persisted, `-2` missing), and `memoryBytes` is `MEMORY USAGE <key>` via `getClient()`.
+- [x] Key type is resolved with a `TYPE <key>` probe (raw client) and dispatched: `string → get`, `hash → hgetall`, `set → smembers`; unknown/none → `404` (or a `{ value: null }` shape — the prompt pins it).
+- [x] `DELETE /admin/keys/:key` calls `del` and returns `{ deleted: number }`.
+- [x] `POST /admin/keys/:key/persist` calls `persist` and returns the resulting `{ ttl: -1 }`.
+- [x] `POST /admin/keys/:key/expire` accepts `{ seconds }` (Zod body), calls `expire`, returns the new `{ ttl }`.
+- [x] Namespace handling is correct and documented: the `:key` arrives fully-namespaced; the service either strips `KeyBuilder.getNamespacePrefix()` before the namespaced facade calls **or** uses the raw client consistently — no double-namespacing (a key is never written as `cache-example:cache-example:…`).
+- [x] In **cluster** mode the `MEMORY USAGE` path (which needs `getClient()`) surfaces `cache.unsupported_in_cluster` via the filter.
+- [x] JSDoc on every public method; no Swagger.
 
 ### Files to create / modify
 
@@ -187,7 +187,7 @@ The detail-drawer backend (DASHBOARD §6 "Detail drawer"). `GET /admin/keys/:key
 
 ## P5-3 — `POST /admin/seed?count=N` — bulk seed via `pipeline()`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P5-1`
@@ -198,12 +198,12 @@ The Explorer/Tenants "Seed N keys" action (DASHBOARD §6, §8). Writes `N` demo 
 
 ### Acceptance Criteria
 
-- [ ] `POST /admin/seed?count=N` accepts `count` (Zod-validated positive integer, sane upper bound e.g. ≤ 10_000, default 50) and seeds that many keys via a single `pipeline()` flush.
-- [ ] Keys are composed with `KeyBuilder.build('product', String(i))` (or a documented demo prefix) — **never** a hand-built string — so they land under `cache-example:`.
-- [ ] An inline comment states explicitly that `pipeline()` keys are **not** auto-namespaced and that `KeyBuilder` is therefore mandatory here.
-- [ ] `KeyBuilder` is injected via the `BYMAX_CACHE_KEY_BUILDER` token (`@Inject(BYMAX_CACHE_KEY_BUILDER) keyBuilder: KeyBuilder`).
-- [ ] Returns `{ seeded: number }`; the seeded keys are subsequently visible via `GET /admin/keys?prefix=product`.
-- [ ] JSDoc on the new method; no Swagger.
+- [x] `POST /admin/seed?count=N` accepts `count` (Zod-validated positive integer, sane upper bound e.g. ≤ 10_000, default 50) and seeds that many keys via a single `pipeline()` flush.
+- [x] Keys are composed with `KeyBuilder.build('product', String(i))` (or a documented demo prefix) — **never** a hand-built string — so they land under `cache-example:`.
+- [x] An inline comment states explicitly that `pipeline()` keys are **not** auto-namespaced and that `KeyBuilder` is therefore mandatory here.
+- [x] `KeyBuilder` is injected via the `BYMAX_CACHE_KEY_BUILDER` token (`@Inject(BYMAX_CACHE_KEY_BUILDER) keyBuilder: KeyBuilder`).
+- [x] Returns `{ seeded: number }`; the seeded keys are subsequently visible via `GET /admin/keys?prefix=product`.
+- [x] JSDoc on the new method; no Swagger.
 
 ### Files to create / modify
 
@@ -266,7 +266,7 @@ The Explorer/Tenants "Seed N keys" action (DASHBOARD §6, §8). Writes `N` demo 
 
 ## P5-4 — `DELETE /admin/namespace` — guarded `flushNamespace()`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `P5-1`
@@ -277,11 +277,11 @@ The Explorer header "Flush namespace" button and the Tenants isolation proof (DA
 
 ### Acceptance Criteria
 
-- [ ] `DELETE /admin/namespace` calls `CacheService.flushNamespace()` and returns `{ flushed: number }` (the count of keys removed) on success.
-- [ ] When the API runs with `NODE_ENV=production` and `ALLOW_FLUSH_IN_PRODUCTION=false`, the endpoint yields `403` with body `{ error: { code: "cache.flush_disabled_in_production", message, details } }` — produced by the global `CacheExceptionFilter`, **not** caught/re-thrown here.
-- [ ] In **cluster** mode it yields the `cache.unsupported_in_cluster` structured body via the filter.
-- [ ] The controller does NOT swallow `CacheException`; it lets the filter map it.
-- [ ] JSDoc documents the guard behaviour (production + cluster) inline; no Swagger.
+- [x] `DELETE /admin/namespace` calls `CacheService.flushNamespace()` and returns `{ flushed: number }` (the count of keys removed) on success.
+- [x] When the API runs with `NODE_ENV=production` and `ALLOW_FLUSH_IN_PRODUCTION=false`, the endpoint yields `403` with body `{ error: { code: "cache.flush_disabled_in_production", message, details } }` — produced by the global `CacheExceptionFilter`, **not** caught/re-thrown here.
+- [x] In **cluster** mode it yields the `cache.unsupported_in_cluster` structured body via the filter.
+- [x] The controller does NOT swallow `CacheException`; it lets the filter map it.
+- [x] JSDoc documents the guard behaviour (production + cluster) inline; no Swagger.
 
 ### Files to create / modify
 
@@ -325,7 +325,7 @@ The Explorer header "Flush namespace" button and the Tenants isolation proof (DA
 
 ## P5-5 — `GET /admin/info` + `GET /admin/keyspace` (INFO parser + breakdowns)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90 min–½ day)
 - **Depends on:** `P5-1`
@@ -336,13 +336,13 @@ The data behind the Overview health strip + keyspace breakdowns and the Connecti
 
 ### Acceptance Criteria
 
-- [ ] `src/admin/info.parser.ts` exports `parseInfo(raw: string): Record<string, Record<string, string>>` — groups by `# Section`, splits `field:value` on `\r\n`, ignores blank/comment lines.
-- [ ] `GET /admin/info?section=` validates `section` (optional; one of the known sections e.g. `server|clients|memory|stats|replication`, Zod) and returns `parseInfo(await cache.info(section))`.
-- [ ] `GET /admin/keyspace` returns `{ byType: {string,hash,set}, byPrefix: Array<{prefix, bytes}>, expiry: { withTtl, noTtl } }`.
-- [ ] All three breakdowns are computed from a **bounded sample** (a capped SCAN window, e.g. ≤ ~1000 keys) — never an unbounded keys scan, never per-key charting; dimensions are limited to data-type / prefix (bounded cardinality, DASHBOARD §15).
-- [ ] `byPrefix` memory uses `MEMORY USAGE` on the sampled keys, aggregated by the leading entity prefix.
-- [ ] An inline comment / JSDoc labels these as **sampled** (RedisInsight-style analyzer), matching the §6/§5 scoped-demo callouts.
-- [ ] JSDoc on every public method; no Swagger.
+- [x] `src/admin/info.parser.ts` exports `parseInfo(raw: string): Record<string, Record<string, string>>` — groups by `# Section`, splits `field:value` on `\r\n`, ignores blank/comment lines.
+- [x] `GET /admin/info?section=` validates `section` (optional; one of the known sections e.g. `server|clients|memory|stats|replication`, Zod) and returns `parseInfo(await cache.info(section))`.
+- [x] `GET /admin/keyspace` returns `{ byType: {string,hash,set}, byPrefix: Array<{prefix, bytes}>, expiry: { withTtl, noTtl } }`.
+- [x] All three breakdowns are computed from a **bounded sample** (a capped SCAN window, e.g. ≤ ~1000 keys) — never an unbounded keys scan, never per-key charting; dimensions are limited to data-type / prefix (bounded cardinality, DASHBOARD §15).
+- [x] `byPrefix` memory uses `MEMORY USAGE` on the sampled keys, aggregated by the leading entity prefix.
+- [x] An inline comment / JSDoc labels these as **sampled** (RedisInsight-style analyzer), matching the §6/§5 scoped-demo callouts.
+- [x] JSDoc on every public method; no Swagger.
 
 ### Files to create / modify
 
@@ -413,7 +413,7 @@ The data behind the Overview health strip + keyspace breakdowns and the Connecti
 
 ## P5-6 — `KeyQuery` Zod DTO + phase verification
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P5-1`, `P5-2`, `P5-3`, `P5-4`, `P5-5`
@@ -424,12 +424,12 @@ Promote the key-browser query contract into a single shared `src/admin/dto/key-q
 
 ### Acceptance Criteria
 
-- [ ] `src/admin/dto/key-query.dto.ts` exports `keyQuerySchema` (Zod) and `type KeyQuery = z.infer<typeof keyQuerySchema>`; `strategy` defaults to `'scan'`, `limit` defaults to `200` (coerced from the query string), `type` is the `'string'|'hash'|'set'` enum, `hasTtl` is a coerced boolean.
-- [ ] `admin.controller.ts` validates `GET /admin/keys` through `keyQuerySchema` (inline schema from P5-1 removed); other routes' bodies/params keep their own small Zod schemas in the same `dto/` folder.
-- [ ] `apps/api` `typecheck` + `lint` are clean.
-- [ ] All seven admin routes answer correctly end to end against a live Redis: `GET /admin/keys` (both strategies), `GET/DELETE /admin/keys/:key`, `POST /admin/keys/:key/persist|expire`, `POST /admin/seed`, `DELETE /admin/namespace`, `GET /admin/info`, `GET /admin/keyspace`.
-- [ ] The library-semantics checks pass: `scan` returns namespaced keys non-blocking; `keys` returns the same set with a blocking warning; `flushNamespace` clears only `cache-example:*`; `info` parses to a nested record.
-- [ ] JSDoc on the schema's exported symbols; no Swagger anywhere in the module.
+- [x] `src/admin/dto/key-query.dto.ts` exports `keyQuerySchema` (Zod) and `type KeyQuery = z.infer<typeof keyQuerySchema>`; `strategy` defaults to `'scan'`, `limit` defaults to `200` (coerced from the query string), `type` is the `'string'|'hash'|'set'` enum, `hasTtl` is a coerced boolean.
+- [x] `admin.controller.ts` validates `GET /admin/keys` through `keyQuerySchema` (inline schema from P5-1 removed); other routes' bodies/params keep their own small Zod schemas in the same `dto/` folder.
+- [x] `apps/api` `typecheck` + `lint` are clean.
+- [x] All seven admin routes answer correctly end to end against a live Redis: `GET /admin/keys` (both strategies), `GET/DELETE /admin/keys/:key`, `POST /admin/keys/:key/persist|expire`, `POST /admin/seed`, `DELETE /admin/namespace`, `GET /admin/info`, `GET /admin/keyspace`.
+- [x] The library-semantics checks pass: `scan` returns namespaced keys non-blocking; `keys` returns the same set with a blocking warning; `flushNamespace` clears only `cache-example:*`; `info` parses to a nested record.
+- [x] JSDoc on the schema's exported symbols; no Swagger anywhere in the module.
 
 ### Files to create / modify
 
@@ -497,3 +497,10 @@ When this task is 🟢, Phase 5 is 6/6 — switch the Phase 5 row in `DEVELOPMEN
 ## Completion log
 
 _(Agents append one line per finished task, newest at the bottom.)_
+
+- P5-1 ✅ 2026-06-16 — AdminModule skeleton + GET /admin/keys with scan/keys strategy toggle and cursor pagination
+- P5-2 ✅ 2026-06-16 — Single-key inspect/delete/persist/expire via typed facade + getClient() raw escape hatch
+- P5-3 ✅ 2026-06-16 — POST /admin/seed bulk-seeds via pipeline() with KeyBuilder.build() for correct namespacing
+- P5-4 ✅ 2026-06-16 — DELETE /admin/namespace thin passthrough exposing flushNamespace() production/cluster guards
+- P5-5 ✅ 2026-06-16 — parseInfo() parser + GET /admin/info + GET /admin/keyspace sampled breakdowns via bounded SCAN
+- P5-6 ✅ 2026-06-16 — Promoted KeyQuery DTO to admin/dto/key-query.dto.ts; phase verification gate clean
