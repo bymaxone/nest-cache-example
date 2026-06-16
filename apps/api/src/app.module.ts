@@ -21,6 +21,7 @@ import { CollectionsModule } from './collections/collections.module.js'
 import { MetricsModule } from './metrics/metrics.module.js'
 import { AdminModule } from './admin/admin.module.js'
 import { TenantsModule } from './tenants/tenants.module.js'
+import { SerializerDemoModule } from './serializer-demo/serializer-demo.module.js'
 
 /** Root application module. */
 @Module({
@@ -34,6 +35,7 @@ import { TenantsModule } from './tenants/tenants.module.js'
     MetricsModule,
     AdminModule,
     TenantsModule,
+    SerializerDemoModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_FILTER, useClass: CacheExceptionFilter }],
