@@ -33,7 +33,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 >
 > **All 17 phase files are scaffolded** under [`docs/tasks/`](tasks/) — the per-phase totals below are firm.
 >
-> **Overall progress: 49 / 107 tasks done (46%)**
+> **Overall progress: 55 / 107 tasks done (51%)**
 
 | #   | Phase                                     | Tasks file                            | Size | Done / Total | %    | Status |
 | --- | ----------------------------------------- | ------------------------------------- | ---- | ------------ | ---- | ------ |
@@ -45,7 +45,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 | 5   | Cache Admin API (Explorer backend)        | `phase-05-cache-admin-api.md`         | M    | 6 / 6        | 100% | 🟢     |
 | 6   | Namespace Isolation & Tenants             | `phase-06-namespace-tenants.md`       | M    | 5 / 5        | 100% | 🟢     |
 | 7   | Serialization (default + custom)          | `phase-07-serialization.md`           | S    | 4 / 4        | 100% | 🟢     |
-| 8   | Pub/Sub + WebSocket Bridge                | `phase-08-pubsub-websocket.md`        | M    | 0 / 6        | 0%   | 🔴     |
+| 8   | Pub/Sub + WebSocket Bridge                | `phase-08-pubsub-websocket.md`        | M    | 6 / 6        | 100% | 🟢     |
 | 9   | TTL Events (keyspace notifications)       | `phase-09-ttl-events.md`              | S    | 0 / 4        | 0%   | 🔴     |
 | 10  | Lua Scripts & Cache Stampede              | `phase-10-lua-stampede.md`            | M    | 0 / 5        | 0%   | 🔴     |
 | 11  | Connection Topologies & Error Surface     | `phase-11-topologies-errors.md`       | M    | 0 / 6        | 0%   | 🔴     |
@@ -286,10 +286,10 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 **Prerequisites:** Phase 3 (gateway).
 **Deliverables:**
 
-- [ ] `src/pubsub/` — `POST /pubsub/publish` (`PubSubService.publish`, returns subscriber count); subscription management (`subscribe` exact channel + `psubscribe` pattern, e.g. `product:*`).
-- [ ] `EventsGateway` subscribes server-side via `PubSubService` and re-emits `cache:event` to all clients.
-- [ ] Ref-counted `Unsubscribe` lifecycle exercised (subscribe×2 + unsubscribe×1 keeps delivery; double-unsubscribe safe).
-- [ ] Handler error isolation verified (a throwing handler is swallowed + surfaced via `events.onEvent` `reason: 'handler_error'`).
+- [x] `src/pubsub/` — `POST /pubsub/publish` (`PubSubService.publish`, returns subscriber count); subscription management (`subscribe` exact channel + `psubscribe` pattern, e.g. `product:*`).
+- [x] `EventsGateway` subscribes server-side via `PubSubService` and re-emits `cache:event` to all clients.
+- [x] Ref-counted `Unsubscribe` lifecycle exercised (subscribe×2 + unsubscribe×1 keeps delivery; double-unsubscribe safe).
+- [x] Handler error isolation verified (a throwing handler is swallowed + surfaced via `events.onEvent` `reason: 'handler_error'`).
 
 **Demonstrates:** matrix #30 (`publish`/`subscribe`), #31 (`psubscribe`/`IPubSubPatternHandler`), #32 (`Unsubscribe`), #33 (`IPubSubHandler`). **References:** spec §17.1–§17.2, DASHBOARD §9.
 **Definition of done:** publishing on the API arrives as `cache:event` in two open browser tabs; a pattern subscription receives matching-channel messages; channels are namespaced (`cache-example:…`).
