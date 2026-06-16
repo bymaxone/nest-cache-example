@@ -112,7 +112,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 
 | Concern              | Convention                                                                                                  |
 | -------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Package manager      | `pnpm@>=10.8` (pinned in `packageManager` + every CI `pnpm/action-setup@v4`), workspaces `apps/*`            |
+| Package manager      | `pnpm@10.8.0` (exact pin in `packageManager` + every CI `pnpm/action-setup@v4`), workspaces `apps/*`            |
 | Runtime              | Node `>=24` (`.nvmrc` = `24`, `engines.node >=24`, setup-node `node-version: '24'`, `cache: pnpm`)           |
 | Install              | `pnpm install --frozen-lockfile` everywhere; `.npmrc` → `frozen-lockfile=true`                              |
 | Language             | TypeScript 5.9 strict + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes`; ESM everywhere           |

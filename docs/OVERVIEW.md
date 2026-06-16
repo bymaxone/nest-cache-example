@@ -1,7 +1,17 @@
 # nest-cache-example — Design Overview
 
+> [!WARNING]
+> **SUPERSEDED — historical draft, do not implement from this file.**
+> This early overview has been replaced by the authoritative planning docs:
+> [`TECHNICAL_SPECIFICATION.md`](TECHNICAL_SPECIFICATION.md) (product spec — 28 sections + 50-row Feature Coverage Matrix),
+> [`DEVELOPMENT_PLAN.md`](DEVELOPMENT_PLAN.md) (17-phase roadmap) and [`DASHBOARD.md`](DASHBOARD.md) (UI spec).
+> Several details below are known to be out of date — endpoint paths, the `cache-admin/`/`products/` module
+> layout, Swagger usage (the project is deliberately **no-Swagger**), the namespace-per-tenant model,
+> the single-channel socket bridge, the page list, and the RedisInsight port. Kept for history only;
+> the spec carries the corrected design.
+
 > Reference application demonstrating `@bymax-one/nest-cache` — typed Redis cache for NestJS.
-> Status: **design phase**
+> Status: **superseded — see [`TECHNICAL_SPECIFICATION.md`](TECHNICAL_SPECIFICATION.md)**
 
 ---
 
