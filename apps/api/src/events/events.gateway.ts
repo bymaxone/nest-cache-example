@@ -12,7 +12,7 @@
 import { Injectable } from '@nestjs/common'
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets'
 import { Server } from 'socket.io'
-import type { CacheEventName } from '@bymax-one/nest-cache'
+import type { CacheEventName } from '@bymax-one/nest-cache/shared'
 
 @Injectable()
 @WebSocketGateway()
