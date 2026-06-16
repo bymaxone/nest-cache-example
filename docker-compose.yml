@@ -24,7 +24,8 @@ services:
     ports:
       - '127.0.0.1:5540:5540'
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
 
   redis-cluster-0:
     image: redis:7-alpine
@@ -254,13 +255,20 @@ services:
     container_name: nest-cache-example-sentinel-1
     profiles: ['sentinel']
     restart: unless-stopped
-    command: ['redis-sentinel', '/usr/local/etc/redis/sentinel.conf']
+    # Copy the read-only template into a named volume on first start so Sentinel can
+    # rewrite /usr/local/etc/redis/sentinel.conf during failover without dirtying the repo.
+    # On container restart after failover the volume copy (updated by Sentinel) is used.
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        [ -f /usr/local/etc/redis/sentinel.conf ] || cp /tmp/sentinel-template.conf /usr/local/etc/redis/sentinel.conf
+        exec redis-sentinel /usr/local/etc/redis/sentinel.conf
     ports:
       - '127.0.0.1:26379:26379'
     volumes:
-      # sentinel.conf is NOT mounted read-only — Redis Sentinel rewrites its own config
-      # during failover to persist the new master address and known-sentinel entries.
-      - ./docker/sentinel/sentinel.conf:/usr/local/etc/redis/sentinel.conf
+      - ./docker/sentinel/sentinel.conf:/tmp/sentinel-template.conf:ro
+      - sentinel-1-conf:/usr/local/etc/redis
     depends_on:
       redis-master:
         condition: service_healthy
@@ -270,11 +278,17 @@ services:
     container_name: nest-cache-example-sentinel-2
     profiles: ['sentinel']
     restart: unless-stopped
-    command: ['redis-sentinel', '/usr/local/etc/redis/sentinel.conf']
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        [ -f /usr/local/etc/redis/sentinel.conf ] || cp /tmp/sentinel-template.conf /usr/local/etc/redis/sentinel.conf
+        exec redis-sentinel /usr/local/etc/redis/sentinel.conf
     ports:
       - '127.0.0.1:26380:26379'
     volumes:
-      - ./docker/sentinel/sentinel.conf:/usr/local/etc/redis/sentinel.conf
+      - ./docker/sentinel/sentinel.conf:/tmp/sentinel-template.conf:ro
+      - sentinel-2-conf:/usr/local/etc/redis
     depends_on:
       redis-master:
         condition: service_healthy
@@ -284,14 +298,23 @@ services:
     container_name: nest-cache-example-sentinel-3
     profiles: ['sentinel']
     restart: unless-stopped
-    command: ['redis-sentinel', '/usr/local/etc/redis/sentinel.conf']
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        [ -f /usr/local/etc/redis/sentinel.conf ] || cp /tmp/sentinel-template.conf /usr/local/etc/redis/sentinel.conf
+        exec redis-sentinel /usr/local/etc/redis/sentinel.conf
     ports:
       - '127.0.0.1:26381:26379'
     volumes:
-      - ./docker/sentinel/sentinel.conf:/usr/local/etc/redis/sentinel.conf
+      - ./docker/sentinel/sentinel.conf:/tmp/sentinel-template.conf:ro
+      - sentinel-3-conf:/usr/local/etc/redis
     depends_on:
       redis-master:
         condition: service_healthy
 
 volumes:
   redis-data:
+  sentinel-1-conf:
+  sentinel-2-conf:
+  sentinel-3-conf:

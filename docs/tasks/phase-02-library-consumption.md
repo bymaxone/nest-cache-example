@@ -2,7 +2,7 @@
 
 > **Source:** [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#phase-2--library-consumption--workspace-bootstrap) §Phase 2
 > **Total tasks:** 3
-> **Progress:** 🔴 0 / 3 done (0%)
+> **Progress:** 🟢 3 / 3 done (100%)
 >
 > **Status legend:** 🔴 Not Started · 🟡 In Progress · 🔵 In Review · 🟢 Done · ⚪ Blocked
 
@@ -10,15 +10,15 @@
 
 | ID   | Task                                                                      | Status | Priority | Size | Depends on |
 | ---- | ------------------------------------------------------------------------- | ------ | -------- | ---- | ---------- |
-| P2-1 | `apps/api` consumes the library (local link + peers) + dual-subpath probe | 🔴     | High     | S    | Phase 0    |
-| P2-2 | `apps/web` consumes the library + `./shared`-only (zero-dep) probe        | 🔴     | High     | S    | Phase 0    |
-| P2-3 | Verification: both subpaths type-resolve in both apps (`pnpm typecheck`)  | 🔴     | High     | XS   | P2-1, P2-2 |
+| P2-1 | `apps/api` consumes the library (local link + peers) + dual-subpath probe | 🟢     | High     | S    | Phase 0    |
+| P2-2 | `apps/web` consumes the library + `./shared`-only (zero-dep) probe        | 🟢     | High     | S    | Phase 0    |
+| P2-3 | Verification: both subpaths type-resolve in both apps (`pnpm typecheck`)  | 🟢     | High     | XS   | P2-1, P2-2 |
 
 ---
 
 ## P2-1 — `apps/api` consumes the library (local link + peers) + dual-subpath probe
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `Phase 0`
@@ -29,12 +29,12 @@ Wire `apps/api` to consume `@bymax-one/nest-cache` as a **versioned external pac
 
 ### Acceptance Criteria
 
-- [ ] `apps/api/package.json` declares `"@bymax-one/nest-cache": "file:../../../nest-cache"` under `dependencies` (with a comment-equivalent note in the task/PR that the published end-state is `^0.1.0`).
-- [ ] `apps/api/package.json` declares the library's peers under `dependencies`: `ioredis@^5`, `@nestjs/common@^11`, `@nestjs/core@^11`, `reflect-metadata@^0.2`.
-- [ ] `apps/api/src/library-probe.ts` imports from `.` (`BymaxCacheModule`, `CacheService`) **and** from `./shared` (`CACHE_ERROR_CODES`, type `CacheErrorCode`).
-- [ ] The probe references each import (no unused-symbol errors) and is a runtime-inert **resolution proof** — it imports values only to prove both subpaths resolve at compile time, not to ship a feature (note: under `verbatimModuleSyntax` the value imports are emitted, so it is not literally "type-only").
-- [ ] `pnpm install` links the library and resolves all four peers to a single copy (no duplicate-peer warnings for these packages).
-- [ ] `pnpm --filter @nest-cache-example/api exec tsc --noEmit` resolves both subpaths with no errors.
+- [x] `apps/api/package.json` declares `"@bymax-one/nest-cache": "file:../../../nest-cache"` under `dependencies` (with a comment-equivalent note in the task/PR that the published end-state is `^0.1.0`).
+- [x] `apps/api/package.json` declares the library's peers under `dependencies`: `ioredis@^5`, `@nestjs/common@^11`, `@nestjs/core@^11`, `reflect-metadata@^0.2`.
+- [x] `apps/api/src/library-probe.ts` imports from `.` (`BymaxCacheModule`, `CacheService`) **and** from `./shared` (`CACHE_ERROR_CODES`, type `CacheErrorCode`).
+- [x] The probe references each import (no unused-symbol errors) and is a runtime-inert **resolution proof** — it imports values only to prove both subpaths resolve at compile time, not to ship a feature (note: under `verbatimModuleSyntax` the value imports are emitted, so it is not literally "type-only").
+- [x] `pnpm install` links the library and resolves all four peers to a single copy (no duplicate-peer warnings for these packages).
+- [x] `pnpm --filter @nest-cache-example/api exec tsc --noEmit` resolves both subpaths with no errors.
 
 ### Files to create / modify
 
@@ -119,7 +119,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P2-2 — `apps/web` consumes the library + `./shared`-only (zero-dep) probe
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `Phase 0`
@@ -130,12 +130,12 @@ Wire `apps/web` (the Next.js dashboard) to consume `@bymax-one/nest-cache` via t
 
 ### Acceptance Criteria
 
-- [ ] `apps/web/package.json` declares `"@bymax-one/nest-cache": "file:../../../nest-cache"` under `dependencies` (published end-state `^0.1.0`, noted in the task/PR).
-- [ ] `apps/web` does **NOT** declare `ioredis`, `@nestjs/common`, `@nestjs/core`, or `reflect-metadata` (the zero-dep shared path needs none of them).
-- [ ] `apps/web/lib/cache-shared-probe.ts` imports **only** from `@bymax-one/nest-cache/shared`: `CACHE_ERROR_CODES`, type `CacheErrorCode`, type `CacheConnectionStatus`, type `SerializableValue`.
-- [ ] The probe contains **no** import from `@bymax-one/nest-cache` (the bare server subpath) — proving the browser path stays NestJS/ioredis-free.
-- [ ] The probe references each import (no unused-symbol errors) and is inert at runtime.
-- [ ] `pnpm --filter @nest-cache-example/web exec tsc --noEmit` resolves the `./shared` subpath with no errors.
+- [x] `apps/web/package.json` declares `"@bymax-one/nest-cache": "file:../../../nest-cache"` under `dependencies` (published end-state `^0.1.0`, noted in the task/PR).
+- [x] `apps/web` does **NOT** declare `ioredis`, `@nestjs/common`, `@nestjs/core`, or `reflect-metadata` (the zero-dep shared path needs none of them).
+- [x] `apps/web/lib/cache-shared-probe.ts` imports **only** from `@bymax-one/nest-cache/shared`: `CACHE_ERROR_CODES`, type `CacheErrorCode`, type `CacheConnectionStatus`, type `SerializableValue`.
+- [x] The probe contains **no** import from `@bymax-one/nest-cache` (the bare server subpath) — proving the browser path stays NestJS/ioredis-free.
+- [x] The probe references each import (no unused-symbol errors) and is inert at runtime.
+- [x] `pnpm --filter @nest-cache-example/web exec tsc --noEmit` resolves the `./shared` subpath with no errors.
 
 ### Files to create / modify
 
@@ -224,7 +224,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P2-3 — Verification: both subpaths type-resolve in both apps (`pnpm typecheck`)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** XS (<30 min)
 - **Depends on:** `P2-1`, `P2-2`
@@ -235,11 +235,11 @@ Phase 2 "Definition of done" gate per `DEVELOPMENT_PLAN.md`: prove the example a
 
 ### Acceptance Criteria
 
-- [ ] `pnpm install` (or `pnpm install --frozen-lockfile` on a clean checkout) exits 0 with the library linked in both apps.
-- [ ] `pnpm typecheck` exits 0 across the workspace (both app packages).
-- [ ] The `apps/api` probe (`src/library-probe.ts`) resolves imports from **both** `.` and `./shared`.
-- [ ] The `apps/web` probe (`lib/cache-shared-probe.ts`) resolves imports from `./shared` **only**, and `apps/web` declares **no** NestJS/ioredis peers.
-- [ ] No duplicate-copy resolution of `ioredis` / `@nestjs/*` for the linked library (peers resolve to a single copy in `apps/api`).
+- [x] `pnpm install` (or `pnpm install --frozen-lockfile` on a clean checkout) exits 0 with the library linked in both apps.
+- [x] `pnpm typecheck` exits 0 across the workspace (both app packages).
+- [x] The `apps/api` probe (`src/library-probe.ts`) resolves imports from **both** `.` and `./shared`.
+- [x] The `apps/web` probe (`lib/cache-shared-probe.ts`) resolves imports from `./shared` **only**, and `apps/web` declares **no** NestJS/ioredis peers.
+- [x] No duplicate-copy resolution of `ioredis` / `@nestjs/*` for the linked library (peers resolve to a single copy in `apps/api`).
 
 ### Files to create / modify
 
@@ -285,4 +285,6 @@ When this task is 🟢, Phase 2 is 3/3 — switch the Phase 2 row in `DEVELOPMEN
 
 ## Completion log
 
-_(Agents append one line per finished task, newest at the bottom.)_
+- P2-1 ✅ 2026-06-16 — `apps/api/package.json` wired with library file link + 4 peers; `src/library-probe.ts` dual-subpath probe typechecks clean.
+- P2-2 ✅ 2026-06-16 — `apps/web/package.json` wired with library file link only (no peers); `lib/cache-shared-probe.ts` shared-only probe typechecks clean.
+- P2-3 ✅ 2026-06-16 — `pnpm typecheck` exits 0 across both apps; ioredis + NestJS peers resolve to a single copy.
