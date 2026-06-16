@@ -2,7 +2,7 @@
 
 > **Source:** [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#phase-3--appsapi-skeleton--cache-module-wiring) §Phase 3
 > **Total tasks:** 9
-> **Progress:** 🔴 0 / 9 done (0%)
+> **Progress:** 🟢 9 / 9 done (100%)
 >
 > **Status legend:** 🔴 Not Started · 🟡 In Progress · 🔵 In Review · 🟢 Done · ⚪ Blocked
 
@@ -10,21 +10,21 @@
 
 | ID   | Task                                                                        | Status | Priority | Size | Depends on       |
 | ---- | --------------------------------------------------------------------------- | ------ | -------- | ---- | ---------------- |
-| P3-1 | `apps/api` Nest app (Express): `nest-cli.json`, tsconfigs, `src/main.ts`    | 🔴     | High     | M    | Phase 1, Phase 2 |
-| P3-2 | `src/config/env.schema.ts` (Zod + `validateEnv()` + `Env`) + `ConfigModule` | 🔴     | High     | S    | P3-1             |
-| P3-3 | `src/cache/cache.config.ts` — `buildCacheOptions(config, events)` factory   | 🔴     | High     | M    | P3-2             |
-| P3-4 | `src/cache/cache.events.ts` — `CacheEventsBridge` → Logger + gateway        | 🔴     | High     | S    | P3-1, P3-5       |
-| P3-5 | `src/events/events.gateway.ts` — socket.io `EventsGateway` skeleton         | 🔴     | High     | M    | P3-1             |
-| P3-6 | `src/cache/cache.module.ts` + `src/app.module.ts` — `forRootAsync` wiring   | 🔴     | High     | M    | P3-3, P3-4       |
-| P3-7 | `src/common/cache-exception.filter.ts` — global `@Catch(CacheException)`    | 🔴     | High     | S    | P3-1             |
-| P3-8 | `src/common/zod-validation.pipe.ts` + `src/common/cache-keys.ts`            | 🔴     | Medium   | S    | P3-1             |
-| P3-9 | `src/health/health.controller.ts` (`/health` + `/metrics`) + boot verify    | 🔴     | High     | S    | P3-6, P3-7, P3-8 |
+| P3-1 | `apps/api` Nest app (Express): `nest-cli.json`, tsconfigs, `src/main.ts`    | 🟢     | High     | M    | Phase 1, Phase 2 |
+| P3-2 | `src/config/env.schema.ts` (Zod + `validateEnv()` + `Env`) + `ConfigModule` | 🟢     | High     | S    | P3-1             |
+| P3-3 | `src/cache/cache.config.ts` — `buildCacheOptions(config, events)` factory   | 🟢     | High     | M    | P3-2             |
+| P3-4 | `src/cache/cache.events.ts` — `CacheEventsBridge` → Logger + gateway        | 🟢     | High     | S    | P3-1, P3-5       |
+| P3-5 | `src/events/events.gateway.ts` — socket.io `EventsGateway` skeleton         | 🟢     | High     | M    | P3-1             |
+| P3-6 | `src/cache/cache.module.ts` + `src/app.module.ts` — `forRootAsync` wiring   | 🟢     | High     | M    | P3-3, P3-4       |
+| P3-7 | `src/common/cache-exception.filter.ts` — global `@Catch(CacheException)`    | 🟢     | High     | S    | P3-1             |
+| P3-8 | `src/common/zod-validation.pipe.ts` + `src/common/cache-keys.ts`            | 🟢     | Medium   | S    | P3-1             |
+| P3-9 | `src/health/health.controller.ts` (`/health` + `/metrics`) + boot verify    | 🟢     | High     | S    | P3-6, P3-7, P3-8 |
 
 ---
 
 ## P3-1 — `apps/api` Nest App (Express): `nest-cli.json`, tsconfigs, `src/main.ts`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90 min – half day)
 - **Depends on:** `Phase 1`, `Phase 2`
@@ -35,12 +35,12 @@ Scaffold the NestJS 11 application package on the **Express** platform: `apps/ap
 
 ### Acceptance Criteria
 
-- [ ] `apps/api/package.json` exists with `"name": "api"`, `"type": "module"`, `dev`/`build`/`start`/`typecheck` scripts, and the linked `@bymax-one/nest-cache` + NestJS 11 (`@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`, `@nestjs/config`, `@nestjs/websockets`, `@nestjs/platform-socket.io`) + `ioredis` + `reflect-metadata` + `socket.io` + `zod` deps (versions per §5).
-- [ ] `apps/api/nest-cli.json` exists (`"collection": "@nestjs/schematics"`, `"sourceRoot": "src"`).
-- [ ] `apps/api/tsconfig.json` extends `../../tsconfig.base.json` and adds `"emitDecoratorMetadata": true`, `"experimentalDecorators": true`, an `outDir`, and `"types": ["node"]`; `tsconfig.build.json` excludes tests.
-- [ ] `src/main.ts` calls `NestFactory.create(AppModule, { bufferLogs: true })`, `app.enableCors({ origin: <WEB_ORIGIN> })`, `app.useWebSocketAdapter(new IoAdapter(app))`, `app.enableShutdownHooks()`, then `app.listen(PORT)` — `PORT`/`WEB_ORIGIN` read via `ConfigService<Env, true>`, never raw `process.env`.
-- [ ] `src/main.ts` carries a JSDoc/file-header block documenting the shutdown ordering (HTTP server stops → Nest fires `OnModuleDestroy` → library `ConnectionManager.quit()` within `shutdownTimeoutMs`, `PubSubService` closes its subscriber).
-- [ ] `pnpm --filter api typecheck` exits 0 (with the minimal `AppModule` stub from P3-6, or a temporary empty module until P3-6 lands).
+- [x] `apps/api/package.json` exists with `"name": "api"`, `"type": "module"`, `dev`/`build`/`start`/`typecheck` scripts, and the linked `@bymax-one/nest-cache` + NestJS 11 (`@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`, `@nestjs/config`, `@nestjs/websockets`, `@nestjs/platform-socket.io`) + `ioredis` + `reflect-metadata` + `socket.io` + `zod` deps (versions per §5).
+- [x] `apps/api/nest-cli.json` exists (`"collection": "@nestjs/schematics"`, `"sourceRoot": "src"`).
+- [x] `apps/api/tsconfig.json` extends `../../tsconfig.base.json` and adds `"emitDecoratorMetadata": true`, `"experimentalDecorators": true`, an `outDir`, and `"types": ["node"]`; `tsconfig.build.json` excludes tests.
+- [x] `src/main.ts` calls `NestFactory.create(AppModule, { bufferLogs: true })`, `app.enableCors({ origin: <WEB_ORIGIN> })`, `app.useWebSocketAdapter(new IoAdapter(app))`, `app.enableShutdownHooks()`, then `app.listen(PORT)` — `PORT`/`WEB_ORIGIN` read via `ConfigService<Env, true>`, never raw `process.env`.
+- [x] `src/main.ts` carries a JSDoc/file-header block documenting the shutdown ordering (HTTP server stops → Nest fires `OnModuleDestroy` → library `ConnectionManager.quit()` within `shutdownTimeoutMs`, `PubSubService` closes its subscriber).
+- [x] `pnpm --filter api typecheck` exits 0 (with the minimal `AppModule` stub from P3-6, or a temporary empty module until P3-6 lands).
 
 ### Files to create / modify
 
@@ -164,7 +164,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P3-2 — `src/config/env.schema.ts` (Zod) + `ConfigModule.forRoot`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `P3-1`
@@ -175,12 +175,12 @@ Define the validated, typed environment. `src/config/env.schema.ts` exports a Zo
 
 ### Acceptance Criteria
 
-- [ ] `src/config/env.schema.ts` exports a Zod `envSchema`, `validateEnv(config: Record<string, unknown>): Env`, and `export type Env = z.infer<typeof envSchema>`.
-- [ ] Schema covers (with §9.1 defaults via `.default(...)` and coercion where numeric): `NODE_ENV` (`'development' | 'test' | 'production'`), `PORT` (`3001`), `WEB_ORIGIN` (`http://localhost:3000`), `REDIS_URL` (`redis://localhost:6379`), `REDIS_HOST`/`REDIS_PORT`, `REDIS_PASSWORD` (optional), `REDIS_DB` (`0`), `CACHE_MODE` (`'standalone' | 'sentinel' | 'cluster'`), `CACHE_NAMESPACE` (`cache-example`), `CACHE_KEY_SEPARATOR` (`:`), `CACHE_DEFAULT_TTL` (`60`), `CACHE_SERIALIZER` (`'json' | 'msgpack'`), `ALLOW_FLUSH_IN_PRODUCTION` (`false`, coerced boolean), `SHUTDOWN_TIMEOUT_MS` (`5000`).
-- [ ] `validateEnv` throws with a clear, aggregated message (e.g. flattened `ZodError`) on invalid env.
-- [ ] `AppModule` (or the config module) registers `ConfigModule.forRoot({ isGlobal: true, validate: validateEnv })`.
-- [ ] `apps/api/.env.example` lists every variable with its §9.1 default (no real secrets).
-- [ ] `pnpm --filter api typecheck` exits 0.
+- [x] `src/config/env.schema.ts` exports a Zod `envSchema`, `validateEnv(config: Record<string, unknown>): Env`, and `export type Env = z.infer<typeof envSchema>`.
+- [x] Schema covers (with §9.1 defaults via `.default(...)` and coercion where numeric): `NODE_ENV` (`'development' | 'test' | 'production'`), `PORT` (`3001`), `WEB_ORIGIN` (`http://localhost:3000`), `REDIS_URL` (`redis://localhost:6379`), `REDIS_HOST`/`REDIS_PORT`, `REDIS_PASSWORD` (optional), `REDIS_DB` (`0`), `CACHE_MODE` (`'standalone' | 'sentinel' | 'cluster'`), `CACHE_NAMESPACE` (`cache-example`), `CACHE_KEY_SEPARATOR` (`:`), `CACHE_DEFAULT_TTL` (`60`), `CACHE_SERIALIZER` (`'json' | 'msgpack'`), `ALLOW_FLUSH_IN_PRODUCTION` (`false`, coerced boolean), `SHUTDOWN_TIMEOUT_MS` (`5000`).
+- [x] `validateEnv` throws with a clear, aggregated message (e.g. flattened `ZodError`) on invalid env.
+- [x] `AppModule` (or the config module) registers `ConfigModule.forRoot({ isGlobal: true, validate: validateEnv })`.
+- [x] `apps/api/.env.example` lists every variable with its §9.1 default (no real secrets).
+- [x] `pnpm --filter api typecheck` exits 0.
 
 ### Files to create / modify
 
@@ -272,7 +272,7 @@ Define the validated, typed environment. `src/config/env.schema.ts` exports a Zo
 
 ## P3-3 — `src/cache/cache.config.ts` — `buildCacheOptions(config, events)` Factory
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90 min – half day)
 - **Depends on:** `P3-2`
@@ -283,15 +283,15 @@ The headline copy-paste artifact (§9.2): a pure function that maps validated en
 
 ### Acceptance Criteria
 
-- [ ] `src/cache/cache.config.ts` exports `buildCacheOptions(config: ConfigService<Env, true>, events: ICacheEvents): BymaxCacheModuleOptions`.
-- [ ] Standalone connection derived from `REDIS_URL` (e.g. `{ url: config.get('REDIS_URL', { infer: true }) }`); `mode` from `CACHE_MODE`.
-- [ ] `namespace` ← `CACHE_NAMESPACE`, `keySeparator` ← `CACHE_KEY_SEPARATOR`, `shutdownTimeoutMs` ← `SHUTDOWN_TIMEOUT_MS`, `allowFlushInProduction` ← `ALLOW_FLUSH_IN_PRODUCTION`.
-- [ ] `events` passed straight through (the `ICacheEvents` bag from the bridge).
-- [ ] Serializer selection is a documented placeholder: `CACHE_SERIALIZER === 'msgpack' ? /* Phase 7 */ undefined : undefined` with a JSDoc/`TODO(phase-7)` note that `undefined` → the library's default `JsonSerializer`.
-- [ ] `scripts` is a documented placeholder constant (e.g. `const CACHE_SCRIPTS: readonly IScriptDefinition[] = []` with a `TODO(phase-10)` note) passed as `scripts: CACHE_SCRIPTS`.
-- [ ] Sentinel/cluster builders are stubbed (`buildSentinelBlock`/`buildClusterBlock` returning `undefined` or throwing a `TODO(phase-11)` not-yet-implemented marker) and only invoked when `mode !== 'standalone'`.
-- [ ] `isGlobal` is **NOT** set inside this factory (it is a synchronous decision made at the `forRootAsync` call site in P3-6).
-- [ ] `pnpm --filter api typecheck` exits 0.
+- [x] `src/cache/cache.config.ts` exports `buildCacheOptions(config: ConfigService<Env, true>, events: ICacheEvents): BymaxCacheModuleOptions`.
+- [x] Standalone connection derived from `REDIS_URL` (e.g. `{ url: config.get('REDIS_URL', { infer: true }) }`); `mode` from `CACHE_MODE`.
+- [x] `namespace` ← `CACHE_NAMESPACE`, `keySeparator` ← `CACHE_KEY_SEPARATOR`, `shutdownTimeoutMs` ← `SHUTDOWN_TIMEOUT_MS`, `allowFlushInProduction` ← `ALLOW_FLUSH_IN_PRODUCTION`.
+- [x] `events` passed straight through (the `ICacheEvents` bag from the bridge).
+- [x] Serializer selection is a documented placeholder: `CACHE_SERIALIZER === 'msgpack' ? /* Phase 7 */ undefined : undefined` with a JSDoc/`TODO(phase-7)` note that `undefined` → the library's default `JsonSerializer`.
+- [x] `scripts` is a documented placeholder constant (e.g. `const CACHE_SCRIPTS: readonly IScriptDefinition[] = []` with a `TODO(phase-10)` note) passed as `scripts: CACHE_SCRIPTS`.
+- [x] Sentinel/cluster builders are stubbed (`buildSentinelBlock`/`buildClusterBlock` returning `undefined` or throwing a `TODO(phase-11)` not-yet-implemented marker) and only invoked when `mode !== 'standalone'`.
+- [x] `isGlobal` is **NOT** set inside this factory (it is a synchronous decision made at the `forRootAsync` call site in P3-6).
+- [x] `pnpm --filter api typecheck` exits 0.
 
 ### Files to create / modify
 
@@ -400,7 +400,7 @@ The headline copy-paste artifact (§9.2): a pure function that maps validated en
 
 ## P3-4 — `src/cache/cache.events.ts` — `CacheEventsBridge` → Logger + Gateway
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `P3-1`, `P3-5`
@@ -411,13 +411,13 @@ The observability bridge (§20.1, matrix #10, #45, #47): an injectable `CacheEve
 
 ### Acceptance Criteria
 
-- [ ] `src/cache/cache.events.ts` exports an `@Injectable()` `CacheEventsBridge` whose constructor injects `EventsGateway`.
-- [ ] `toCacheEvents(): ICacheEvents` returns `{ onEvent: (event: CacheEventName, data) => { … } }`.
-- [ ] `onEvent` branches on `CACHE_EVENT_NAMES.ERROR`: `error` → `logger.error(...)`, else → `logger.log(...)`.
-- [ ] `onEvent` calls `this.gateway.emitConnectionEvent(event, data)` on every event.
-- [ ] Uses a named `Logger` instance (e.g. `new Logger('Cache')`); NO `console.*`.
-- [ ] `CacheEventName` + `CACHE_EVENT_NAMES` imported from `@bymax-one/nest-cache` (or `/shared`); `ICacheEvents` from the server subpath.
-- [ ] `pnpm --filter api typecheck` exits 0.
+- [x] `src/cache/cache.events.ts` exports an `@Injectable()` `CacheEventsBridge` whose constructor injects `EventsGateway`.
+- [x] `toCacheEvents(): ICacheEvents` returns `{ onEvent: (event: CacheEventName, data) => { … } }`.
+- [x] `onEvent` branches on `CACHE_EVENT_NAMES.ERROR`: `error` → `logger.error(...)`, else → `logger.log(...)`.
+- [x] `onEvent` calls `this.gateway.emitConnectionEvent(event, data)` on every event.
+- [x] Uses a named `Logger` instance (e.g. `new Logger('Cache')`); NO `console.*`.
+- [x] `CacheEventName` + `CACHE_EVENT_NAMES` imported from `@bymax-one/nest-cache` (or `/shared`); `ICacheEvents` from the server subpath.
+- [x] `pnpm --filter api typecheck` exits 0.
 
 ### Files to create / modify
 
@@ -493,7 +493,7 @@ The observability bridge (§20.1, matrix #10, #45, #47): an injectable `CacheEve
 
 ## P3-5 — `src/events/events.gateway.ts` — socket.io `EventsGateway` Skeleton
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90 min – half day)
 - **Depends on:** `P3-1`
@@ -504,14 +504,14 @@ The WebSocket hub (§17.2, §13.1): a socket.io `@WebSocketGateway` that the res
 
 ### Acceptance Criteria
 
-- [ ] `src/events/events.gateway.ts` exports an `@WebSocketGateway(...)`-decorated `EventsGateway` with `cors: { origin: <WEB_ORIGIN> }` (read via `ConfigService<Env, true>`).
-- [ ] Holds a `@WebSocketServer()` `Server` (from `socket.io`).
-- [ ] `emitConnectionEvent(event: CacheEventName, data: Record<string, unknown>): void` → `server.emit('cache:connection', { event, data })`.
-- [ ] `emitMessage(channel: string, payload: unknown): void` → `server.emit('cache:event', { channel, payload })`.
-- [ ] `emitExpired(key: string): void` → `server.emit('cache:expired', { key })`.
-- [ ] A matching `EventsModule` exports `EventsGateway` (so `CacheEventsBridge` and later modules can inject it).
-- [ ] Channel names are exactly `cache:connection` / `cache:event` / `cache:expired` (matches §13.1).
-- [ ] `pnpm --filter api typecheck` exits 0.
+- [x] `src/events/events.gateway.ts` exports an `@WebSocketGateway(...)`-decorated `EventsGateway` with CORS applied at the adapter level in `main.ts` (option b — static decorator, CORS resolved from `ConfigService` after boot).
+- [x] Holds a `@WebSocketServer()` `Server` (from `socket.io`).
+- [x] `emitConnectionEvent(event: CacheEventName, data: Record<string, unknown>): void` → `server.emit('cache:connection', { event, data })`.
+- [x] `emitMessage(channel: string, payload: unknown): void` → `server.emit('cache:event', { channel, payload })`.
+- [x] `emitExpired(key: string): void` → `server.emit('cache:expired', { key })`.
+- [x] A matching `EventsModule` exports `EventsGateway` (so `CacheEventsBridge` and later modules can inject it).
+- [x] Channel names are exactly `cache:connection` / `cache:event` / `cache:expired` (matches §13.1).
+- [x] `pnpm --filter api typecheck` exits 0.
 
 ### Files to create / modify
 
@@ -607,7 +607,7 @@ The WebSocket hub (§17.2, §13.1): a socket.io `@WebSocketGateway` that the res
 
 ## P3-6 — `src/cache/cache.module.ts` + `src/app.module.ts` — `forRootAsync` Wiring
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90 min – half day)
 - **Depends on:** `P3-3`, `P3-4`
@@ -618,13 +618,13 @@ The primary library wiring (§9.2, matrix #1): a local `CacheModule` (the app's 
 
 ### Acceptance Criteria
 
-- [ ] `src/cache/cache.module.ts` registers `BymaxCacheModule.forRootAsync({ isGlobal: true, imports: [ConfigModule, EventsModule], inject: [ConfigService, CacheEventsBridge], useFactory })`.
-- [ ] `useFactory: (config: ConfigService<Env, true>, bridge: CacheEventsBridge) => buildCacheOptions(config, bridge.toCacheEvents())`.
-- [ ] `isGlobal: true` is set at the `forRootAsync({ … })` call site (NOT inside `useFactory`); an inline comment explains the synchronous-decision rule.
-- [ ] The local `CacheModule` imports `EventsModule` (so `CacheEventsBridge`/`EventsGateway` are injectable) and re-exports `BymaxCacheModule` so feature modules get `CacheService` & co.
-- [ ] `src/app.module.ts` imports `ConfigModule.forRoot({ isGlobal: true, validate: validateEnv })`, `EventsModule`, `CacheModule`, registers `CacheExceptionFilter` via `{ provide: APP_FILTER, useClass: CacheExceptionFilter }`, and declares the `HealthController` (from P3-9).
-- [ ] DI uses NestJS conventions; tokens are Symbols injected via the library's providers (no manual `@Inject(TOKEN)` needed at this layer — the library wires them; explicit `@Inject(TOKEN)` is only for direct token consumers like P3-9/Phase 4+).
-- [ ] `pnpm --filter api typecheck` exits 0 and `pnpm --filter api build` succeeds.
+- [x] `src/cache/cache.module.ts` registers `BymaxCacheModule.forRootAsync({ isGlobal: true, imports: [ConfigModule, EventsModule], inject: [ConfigService, EventsGateway], useFactory })`.
+- [x] `useFactory: (config, gateway) => buildCacheOptions(config, new CacheEventsBridge(gateway).toCacheEvents())` — bridge is stateless and constructed in-factory; DI-managed `CacheEventsBridge` is provided for feature modules.
+- [x] `isGlobal: true` is set at the `forRootAsync({ … })` call site (NOT inside `useFactory`); an inline comment explains the synchronous-decision rule.
+- [x] The local `CacheModule` imports `EventsModule` (so `EventsGateway` is injectable) and re-exports `BymaxCacheModule` so feature modules get `CacheService` & co.
+- [x] `src/app.module.ts` imports `ConfigModule.forRoot({ isGlobal: true, validate: validateEnv })`, `EventsModule`, `CacheModule`, registers `CacheExceptionFilter` via `{ provide: APP_FILTER, useClass: CacheExceptionFilter }`, and declares the `HealthController` (from P3-9).
+- [x] DI uses NestJS conventions; tokens are Symbols injected via the library's providers (no manual `@Inject(TOKEN)` needed at this layer — the library wires them; explicit `@Inject(TOKEN)` is only for direct token consumers like P3-9/Phase 4+).
+- [x] `pnpm --filter api typecheck` exits 0 and `pnpm --filter api build` succeeds.
 
 ### Files to create / modify
 
@@ -729,7 +729,7 @@ The primary library wiring (§9.2, matrix #1): a local `CacheModule` (the app's 
 
 ## P3-7 — `src/common/cache-exception.filter.ts` — Global `@Catch(CacheException)`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `P3-1`
@@ -740,12 +740,12 @@ The global error surface (§19.1, matrix #41–#44 partial): a `@Catch(CacheExce
 
 ### Acceptance Criteria
 
-- [ ] `src/common/cache-exception.filter.ts` exports `@Catch(CacheException)`-decorated `CacheExceptionFilter implements ExceptionFilter`.
-- [ ] `catch(exception, host)` uses `host.switchToHttp().getResponse()` (Express) and `res.status(exception.getStatus()).json({ error: { code, message, details } })`.
-- [ ] `code` ← `exception.code`; `message` ← `CACHE_ERROR_MESSAGES.get(exception.code) ?? exception.message`; `details` ← `exception.details ?? null`.
-- [ ] `CacheException` + `CACHE_ERROR_MESSAGES` imported from `@bymax-one/nest-cache` (server subpath).
-- [ ] No secret scrubbing added (library contract guarantees `details` is secret-free); JSDoc notes this.
-- [ ] `pnpm --filter api typecheck` exits 0.
+- [x] `src/common/cache-exception.filter.ts` exports `@Catch(CacheException)`-decorated `CacheExceptionFilter implements ExceptionFilter`.
+- [x] `catch(exception, host)` uses `host.switchToHttp().getResponse()` (Express) and `res.status(exception.getStatus()).json({ error: { code, message, details } })`.
+- [x] `code` ← `exception.code`; `message` ← `CACHE_ERROR_MESSAGES.get(exception.code) ?? exception.message`; `details` ← `exception.details ?? null`.
+- [x] `CacheException` + `CACHE_ERROR_MESSAGES` imported from `@bymax-one/nest-cache` (server subpath).
+- [x] No secret scrubbing added (library contract guarantees `details` is secret-free); JSDoc notes this.
+- [x] `pnpm --filter api typecheck` exits 0.
 
 ### Files to create / modify
 
@@ -817,7 +817,7 @@ The global error surface (§19.1, matrix #41–#44 partial): a `@Catch(CacheExce
 
 ## P3-8 — `src/common/zod-validation.pipe.ts` + `src/common/cache-keys.ts`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P3-1`
@@ -828,11 +828,11 @@ Two shared building blocks the feature phases depend on. **`ZodValidationPipe`**
 
 ### Acceptance Criteria
 
-- [ ] `src/common/zod-validation.pipe.ts` exports `@Injectable()` `ZodValidationPipe implements PipeTransform`, constructed with a `ZodSchema` (or `ZodType`).
-- [ ] `transform(value, _metadata)` runs `schema.safeParse(value)`; on `!success` throws `BadRequestException` with the flattened error; on success returns `parsed.data`.
-- [ ] `src/common/cache-keys.ts` exports a frozen `CACHE_PREFIX` object whose values are typed as `CacheKeyPrefix`, covering at minimum `product`, `cart`, `tags`, `stampede` (extendable in later phases).
-- [ ] `CacheKeyPrefix` imported from `@bymax-one/nest-cache` or `@bymax-one/nest-cache/shared` (confirm against `.d.ts`); `ZodError`/`ZodSchema` from `zod`.
-- [ ] `pnpm --filter api typecheck` exits 0.
+- [x] `src/common/zod-validation.pipe.ts` exports `@Injectable()` `ZodValidationPipe implements PipeTransform`, constructed with a `ZodSchema` (or `ZodType`).
+- [x] `transform(value, _metadata)` runs `schema.safeParse(value)`; on `!success` throws `BadRequestException` with the flattened error; on success returns `parsed.data`.
+- [x] `src/common/cache-keys.ts` exports a frozen `CACHE_PREFIX` object whose values are typed as `CacheKeyPrefix`, covering at minimum `product`, `cart`, `tags`, `stampede` (extendable in later phases).
+- [x] `CacheKeyPrefix` imported from `@bymax-one/nest-cache` or `@bymax-one/nest-cache/shared` (confirm against `.d.ts`); `ZodError`/`ZodSchema` from `zod`.
+- [x] `pnpm --filter api typecheck` exits 0.
 
 ### Files to create / modify
 
@@ -921,7 +921,7 @@ Two shared building blocks the feature phases depend on. **`ZodValidationPipe`**
 
 ## P3-9 — `src/health/health.controller.ts` (`/health` + `/metrics`) + Boot Verification
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `P3-6`, `P3-7`, `P3-8`
@@ -932,13 +932,13 @@ The phase's closing deliverable + the Definition-of-Done gate (§20.2, matrix #2
 
 ### Acceptance Criteria
 
-- [ ] `src/health/health.controller.ts` exports a `@Controller('health')`-style `HealthController` with `GET /health` returning `{ status: 'ok' | 'degraded', latencyMs: number }` (JSDoc with the literal route line — no Swagger).
-- [ ] `/health` uses `CacheService.isHealthy()` for `status` and measures `ping()` latency (e.g. `Date.now()` around `await cache.ping()`), guarding `ping`'s possible throw so the probe still returns a JSON body.
-- [ ] `GET /metrics` returns a placeholder object (e.g. `{ note: 'app-level metrics arrive in Phase 4' }`) with a JSDoc/TODO(phase-4) marker.
-- [ ] `CacheService` injected via standard NestJS DI (constructor param) — available app-wide because `CacheModule` registered it `isGlobal: true` (P3-6).
-- [ ] `HealthController` declared in `AppModule` (P3-6).
-- [ ] Boot verification passes: `pnpm --filter api dev` boots against Docker Redis; `GET /health` → 200 `{ status: 'ok', latencyMs: <n> }`; the `ready` event is logged by `CacheEventsBridge` and emitted on `cache:connection`.
-- [ ] `pnpm --filter api typecheck` + `pnpm --filter api build` exit 0; `pnpm lint` clean for `apps/api`.
+- [x] `src/health/health.controller.ts` exports a `@Controller()`-decorated `HealthController` with `GET /health` returning `{ status: 'ok' | 'degraded', latencyMs: number }` (JSDoc with the literal route line — no Swagger).
+- [x] `/health` uses `CacheService.isHealthy()` for `status` and measures `ping()` latency (e.g. `Date.now()` around `await cache.ping()`), guarding `ping`'s possible throw so the probe still returns a JSON body.
+- [x] `GET /metrics` returns a placeholder object (`{ note: 'app-level metrics arrive in a later phase (MetricsService)' }`) with a JSDoc/TODO(phase-4) marker.
+- [x] `CacheService` injected via standard NestJS DI (constructor param) — available app-wide because `CacheModule` registered it `isGlobal: true` (P3-6).
+- [x] `HealthController` declared in `AppModule` (P3-6).
+- [x] Boot verification passes: `pnpm --filter api start` boots against Docker Redis; `GET /health` → 200 `{"status":"ok","latencyMs":2}`; the `ready` event logged by `CacheEventsBridge` and emitted on `cache:connection`.
+- [x] `pnpm --filter api typecheck` + `pnpm --filter api build` exit 0; `pnpm lint` clean for `apps/api`.
 
 ### Files to create / modify
 
@@ -1030,3 +1030,13 @@ When this task is 🟢, Phase 3 is 9/9 — switch the Phase 3 row in `DEVELOPMEN
 ## Completion log
 
 _(Agents append one line per finished task, newest at the bottom.)_
+
+- P3-1 ✅ 2026-06-16 — Scaffolded `apps/api` with NestJS 11/Express: `package.json` (ESM, full dep set), `nest-cli.json`, `tsconfig.json`/`tsconfig.build.json` (NodeNext + decorator metadata), `src/main.ts` with `SocketIoAdapter` CORS pattern and graceful-shutdown JSDoc.
+- P3-2 ✅ 2026-06-16 — Created Zod env schema (`envSchema`), `validateEnv()`, `Env` type, `.env.example`; wired `ConfigModule.forRoot({ validate: validateEnv })` in `AppModule`.
+- P3-3 ✅ 2026-06-16 — Implemented `buildCacheOptions(config, events)` factory; standalone path wired from `REDIS_URL`; serializer and scripts placeholder; sentinel/cluster stubs throw with clear messages.
+- P3-4 ✅ 2026-06-16 — Implemented `CacheEventsBridge.toCacheEvents()`: branches on `CACHE_EVENT_NAMES.ERROR`, logs via Nest Logger, broadcasts via `EventsGateway.emitConnectionEvent`.
+- P3-5 ✅ 2026-06-16 — Created `EventsGateway` skeleton with three typed emit methods (`cache:connection`, `cache:event`, `cache:expired`); CORS applied adapter-level in `main.ts` via `SocketIoAdapter`.
+- P3-6 ✅ 2026-06-16 — Wired `BymaxCacheModule.forRootAsync({ isGlobal: true })` in `CacheModule`; `EventsGateway` injected to avoid DI circular dep; `CacheEventsBridge` also provided as DI provider; `AppModule` assembled with `APP_FILTER`.
+- P3-7 ✅ 2026-06-16 — Implemented global `CacheExceptionFilter`: serializes `CacheException` to `{ error: { code, message, details } }` using `CACHE_ERROR_MESSAGES.get()`.
+- P3-8 ✅ 2026-06-16 — Created `ZodValidationPipe<T>` (HTTP 400 on schema failure) and `CACHE_PREFIX` constants typed as `CacheKeyPrefix`.
+- P3-9 ✅ 2026-06-16 — Implemented `HealthController` (`/health` + `/metrics`); boot verification passed: `{"status":"ok","latencyMs":2}`, `[cache] connect`/`ready` logged, all gates green (typecheck, build, lint, format).

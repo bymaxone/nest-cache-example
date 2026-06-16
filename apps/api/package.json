@@ -1,16 +1,31 @@
 {
   "name": "api",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "nest start --watch",
+    "build": "nest build",
+    "start": "node dist/main.js",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "@bymax-one/nest-cache": "file:../../../nest-cache",
     "@nestjs/common": "^11",
+    "@nestjs/config": "^4",
     "@nestjs/core": "^11",
+    "@nestjs/platform-express": "^11",
+    "@nestjs/platform-socket.io": "^11",
+    "@nestjs/websockets": "^11",
     "ioredis": "^5",
-    "reflect-metadata": "^0.2"
+    "reflect-metadata": "^0.2",
+    "socket.io": "^4",
+    "zod": "^4"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11",
+    "@nestjs/schematics": "^11",
+    "@types/express": "^5",
+    "@types/node": "^22"
   }
 }
