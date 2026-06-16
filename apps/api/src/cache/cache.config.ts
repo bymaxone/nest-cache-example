@@ -3,24 +3,23 @@
  *
  * Layer: cache. This is the project's headline copy-paste artifact: it separates
  * _what the options are_ from _how the module is wired_ (the latter is app.module.ts).
- * Standalone is the default path; sentinel/cluster are stubbed and throw until
- * their respective topology phases wire them. The serializer selection and the
- * Lua script registry are placeholders filled in later phases.
+ * Standalone is the default path; sentinel and cluster connection blocks throw until
+ * their respective topology options are wired (see TECHNICAL_SPECIFICATION.md §15.2/§15.3).
  */
 import type { ConfigService } from '@nestjs/config'
 import type {
   BymaxCacheModuleOptions,
   ICacheEvents,
   IScriptDefinition,
-  ISerializer,
 } from '@bymax-one/nest-cache'
 import type { Env } from '../config/env.schema.js'
+import { MsgPackSerializer } from './msgpack.serializer.js'
 
 /**
  * Pre-registered Lua scripts passed to the module at boot.
- * Populated with the single-flight `acquireLock` script in a later phase.
+ * Reserved for the single-flight `acquireLock` Lua script — see TECHNICAL_SPECIFICATION.md §7.
  */
-const CACHE_SCRIPTS: readonly IScriptDefinition[] = [] // TODO(phase-10): acquireLock
+const CACHE_SCRIPTS: readonly IScriptDefinition[] = []
 
 /**
  * Builds the resolved options for `BymaxCacheModule` from the validated env.
@@ -39,9 +38,10 @@ export function buildCacheOptions(
 ): BymaxCacheModuleOptions {
   const mode = config.get('CACHE_MODE', { infer: true })
 
-  // TODO(phase-7): replace with `new MsgPackSerializer()` when CACHE_SERIALIZER === 'msgpack'.
-  // `undefined` → omitted → the library's default JsonSerializer is used.
-  const serializer: ISerializer | undefined = undefined
+  const serializer =
+    config.get('CACHE_SERIALIZER', { infer: true }) === 'msgpack'
+      ? new MsgPackSerializer()
+      : undefined // undefined → library default JsonSerializer
 
   return {
     mode,
@@ -61,7 +61,7 @@ export function buildCacheOptions(
 }
 
 /**
- * Sentinel connection block. Implemented in a later topology phase (§15.2).
+ * Sentinel connection block. See TECHNICAL_SPECIFICATION.md §15.2 for the full wiring.
  *
  * @throws Always — sentinel mode is not yet configured.
  */
@@ -70,7 +70,7 @@ function buildSentinelBlock(): never {
 }
 
 /**
- * Cluster connection block. Implemented in a later topology phase (§15.3).
+ * Cluster connection block. See TECHNICAL_SPECIFICATION.md §15.3 for the full wiring.
  *
  * @throws Always — cluster mode is not yet configured.
  */

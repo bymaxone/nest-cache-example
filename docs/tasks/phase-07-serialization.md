@@ -2,7 +2,7 @@
 
 > **Source:** [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#phase-7--serialization-default--custom) §Phase 7
 > **Total tasks:** 4
-> **Progress:** 🔴 0 / 4 done (0%)
+> **Progress:** 🟢 4 / 4 done (100%)
 >
 > **Status legend:** 🔴 Not Started · 🟡 In Progress · 🔵 In Review · 🟢 Done · ⚪ Blocked
 
@@ -10,16 +10,16 @@
 
 | ID   | Task                                                                           | Status | Priority | Size | Depends on |
 | ---- | ------------------------------------------------------------------------------ | ------ | -------- | ---- | ---------- |
-| P7-1 | `src/cache/msgpack.serializer.ts` — `MsgPackSerializer implements ISerializer` | 🔴     | Medium   | S    | Phase 3    |
-| P7-2 | Wire `CACHE_SERIALIZER` selection into `src/cache/cache.config.ts`             | 🔴     | High     | S    | P7-1       |
-| P7-3 | `src/serializer-demo/` — `POST /serializer/roundtrip` (raw vs decoded)         | 🔴     | High     | M    | P7-1, P7-2 |
-| P7-4 | `SerializableValue` caveat payload (`Date`) + phase verification               | 🔴     | Medium   | S    | P7-1..P7-3 |
+| P7-1 | `src/cache/msgpack.serializer.ts` — `MsgPackSerializer implements ISerializer` | 🟢     | Medium   | S    | Phase 3    |
+| P7-2 | Wire `CACHE_SERIALIZER` selection into `src/cache/cache.config.ts`             | 🟢     | High     | S    | P7-1       |
+| P7-3 | `src/serializer-demo/` — `POST /serializer/roundtrip` (raw vs decoded)         | 🟢     | High     | M    | P7-1, P7-2 |
+| P7-4 | `SerializableValue` caveat payload (`Date`) + phase verification               | 🟢     | Medium   | S    | P7-1..P7-3 |
 
 ---
 
 ## P7-1 — `src/cache/msgpack.serializer.ts` — `MsgPackSerializer implements ISerializer`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `Phase 3`
@@ -30,12 +30,12 @@ Build the custom codec that the rest of the phase demonstrates against the libra
 
 ### Acceptance Criteria
 
-- [ ] `apps/api/src/cache/msgpack.serializer.ts` exports `class MsgPackSerializer implements ISerializer`.
-- [ ] `serialize<T>(value: T): string` returns `Buffer.from(encode(value)).toString('base64')` (MessagePack → base64).
-- [ ] `deserialize<T>(raw: string): T` returns `decode(Buffer.from(raw, 'base64')) as T`, propagating the `@msgpack/msgpack` decode error on malformed input (fail closed — never returns a partial value).
-- [ ] `ISerializer` is imported as a **type-only** import from `@bymax-one/nest-cache` (`import type { ISerializer }`).
-- [ ] `@msgpack/msgpack` is added to `apps/api` `dependencies` (runtime, not dev).
-- [ ] The class carries a JSDoc summary (English) describing it as a compact, binary-safe, base64-wrapped codec.
+- [x] `apps/api/src/cache/msgpack.serializer.ts` exports `class MsgPackSerializer implements ISerializer`.
+- [x] `serialize<T>(value: T): string` returns `Buffer.from(encode(value)).toString('base64')` (MessagePack → base64).
+- [x] `deserialize<T>(raw: string): T` returns `decode(Buffer.from(raw, 'base64')) as T`, propagating the `@msgpack/msgpack` decode error on malformed input (fail closed — never returns a partial value).
+- [x] `ISerializer` is imported as a **type-only** import from `@bymax-one/nest-cache` (`import type { ISerializer }`).
+- [x] `@msgpack/msgpack` is added to `apps/api` `dependencies` (runtime, not dev).
+- [x] The class carries a JSDoc summary (English) describing it as a compact, binary-safe, base64-wrapped codec.
 
 ### Files to create / modify
 
@@ -98,7 +98,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P7-2 — Wire `CACHE_SERIALIZER` Selection into `src/cache/cache.config.ts`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `P7-1`
@@ -109,12 +109,12 @@ Make the active codec env-selectable through the existing `buildCacheOptions(con
 
 ### Acceptance Criteria
 
-- [ ] `apps/api/src/config/env.schema.ts` (from P3-2) includes `CACHE_SERIALIZER` as a Zod enum `['json', 'msgpack']` defaulting to `'json'` (matches spec §9.1).
-- [ ] `apps/api/src/cache/cache.config.ts` computes `const serializer = config.get('CACHE_SERIALIZER', { infer: true }) === 'msgpack' ? new MsgPackSerializer() : undefined`.
-- [ ] The returned `BymaxCacheModuleOptions` sets `serializer` to that value (so `json` → `undefined` → library default `JsonSerializer`; `msgpack` → `new MsgPackSerializer()`).
-- [ ] `MsgPackSerializer` is imported from `./msgpack.serializer` (the P7-1 class) — not re-implemented inline.
-- [ ] `apps/api/.env.example` documents `CACHE_SERIALIZER=json` with a comment noting the `json | msgpack` choices.
-- [ ] Booting with `CACHE_SERIALIZER` unset and with `=json` both resolve the library default; `=msgpack` resolves the custom codec (asserted in P7-3 / P7-4).
+- [x] `apps/api/src/config/env.schema.ts` (from P3-2) includes `CACHE_SERIALIZER` as a Zod enum `['json', 'msgpack']` defaulting to `'json'` (matches spec §9.1).
+- [x] `apps/api/src/cache/cache.config.ts` computes `const serializer = config.get('CACHE_SERIALIZER', { infer: true }) === 'msgpack' ? new MsgPackSerializer() : undefined`.
+- [x] The returned `BymaxCacheModuleOptions` sets `serializer` to that value (so `json` → `undefined` → library default `JsonSerializer`; `msgpack` → `new MsgPackSerializer()`).
+- [x] `MsgPackSerializer` is imported from `./msgpack.serializer` (the P7-1 class) — not re-implemented inline.
+- [x] `apps/api/.env.example` documents `CACHE_SERIALIZER=json` with a comment noting the `json | msgpack` choices.
+- [x] Booting with `CACHE_SERIALIZER` unset and with `=json` both resolve the library default; `=msgpack` resolves the custom codec (asserted in P7-3 / P7-4).
 
 ### Files to create / modify
 
@@ -169,7 +169,7 @@ Make the active codec env-selectable through the existing `buildCacheOptions(con
 
 ## P7-3 — `src/serializer-demo/` — `POST /serializer/roundtrip` (raw vs decoded)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90 min–½ day)
 - **Depends on:** `P7-1`, `P7-2`
@@ -180,13 +180,13 @@ Build the backend for the Serializer Lab (DASHBOARD §12): a module that stores 
 
 ### Acceptance Criteria
 
-- [ ] `apps/api/src/serializer-demo/serializer-demo.module.ts`, `.controller.ts`, `.service.ts` exist; `SerializerDemoModule` is imported by `app.module.ts`.
-- [ ] `POST /serializer/roundtrip?codec=json|msgpack` accepts a JSON body (the payload), validates `codec` via Zod (`z.enum(['json','msgpack'])`, default `json`), `set`s it under a demo prefix (e.g. `serializer:demo`), then returns `{ codec, raw, decoded, rawBytes, rawBypass }` where `raw` is `getRaw(...)`, `decoded` is `get(...)`, `rawBytes` is `Buffer.byteLength(raw)` (or `0` when `raw` is `null`), and `rawBypass` is the value read back after a `setRaw` write (matrix #14's write half).
-- [ ] `getRaw(prefix, id)` and `get<T>(prefix, id)` are both called against the **same** stored key so the response shows the raw string vs the decoded value for one write.
-- [ ] **`setRaw` is exercised** (matrix #14 write half): the lab `setRaw`s a pre-encoded string and reads it back with `getRaw`, proving the active codec is bypassed on **both** write and read (not just read).
-- [ ] `GET /serializer/active` returns `{ serializer: string }` — the active codec name read from the **injected** `BYMAX_CACHE_SERIALIZER` token (e.g. `'JsonSerializer'` or `'MsgPackSerializer'` via `serializer.constructor.name`).
-- [ ] The injected serializer is obtained with `@Inject(BYMAX_CACHE_SERIALIZER)` typed as `ISerializer` (token + type imported from `@bymax-one/nest-cache`).
-- [ ] Both controller methods carry JSDoc (English); no Swagger decorators anywhere.
+- [x] `apps/api/src/serializer-demo/serializer-demo.module.ts`, `.controller.ts`, `.service.ts` exist; `SerializerDemoModule` is imported by `app.module.ts`.
+- [x] `POST /serializer/roundtrip?codec=json|msgpack` accepts a JSON body (the payload), validates `codec` via Zod (`z.enum(['json','msgpack'])`, default `json`), `set`s it under a demo prefix (e.g. `serializer:demo`), then returns `{ codec, raw, decoded, rawBytes, rawBypass }` where `raw` is `getRaw(...)`, `decoded` is `get(...)`, `rawBytes` is `Buffer.byteLength(raw)` (or `0` when `raw` is `null`), and `rawBypass` is the value read back after a `setRaw` write (matrix #14's write half).
+- [x] `getRaw(prefix, id)` and `get<T>(prefix, id)` are both called against the **same** stored key so the response shows the raw string vs the decoded value for one write.
+- [x] **`setRaw` is exercised** (matrix #14 write half): the lab `setRaw`s a pre-encoded string and reads it back with `getRaw`, proving the active codec is bypassed on **both** write and read (not just read).
+- [x] `GET /serializer/active` returns `{ serializer: string }` — the active codec name read from the **injected** `BYMAX_CACHE_SERIALIZER` token (e.g. `'JsonSerializer'` or `'MsgPackSerializer'` via `serializer.constructor.name`).
+- [x] The injected serializer is obtained with `@Inject(BYMAX_CACHE_SERIALIZER)` typed as `ISerializer` (token + type imported from `@bymax-one/nest-cache`).
+- [x] Both controller methods carry JSDoc (English); no Swagger decorators anywhere.
 
 ### Files to create / modify
 
@@ -270,7 +270,7 @@ Build the backend for the Serializer Lab (DASHBOARD §12): a module that stores 
 
 ## P7-4 — `SerializableValue` Caveat Payload (`Date`) + Phase Verification
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P7-1`, `P7-2`, `P7-3`
@@ -281,12 +281,12 @@ Teach the `SerializableValue` caveat and close the phase. JSON does not preserve
 
 ### Acceptance Criteria
 
-- [ ] A caveat fixture exists (e.g. `apps/api/src/serializer-demo/serializer-demo.fixtures.ts`) exporting a payload that includes a `Date` (e.g. `{ id: 42, when: new Date('2026-06-01T00:00:00.000Z'), tags: ['a', 'b'] }`).
-- [ ] `POST /serializer/caveat?codec=json|msgpack` (or a `caveat` branch of the service) stores the fixture and returns the raw + decoded forms plus a `dateSurvived: boolean` flag (`decoded.when instanceof Date`).
-- [ ] Under `json`, the response shows `when` decoded as an ISO **string** and `dateSurvived: false`; the response body carries a human-readable note (e.g. `'JSON does not preserve Date — it became an ISO string'`).
-- [ ] Under `msgpack`, the response shows `when` decoded as a `Date` and `dateSurvived: true`.
-- [ ] `SerializableValue` is imported (type-only) from `@bymax-one/nest-cache/shared` somewhere in the module (e.g. typing the non-caveat payloads) and a JSDoc/comment records that it excludes `Date`/`Map`/`Set`/`BigInt`/`undefined`.
-- [ ] Phase gate green: `pnpm --filter @nest-cache-example/api typecheck`, `lint`, and `build` all exit 0; matrix rows #11, #14, #37, #38, #39 are demonstrated by the endpoints from P7-3 + P7-4.
+- [x] A caveat fixture exists (e.g. `apps/api/src/serializer-demo/serializer-demo.fixtures.ts`) exporting a payload that includes a `Date` (e.g. `{ id: 42, when: new Date('2026-06-01T00:00:00.000Z'), tags: ['a', 'b'] }`).
+- [x] `POST /serializer/caveat?codec=json|msgpack` (or a `caveat` branch of the service) stores the fixture and returns the raw + decoded forms plus a `dateSurvived: boolean` flag (`decoded.when instanceof Date`).
+- [x] Under `json`, the response shows `when` decoded as an ISO **string** and `dateSurvived: false`; the response body carries a human-readable note (e.g. `'JSON does not preserve Date — it became an ISO string'`).
+- [x] Under `msgpack`, the response shows `when` decoded as a `Date` and `dateSurvived: true`.
+- [x] `SerializableValue` is imported (type-only) from `@bymax-one/nest-cache/shared` somewhere in the module (e.g. typing the non-caveat payloads) and a JSDoc/comment records that it excludes `Date`/`Map`/`Set`/`BigInt`/`undefined`.
+- [x] Phase gate green: `pnpm --filter @nest-cache-example/api typecheck`, `lint`, and `build` all exit 0; matrix rows #11, #14, #37, #38, #39 are demonstrated by the endpoints from P7-3 + P7-4.
 
 ### Files to create / modify
 
@@ -347,3 +347,8 @@ When this task is 🟢, Phase 7 is 4/4 — switch the Phase 7 row in `DEVELOPMEN
 ## Completion log
 
 _(Agents append one line per finished task, newest at the bottom.)_
+
+- P7-1 ✅ 2026-06-16 — MsgPackSerializer (base64-wrapped MessagePack codec) created; @msgpack/msgpack added to api deps
+- P7-2 ✅ 2026-06-16 — CACHE_SERIALIZER env var wired into buildCacheOptions; json → undefined → library default; msgpack → MsgPackSerializer
+- P7-3 ✅ 2026-06-16 — serializer-demo module built with POST /serializer/roundtrip and GET /serializer/active; getRaw/setRaw bypass demonstrated
+- P7-4 ✅ 2026-06-16 — caveat fixture + POST /serializer/caveat added; dateSurvived flag shows JSON Date→ISO lossy vs MessagePack intact; phase gate green
