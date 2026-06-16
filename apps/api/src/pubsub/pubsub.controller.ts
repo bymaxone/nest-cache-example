@@ -59,8 +59,8 @@ export class PubSubController {
   async subscribe(
     @Body(new ZodValidationPipe(subscribeSchema)) body: SubscribeDto,
   ): Promise<{ channel: string; refs: number; pattern: boolean }> {
-    const refs = await this.bridge.addSubscription(body.channel, body.pattern)
-    return { channel: body.channel, refs, pattern: body.pattern }
+    const result = await this.bridge.addSubscription(body.channel, body.pattern)
+    return { channel: body.channel, refs: result.refs, pattern: result.isPattern }
   }
 
   /**
@@ -77,8 +77,8 @@ export class PubSubController {
   async unsubscribe(
     @Body(new ZodValidationPipe(subscribeSchema)) body: SubscribeDto,
   ): Promise<{ channel: string; refs: number; pattern: boolean }> {
-    const refs = await this.bridge.removeSubscription(body.channel)
-    return { channel: body.channel, refs, pattern: body.pattern }
+    const result = await this.bridge.removeSubscription(body.channel)
+    return { channel: body.channel, refs: result.refs, pattern: result.isPattern }
   }
 
   /**

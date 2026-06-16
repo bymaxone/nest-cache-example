@@ -23,6 +23,8 @@ import { EventsGateway } from '../events/events.gateway.js'
 interface SubEntry {
   unsubscribe: Unsubscribe
   refs: number
+  /** Whether this entry was created via psubscribe (true) or subscribe (false). */
+  isPattern: boolean
 }
 
 /**
@@ -56,7 +58,9 @@ export class PubSubBridgeService implements OnModuleInit, OnModuleDestroy {
    * Handler for pattern subscriptions.
    * IPubSubPatternHandler<T> = (message: T, channel: string, pattern: string) => void | Promise<void>.
    * The library passes the NAMESPACED concrete channel (e.g. 'cache-example:product:42');
-   * re-broadcast to every tab. The pattern arg (e.g. 'cache-example:product:*') is available for UI tagging.
+   * re-broadcast to every tab. The pattern arg is not forwarded — the frontend receives
+   * the resolved channel instead. TypeScript allows omitting trailing params when the handler
+   * is only interested in a prefix of the signature.
    */
   private readonly forwardPattern: IPubSubPatternHandler<unknown> = (message, channel) => {
     this.gateway.emitMessage(channel, message)
@@ -75,11 +79,11 @@ export class PubSubBridgeService implements OnModuleInit, OnModuleDestroy {
     // Exact-channel subscription: gateway fans every message out to all tabs (spec §17.2).
     // The library namespaces the channel: 'product-events' → 'cache-example:product-events'.
     const exactUnsub = await this.pubsub.subscribe<unknown>('product-events', this.forward)
-    this.subs.set('product-events', { unsubscribe: exactUnsub, refs: 1 })
+    this.subs.set('product-events', { unsubscribe: exactUnsub, refs: 1, isPattern: false })
 
     // Pattern subscription: matches e.g. 'product:42'. Pattern namespaced by library (spec §17.1).
     const patternUnsub = await this.pubsub.psubscribe<unknown>('product:*', this.forwardPattern)
-    this.subs.set('product:*', { unsubscribe: patternUnsub, refs: 1 })
+    this.subs.set('product:*', { unsubscribe: patternUnsub, refs: 1, isPattern: true })
 
     // The library SWALLOWS a handler throw — it must NOT tear down the shared subscriber —
     // and forwards it to events.onEvent as an `error` with reason: 'handler_error' (spec §17.1).
@@ -89,7 +93,11 @@ export class PubSubBridgeService implements OnModuleInit, OnModuleDestroy {
         throw new Error('intentional handler failure (error-isolation demo)')
       },
     )
-    this.subs.set(PubSubBridgeService.ERROR_DEMO_CHANNEL, { unsubscribe: errUnsub, refs: 1 })
+    this.subs.set(PubSubBridgeService.ERROR_DEMO_CHANNEL, {
+      unsubscribe: errUnsub,
+      refs: 1,
+      isPattern: false,
+    })
   }
 
   /** Tears down every active subscription on module shutdown. All entries are attempted even if one rejects. */
@@ -122,21 +130,24 @@ export class PubSubBridgeService implements OnModuleInit, OnModuleDestroy {
    *
    * @param channel - Bare channel name or glob pattern.
    * @param pattern - When true, uses psubscribe instead of subscribe.
-   * @returns The new ref count for this channel.
+   * @returns The updated ref count and the actual subscription kind (isPattern).
    * @throws {CacheException} When the library's subscribe or psubscribe call fails (e.g. connection error).
    */
-  async addSubscription(channel: string, pattern: boolean): Promise<number> {
+  async addSubscription(
+    channel: string,
+    pattern: boolean,
+  ): Promise<{ refs: number; isPattern: boolean }> {
     const existing = this.subs.get(channel)
     if (existing) {
       // ref-counted: a 2nd subscribe does NOT open a 2nd Redis subscription
       existing.refs += 1
-      return existing.refs
+      return { refs: existing.refs, isPattern: existing.isPattern }
     }
     const unsubscribe = pattern
       ? await this.pubsub.psubscribe<unknown>(channel, this.forwardPattern)
       : await this.pubsub.subscribe<unknown>(channel, this.forward)
-    this.subs.set(channel, { unsubscribe, refs: 1 })
-    return 1
+    this.subs.set(channel, { unsubscribe, refs: 1, isPattern: pattern })
+    return { refs: 1, isPattern: pattern }
   }
 
   /**
@@ -147,17 +158,18 @@ export class PubSubBridgeService implements OnModuleInit, OnModuleDestroy {
    * library's Unsubscribe is idempotent, and double-unsubscribe never throws.
    *
    * @param channel - Bare channel name or glob pattern.
-   * @returns The remaining ref count (0 when the subscription was torn down).
+   * @returns The remaining ref count and the actual subscription kind (isPattern). When the channel
+   *   was unknown, `isPattern` defaults to false.
    * @throws {CacheException} When the underlying unsubscribe call fails (e.g. connection error).
    */
-  async removeSubscription(channel: string): Promise<number> {
+  async removeSubscription(channel: string): Promise<{ refs: number; isPattern: boolean }> {
     const existing = this.subs.get(channel)
-    if (!existing) return 0 // double-unsubscribe / unknown channel is safe (idempotent)
+    if (!existing) return { refs: 0, isPattern: false } // double-unsubscribe / unknown channel is safe (idempotent)
     existing.refs -= 1
-    if (existing.refs > 0) return existing.refs // still other listeners → keep delivery alive
+    if (existing.refs > 0) return { refs: existing.refs, isPattern: existing.isPattern } // still other listeners → keep delivery alive
     await existing.unsubscribe() // last listener → library fires Redis UNSUBSCRIBE
     this.subs.delete(channel)
-    return 0
+    return { refs: 0, isPattern: existing.isPattern }
   }
 
   /**
