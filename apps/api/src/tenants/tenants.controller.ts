@@ -52,9 +52,10 @@ export class TenantsController {
   /**
    * DELETE /tenants/:t/cache — clear all cached keys for one tenant.
    *
-   * Uses `CacheService.scan('tenant:{t}:product', '*')` (AsyncIterable) to
-   * collect the tenant's key ids, then deletes them in one `delMany` call.
-   * Other tenants' keys are not touched.
+   * Scans all keys under the tenant's root prefix `tenant:{t}:*` via
+   * `CacheService.scan`, then deletes them in one `delMany` call. Covers all
+   * entity types cached under this tenant — not limited to products. Other
+   * tenants' keys are not touched.
    *
    * In cluster mode surfaces `CacheException('cache.unsupported_in_cluster')` (HTTP 503)
    * via the global CacheExceptionFilter.

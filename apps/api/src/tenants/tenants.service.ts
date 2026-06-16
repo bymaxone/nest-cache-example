@@ -108,11 +108,15 @@ export class TenantsService {
   }
 
   /**
-   * Clears every key under one tenant's prefix via SCAN + delMany.
+   * Clears all cached keys under one tenant's root prefix via SCAN + delMany.
    *
-   * The scan is scoped to `tenant:{tenantId}:product`; it cannot widen to
-   * other tenants. This is NOT `flushNamespace()` — the namespace flush would
-   * remove keys for every tenant. This method leaves all other tenants intact.
+   * Scans `tenant:{tenantId}:*` so ALL entity types belonging to that tenant
+   * are removed in a single operation (products, and any future entity types).
+   * Other tenants' keys are not touched. This is NOT `flushNamespace()` — the
+   * namespace flush would remove keys for every tenant.
+   *
+   * The full-key prefix boundary is derived via `KeyBuilder.build()` so the
+   * configured key separator is respected — no separator is hard-coded here.
    *
    * In cluster mode the underlying SCAN raises
    * `CacheException('cache.unsupported_in_cluster')` — the CacheExceptionFilter
@@ -124,21 +128,25 @@ export class TenantsService {
   async clearTenant(
     tenantId: string,
   ): Promise<{ tenant: string; scannedKeys: number; deleted: number }> {
-    const prefix = this.tenantPrefix(tenantId)
-    // Use the library's namespace prefix to build the full key prefix string —
-    // avoids hard-coding 'cache-example:' here so the separator stays library-owned.
-    const nsPrefix = this.keyBuilder.getNamespacePrefix()
-    const fullKeyPrefix = `${nsPrefix}${prefix}:`
+    // Root tenant prefix — broader than any single entity type so future prefixes
+    // (e.g. tenant:{t}:cart) are also cleared in the same operation.
+    const rootPrefix: CacheKeyPrefix = `tenant:${tenantId}`
+
+    // Use KeyBuilder.build() with a known sentinel to derive the full namespaced
+    // prefix boundary without hard-coding the key separator character.
+    const SENTINEL = '~'
+    const sentinelKey = this.keyBuilder.build(rootPrefix, SENTINEL)
+    const fullKeyPrefix = sentinelKey.slice(0, -SENTINEL.length)
 
     const ids: string[] = []
-    for await (const key of this.cache.scan(prefix, '*')) {
-      // key is fully namespaced: cache-example:tenant:{tenantId}:product:{productId}
-      // Strip the namespace+prefix boundary to recover the id delMany expects.
+    for await (const key of this.cache.scan(rootPrefix, '*')) {
+      // key is fully namespaced: cache-example:tenant:{tenantId}:{entityType}:{id}
+      // Strip the namespace+prefix boundary to recover the composite id delMany expects.
       const id = key.startsWith(fullKeyPrefix) ? key.slice(fullKeyPrefix.length) : key
       ids.push(id)
     }
 
-    const deleted = ids.length ? await this.cache.delMany(prefix, ids) : 0
+    const deleted = ids.length ? await this.cache.delMany(rootPrefix, ids) : 0
     return { tenant: tenantId, scannedKeys: ids.length, deleted }
   }
 
