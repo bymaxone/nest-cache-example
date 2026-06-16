@@ -20,6 +20,7 @@ import { CountersModule } from './counters/counters.module.js'
 import { CollectionsModule } from './collections/collections.module.js'
 import { MetricsModule } from './metrics/metrics.module.js'
 import { AdminModule } from './admin/admin.module.js'
+import { TenantsModule } from './tenants/tenants.module.js'
 
 /** Root application module. */
 @Module({
@@ -32,6 +33,7 @@ import { AdminModule } from './admin/admin.module.js'
     CollectionsModule,
     MetricsModule,
     AdminModule,
+    TenantsModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_FILTER, useClass: CacheExceptionFilter }],

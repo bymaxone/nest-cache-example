@@ -33,7 +33,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 >
 > **All 17 phase files are scaffolded** under [`docs/tasks/`](tasks/) — the per-phase totals below are firm.
 >
-> **Overall progress: 40 / 107 tasks done (37%)**
+> **Overall progress: 45 / 107 tasks done (42%)**
 
 | #   | Phase                                     | Tasks file                            | Size | Done / Total | %    | Status |
 | --- | ----------------------------------------- | ------------------------------------- | ---- | ------------ | ---- | ------ |
@@ -43,7 +43,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 | 3   | `apps/api` Skeleton + Cache Module Wiring | `phase-03-api-skeleton-wiring.md`     | L    | 9 / 9        | 100% | 🟢     |
 | 4   | Domain & Core Data Structures             | `phase-04-domain-data-structures.md`  | L    | 9 / 9        | 100% | 🟢     |
 | 5   | Cache Admin API (Explorer backend)        | `phase-05-cache-admin-api.md`         | M    | 6 / 6        | 100% | 🟢     |
-| 6   | Namespace Isolation & Tenants             | `phase-06-namespace-tenants.md`       | M    | 0 / 5        | 0%   | 🔴     |
+| 6   | Namespace Isolation & Tenants             | `phase-06-namespace-tenants.md`       | M    | 5 / 5        | 100% | 🟢     |
 | 7   | Serialization (default + custom)          | `phase-07-serialization.md`           | S    | 0 / 4        | 0%   | 🔴     |
 | 8   | Pub/Sub + WebSocket Bridge                | `phase-08-pubsub-websocket.md`        | M    | 0 / 6        | 0%   | 🔴     |
 | 9   | TTL Events (keyspace notifications)       | `phase-09-ttl-events.md`              | S    | 0 / 4        | 0%   | 🔴     |

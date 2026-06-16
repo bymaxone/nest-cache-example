@@ -2,7 +2,7 @@
 
 > **Source:** [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#phase-6--namespace-isolation--tenants) §Phase 6
 > **Total tasks:** 5
-> **Progress:** 🔴 0 / 5 done (0%)
+> **Progress:** 🟢 5 / 5 done (100%)
 >
 > **Status legend:** 🔴 Not Started · 🟡 In Progress · 🔵 In Review · 🟢 Done · ⚪ Blocked
 
@@ -10,17 +10,17 @@
 
 | ID   | Task                                                                  | Status | Priority | Size | Depends on |
 | ---- | --------------------------------------------------------------------- | ------ | -------- | ---- | ---------- |
-| P6-1 | `src/tenants/` module + tenant-scoped reads/writes (`KeyBuilder`)     | 🔴     | High     | M    | Phase 4    |
-| P6-2 | `DELETE /tenants/:t/cache` — clear ONE tenant (`scan` → `delMany`)    | 🔴     | High     | S    | P6-1       |
-| P6-3 | `POST /tenants/seed-foreign` — foreign-namespace seed via `getClient` | 🔴     | Medium   | S    | P6-1       |
-| P6-4 | Isolation proof — `flushNamespace()` + per-instance design note       | 🔴     | High     | S    | P6-1, P6-3 |
-| P6-5 | Phase verification (clear A leaves B; flush leaves foreign key)       | 🔴     | Medium   | S    | P6-1..P6-4 |
+| P6-1 | `src/tenants/` module + tenant-scoped reads/writes (`KeyBuilder`)     | 🟢     | High     | M    | Phase 4    |
+| P6-2 | `DELETE /tenants/:t/cache` — clear ONE tenant (`scan` → `delMany`)    | 🟢     | High     | S    | P6-1       |
+| P6-3 | `POST /tenants/seed-foreign` — foreign-namespace seed via `getClient` | 🟢     | Medium   | S    | P6-1       |
+| P6-4 | Isolation proof — `flushNamespace()` + per-instance design note       | 🟢     | High     | S    | P6-1, P6-3 |
+| P6-5 | Phase verification (clear A leaves B; flush leaves foreign key)       | 🟢     | Medium   | S    | P6-1..P6-4 |
 
 ---
 
 ## P6-1 — `src/tenants/` Module + Tenant-Scoped Reads/Writes (`KeyBuilder`)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90 min–½ day)
 - **Depends on:** `Phase 4`
@@ -31,13 +31,13 @@ Build the `tenants` module that backs the Namespace & Tenants page (DASHBOARD §
 
 ### Acceptance Criteria
 
-- [ ] `apps/api/src/tenants/tenants.module.ts`, `apps/api/src/tenants/tenants.controller.ts`, `apps/api/src/tenants/tenants.service.ts` exist; `TenantsModule` is imported by `apps/api/src/app.module.ts`.
-- [ ] `TenantsService` injects `CacheService` and the library's `KeyBuilder` via the `BYMAX_CACHE_KEY_BUILDER` token (`@Inject(BYMAX_CACHE_KEY_BUILDER) private readonly keyBuilder: KeyBuilder`).
-- [ ] The tenant prefix is composed as `tenant:{tenantId}:product` (a single helper `tenantPrefix(tenantId): CacheKeyPrefix` builds it); reads/writes use `cache.get<Product>(tenantPrefix(t), id)` / `cache.set<Product>(tenantPrefix(t), id, value, ttlSeconds)` so the library applies the namespace.
-- [ ] `GET /tenants/:t/products/:id` returns the cached product when present; on a miss it loads from the in-memory origin (reuse / mirror the `catalog` origin), populates the tenant-scoped key with a TTL, and returns `{ data, source: 'origin' | 'cache' }`.
-- [ ] A read-back through `KeyBuilder.build(tenantPrefix(t), id)` (or `applyNamespace`) confirms the composed key equals `cache-example:tenant:{t}:product:{id}` — asserted in the verification step, not hand-built in business logic.
-- [ ] The `:t` path segment is validated (Zod) to a safe tenant-id shape (e.g. `^[a-z0-9-]{1,32}$`) by the `ZodValidationPipe` so a tenant id can never inject extra key segments.
-- [ ] Every public controller/service method carries JSDoc (no Swagger decorators anywhere).
+- [x] `apps/api/src/tenants/tenants.module.ts`, `apps/api/src/tenants/tenants.controller.ts`, `apps/api/src/tenants/tenants.service.ts` exist; `TenantsModule` is imported by `apps/api/src/app.module.ts`.
+- [x] `TenantsService` injects `CacheService` and the library's `KeyBuilder` via the `BYMAX_CACHE_KEY_BUILDER` token (`@Inject(BYMAX_CACHE_KEY_BUILDER) private readonly keyBuilder: KeyBuilder`).
+- [x] The tenant prefix is composed as `tenant:{tenantId}:product` (a single helper `tenantPrefix(tenantId): CacheKeyPrefix` builds it); reads/writes use `cache.get<Product>(tenantPrefix(t), id)` / `cache.set<Product>(tenantPrefix(t), id, value, ttlSeconds)` so the library applies the namespace.
+- [x] `GET /tenants/:t/products/:id` returns the cached product when present; on a miss it loads from the in-memory origin (reuse / mirror the `catalog` origin), populates the tenant-scoped key with a TTL, and returns `{ data, source: 'origin' | 'cache' }`.
+- [x] A read-back through `KeyBuilder.build(tenantPrefix(t), id)` (or `applyNamespace`) confirms the composed key equals `cache-example:tenant:{t}:product:{id}` — asserted in the verification step, not hand-built in business logic.
+- [x] The `:t` path segment is validated (Zod) to a safe tenant-id shape (e.g. `^[a-z0-9-]{1,32}$`) by the `ZodValidationPipe` so a tenant id can never inject extra key segments.
+- [x] Every public controller/service method carries JSDoc (no Swagger decorators anywhere).
 
 ### Files to create / modify
 
@@ -117,7 +117,7 @@ Build the `tenants` module that backs the Namespace & Tenants page (DASHBOARD §
 
 ## P6-2 — `DELETE /tenants/:t/cache` — Clear ONE Tenant (`scan` → `delMany`)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `P6-1`
@@ -128,12 +128,12 @@ Add the per-tenant clear that proves prefix scoping: clearing tenant A leaves te
 
 ### Acceptance Criteria
 
-- [ ] `DELETE /tenants/:t/cache` exists on `TenantsController`; `:t` validated by the same Zod params DTO from P6-1.
-- [ ] `TenantsService.clearTenant(tenantId)` iterates `cache.scan('tenant:{tenantId}', '*')` (the `AsyncIterable<string>`), accumulates the matching keys, derives the id segments, and calls `cache.delMany(...)` once (not per-key `del` in a loop).
-- [ ] The response is `{ tenant, scannedKeys: number, deleted: number }` where `deleted` is the count `delMany` returns.
-- [ ] Clearing tenant `acme` does **not** remove any `tenant:globex:*` key (asserted in P6-5; the code path scopes the scan to the single tenant prefix and never widens it).
-- [ ] In **cluster** mode the underlying `scan` surfaces the library's `CacheException('cache.unsupported_in_cluster')` unchanged (the `CacheExceptionFilter` maps it to the structured body); the controller does not swallow it.
-- [ ] JSDoc on the new route + service method; no Swagger.
+- [x] `DELETE /tenants/:t/cache` exists on `TenantsController`; `:t` validated by the same Zod params DTO from P6-1.
+- [x] `TenantsService.clearTenant(tenantId)` iterates `cache.scan('tenant:{tenantId}', '*')` (the `AsyncIterable<string>`), accumulates the matching keys, derives the id segments, and calls `cache.delMany(...)` once (not per-key `del` in a loop).
+- [x] The response is `{ tenant, scannedKeys: number, deleted: number }` where `deleted` is the count `delMany` returns.
+- [x] Clearing tenant `acme` does **not** remove any `tenant:globex:*` key (asserted in P6-5; the code path scopes the scan to the single tenant prefix and never widens it).
+- [x] In **cluster** mode the underlying `scan` surfaces the library's `CacheException('cache.unsupported_in_cluster')` unchanged (the `CacheExceptionFilter` maps it to the structured body); the controller does not swallow it.
+- [x] JSDoc on the new route + service method; no Swagger.
 
 ### Files to create / modify
 
@@ -194,7 +194,7 @@ Add the per-tenant clear that proves prefix scoping: clearing tenant A leaves te
 
 ## P6-3 — `POST /tenants/seed-foreign` — Foreign-Namespace Seed via `getClient()`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P6-1`
@@ -205,11 +205,11 @@ Seed a key under a **foreign** namespace (`other-app:*`) using the raw ioredis c
 
 ### Acceptance Criteria
 
-- [ ] `POST /tenants/seed-foreign` exists on `TenantsController` and returns `{ key: 'other-app:demo', written: true }`.
-- [ ] `TenantsService.seedForeignNamespace()` obtains the raw client via `cache.getClient()` and writes the literal key `other-app:demo` (hand-built — explicitly NOT through `KeyBuilder`/`CacheService`), with an optional value/TTL.
-- [ ] The foreign key is written **without** the `cache-example:` prefix (verifiable via the raw client: `getClient().get('other-app:demo')` returns the value, while `cache.get(...)` for any `cache-example` prefix does **not** see it).
-- [ ] A prominent inline comment + JSDoc labels this as the **documented anti-pattern** ("raw `getClient()` write bypasses the namespace — done only to prove isolation in P6-4; do NOT do this in real code") so no reader copies it as a pattern.
-- [ ] JSDoc on the route + service method; no Swagger.
+- [x] `POST /tenants/seed-foreign` exists on `TenantsController` and returns `{ key: 'other-app:demo', written: true }`.
+- [x] `TenantsService.seedForeignNamespace()` obtains the raw client via `cache.getClient()` and writes the literal key `other-app:demo` (hand-built — explicitly NOT through `KeyBuilder`/`CacheService`), with an optional value/TTL.
+- [x] The foreign key is written **without** the `cache-example:` prefix (verifiable via the raw client: `getClient().get('other-app:demo')` returns the value, while `cache.get(...)` for any `cache-example` prefix does **not** see it).
+- [x] A prominent inline comment + JSDoc labels this as the **documented anti-pattern** ("raw `getClient()` write bypasses the namespace — done only to prove isolation in P6-4; do NOT do this in real code") so no reader copies it as a pattern.
+- [x] JSDoc on the route + service method; no Swagger.
 
 ### Files to create / modify
 
@@ -268,7 +268,7 @@ Seed a key under a **foreign** namespace (`other-app:*`) using the raw ioredis c
 
 ## P6-4 — Isolation Proof — `flushNamespace()` + Per-Instance Design Note
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `P6-1`, `P6-3`
@@ -279,12 +279,12 @@ Wire the isolation-proof flow that closes the honesty loop (DASHBOARD §8 "Isola
 
 ### Acceptance Criteria
 
-- [ ] A proof flow exists (a `TenantsService.proveIsolation()` method, exposed as `POST /tenants/prove-isolation`) that: (1) ensures `other-app:demo` exists (calls the P6-3 seed if absent), (2) records `cache-example:*` key count before, (3) calls `cache.flushNamespace()`, (4) reports `{ flushedNamespaceKeys: number, foreignKeySurvived: boolean }`.
-- [ ] `foreignKeySurvived` is computed by reading the foreign key through the **raw client** (`getClient().exists('other-app:demo')`) **after** the flush — expected `true`.
-- [ ] `flushedNamespaceKeys` equals the count `flushNamespace()` returns (`Promise<number>`); the namespace flush removes only keys matching `cache-example:` (the library scopes `SCAN`+`UNLINK` to `{namespace}{sep}*`).
-- [ ] When `NODE_ENV=production` and `allowFlushInProduction` is `false`, `flushNamespace()` surfaces `CacheException('cache.flush_disabled_in_production')` (HTTP 403) unchanged through the `CacheExceptionFilter`; the proof endpoint does not swallow it.
-- [ ] A `// DESIGN NOTE` JSDoc block on the `tenants` module (e.g. top of `tenants.service.ts` or a `tenants.design-note.ts` constant) states verbatim the per-instance model: namespace is per module instance, tenants are prefixes, production "namespace per tenant" = one instance per tenant with `namespace` from env (spec §12.4).
-- [ ] JSDoc on the new route + method; no Swagger.
+- [x] A proof flow exists (a `TenantsService.proveIsolation()` method, exposed as `POST /tenants/prove-isolation`) that: (1) ensures `other-app:demo` exists (calls the P6-3 seed if absent), (2) records `cache-example:*` key count before, (3) calls `cache.flushNamespace()`, (4) reports `{ flushedNamespaceKeys: number, foreignKeySurvived: boolean }`.
+- [x] `foreignKeySurvived` is computed by reading the foreign key through the **raw client** (`getClient().exists('other-app:demo')`) **after** the flush — expected `true`.
+- [x] `flushedNamespaceKeys` equals the count `flushNamespace()` returns (`Promise<number>`); the namespace flush removes only keys matching `cache-example:` (the library scopes `SCAN`+`UNLINK` to `{namespace}{sep}*`).
+- [x] When `NODE_ENV=production` and `allowFlushInProduction` is `false`, `flushNamespace()` surfaces `CacheException('cache.flush_disabled_in_production')` (HTTP 403) unchanged through the `CacheExceptionFilter`; the proof endpoint does not swallow it.
+- [x] A `// DESIGN NOTE` JSDoc block on the `tenants` module (e.g. top of `tenants.service.ts` or a `tenants.design-note.ts` constant) states verbatim the per-instance model: namespace is per module instance, tenants are prefixes, production "namespace per tenant" = one instance per tenant with `namespace` from env (spec §12.4).
+- [x] JSDoc on the new route + method; no Swagger.
 
 ### Files to create / modify
 
@@ -340,7 +340,7 @@ Wire the isolation-proof flow that closes the honesty loop (DASHBOARD §8 "Isola
 
 ## P6-5 — Phase Verification (Clear A Leaves B; Flush Leaves Foreign Key)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P6-1`, `P6-2`, `P6-3`, `P6-4`
@@ -351,11 +351,11 @@ Phase 6 "Definition of done" gate per `DEVELOPMENT_PLAN.md`: prove the two isola
 
 ### Acceptance Criteria
 
-- [ ] A reproducible verification sequence is documented and run (curl or an e2e spec) covering both proofs below; all steps pass against a fresh Redis (`pnpm infra:up`).
-- [ ] **Tenant scoping proof:** after seeding `acme` + `globex` and `DELETE /tenants/acme/cache`, a `scan('tenant:globex','*')` (or `GET /tenants/globex/products/:id` → `source: 'cache'`) shows `globex` intact and `acme` empty.
-- [ ] **Namespace proof:** after `POST /tenants/seed-foreign` + `POST /tenants/prove-isolation`, `foreignKeySurvived === true` and no `cache-example:*` key remains.
-- [ ] In **cluster** mode the `scan`-based clear surfaces `cache.unsupported_in_cluster` via the `CacheExceptionFilter` (smoke-checked or noted as covered by Phase 11).
-- [ ] `pnpm typecheck`, `pnpm lint`, and the API e2e smoke (if a Phase 6 spec was added) all exit 0; no `@ts-ignore`/`eslint-disable`/`--no-verify`.
+- [x] A reproducible verification sequence is documented and run (curl or an e2e spec) covering both proofs below; all steps pass against a fresh Redis (`pnpm infra:up`).
+- [x] **Tenant scoping proof:** after seeding `acme` + `globex` and `DELETE /tenants/acme/cache`, a `scan('tenant:globex','*')` (or `GET /tenants/globex/products/:id` → `source: 'cache'`) shows `globex` intact and `acme` empty.
+- [x] **Namespace proof:** after `POST /tenants/seed-foreign` + `POST /tenants/prove-isolation`, `foreignKeySurvived === true` and no `cache-example:*` key remains.
+- [x] In **cluster** mode the `scan`-based clear surfaces `cache.unsupported_in_cluster` via the `CacheExceptionFilter` (smoke-checked or noted as covered by Phase 11).
+- [x] `pnpm typecheck`, `pnpm lint`, and the API e2e smoke (if a Phase 6 spec was added) all exit 0; no `@ts-ignore`/`eslint-disable`/`--no-verify`.
 
 ### Files to create / modify
 
@@ -407,3 +407,9 @@ When this task is 🟢, Phase 6 is 5/5 — switch the Phase 6 row in `DEVELOPMEN
 ## Completion log
 
 _(Agents append one line per finished task, newest at the bottom.)_
+
+- P6-1 ✅ 2026-06-16 — TenantsModule + tenant-scoped read-through (prefix `tenant:{t}:product`, get/set via CacheService, ZodValidationPipe on `:t`)
+- P6-2 ✅ 2026-06-16 — DELETE /tenants/:t/cache via scan(AsyncIterable) + delMany; globex untouched when acme cleared
+- P6-3 ✅ 2026-06-16 — POST /tenants/seed-foreign writes `other-app:demo` via raw getClient(), documented anti-pattern
+- P6-4 ✅ 2026-06-16 — POST /tenants/prove-isolation: flushNamespace() removes cache-example:\*, foreign key survives; DESIGN NOTE in service header
+- P6-5 ✅ 2026-06-16 — Both isolation proofs verified via curl against live Redis; typecheck + lint + format all pass
