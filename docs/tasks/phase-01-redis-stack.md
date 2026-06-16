@@ -2,7 +2,7 @@
 
 > **Source:** [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#phase-1--local-redis-stack--docker) §Phase 1
 > **Total tasks:** 5
-> **Progress:** 🔴 0 / 5 done (0%)
+> **Progress:** 🟢 5 / 5 done (100%)
 >
 > **Status legend:** 🔴 Not Started · 🟡 In Progress · 🔵 In Review · 🟢 Done · ⚪ Blocked
 
@@ -12,17 +12,17 @@
 
 | ID   | Task                                                                        | Status | Priority | Size | Depends on |
 | ---- | --------------------------------------------------------------------------- | ------ | -------- | ---- | ---------- |
-| P1-1 | `docker-compose.yml` — `redis:7-alpine` service (healthcheck, volume, conf) | 🔴     | High     | S    | Phase 0    |
-| P1-2 | `docker/redis/redis.conf` — keyspace notifications + dev no-persistence     | 🔴     | High     | XS   | P1-1       |
-| P1-3 | Optional Docker profiles (`tools` / `cluster` / `sentinel`) — config only   | 🔴     | Medium   | M    | P1-1, P1-2 |
-| P1-4 | `.env.example` (api + web) — every spec §9 variable                         | 🔴     | High     | S    | Phase 0    |
-| P1-5 | Verification gate (`pnpm infra:up` healthy · keyspace · `--profile tools`)  | 🔴     | High     | S    | P1-1..P1-4 |
+| P1-1 | `docker-compose.yml` — `redis:7-alpine` service (healthcheck, volume, conf) | 🟢     | High     | S    | Phase 0    |
+| P1-2 | `docker/redis/redis.conf` — keyspace notifications + dev no-persistence     | 🟢     | High     | XS   | P1-1       |
+| P1-3 | Optional Docker profiles (`tools` / `cluster` / `sentinel`) — config only   | 🟢     | Medium   | M    | P1-1, P1-2 |
+| P1-4 | `.env.example` (api + web) — every spec §9 variable                         | 🟢     | High     | S    | Phase 0    |
+| P1-5 | Verification gate (`pnpm infra:up` healthy · keyspace · `--profile tools`)  | 🟢     | High     | S    | P1-1..P1-4 |
 
 ---
 
 ## P1-1 — `docker-compose.yml` — `redis:7-alpine` service (healthcheck, volume, conf)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `Phase 0`
@@ -33,14 +33,14 @@ Create the workspace-root `docker-compose.yml` whose **default** `up` starts the
 
 ### Acceptance Criteria
 
-- [ ] `docker-compose.yml` exists at the repo root.
-- [ ] Defines a `redis` service on image `redis:7-alpine`.
-- [ ] Port mapping is `127.0.0.1:6379:6379` (host-loopback-bound, not `0.0.0.0`).
-- [ ] A named volume (e.g. `redis-data`) is mounted at `/data` and declared under top-level `volumes:`.
-- [ ] Mounts `./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro` and starts via `redis-server /usr/local/etc/redis/redis.conf`.
-- [ ] `healthcheck` runs `redis-cli ping` (expecting `PONG`) with interval/timeout/retries set.
-- [ ] `restart: unless-stopped` is set; the service carries no `profiles:` key (so default `up` starts it).
-- [ ] `docker compose config` validates the file with zero errors.
+- [x] `docker-compose.yml` exists at the repo root.
+- [x] Defines a `redis` service on image `redis:7-alpine`.
+- [x] Port mapping is `127.0.0.1:6379:6379` (host-loopback-bound, not `0.0.0.0`).
+- [x] A named volume (e.g. `redis-data`) is mounted at `/data` and declared under top-level `volumes:`.
+- [x] Mounts `./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro` and starts via `redis-server /usr/local/etc/redis/redis.conf`.
+- [x] `healthcheck` runs `redis-cli ping` (expecting `PONG`) with interval/timeout/retries set.
+- [x] `restart: unless-stopped` is set; the service carries no `profiles:` key (so default `up` starts it).
+- [x] `docker compose config` validates the file with zero errors.
 
 ### Files to create / modify
 
@@ -108,7 +108,7 @@ Create the workspace-root `docker-compose.yml` whose **default** `up` starts the
 
 ## P1-2 — `docker/redis/redis.conf` — keyspace notifications + dev no-persistence
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** XS (<30 min)
 - **Depends on:** `P1-1`
@@ -119,12 +119,12 @@ Author the Redis startup config mounted by P1-1. The critical line is `notify-ke
 
 ### Acceptance Criteria
 
-- [ ] `docker/redis/redis.conf` exists.
-- [ ] Contains `notify-keyspace-events Ex` (E = keyevent stream, x = expired events) with an explanatory comment.
-- [ ] Disables RDB snapshots with `save ""` (commented as dev no-persistence).
-- [ ] Disables the AOF with `appendonly no` (commented).
-- [ ] Comments reference the TTL-expiry demo (spec §17.3) so the intent is self-documenting.
-- [ ] Starting the P1-1 `redis` service with this conf succeeds and `redis-cli config get notify-keyspace-events` returns a value containing `E` and `x`.
+- [x] `docker/redis/redis.conf` exists.
+- [x] Contains `notify-keyspace-events Ex` (E = keyevent stream, x = expired events) with an explanatory comment.
+- [x] Disables RDB snapshots with `save ""` (commented as dev no-persistence).
+- [x] Disables the AOF with `appendonly no` (commented).
+- [x] Comments reference the TTL-expiry demo (spec §17.3) so the intent is self-documenting.
+- [x] Starting the P1-1 `redis` service with this conf succeeds and `redis-cli config get notify-keyspace-events` returns a value containing `E` and `x`.
 
 ### Files to create / modify
 
@@ -173,23 +173,23 @@ Author the Redis startup config mounted by P1-1. The critical line is `notify-ke
 
 ## P1-3 — Optional Docker Profiles (`tools` / `cluster` / `sentinel`) — config only
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** M (2–4 h)
 - **Depends on:** `P1-1`, `P1-2`
 
 ### Description
 
-Add the three **opt-in** Docker Compose profiles (config only in this phase — they are exercised end-to-end in Phase 11). `tools` adds a `redis/redisinsight` browser on `127.0.0.1:5540`; `cluster` adds a 3-master + 3-replica topology on ports `7000–7005` (config under `docker/cluster/`); `sentinel` adds 1 master + 2 replicas + 3 sentinels on `26379–26381` (config under `docker/sentinel/`). None of these start on a default `up` — each requires `--profile <name>`. All container ports stay bound to `127.0.0.1`. **RedisInsight is `5540`, NOT `8001` — `8001` is the legacy bundled `redis-stack` port and must not be used here.**
+Add the three **opt-in** Docker Compose profiles (config only — the live topology exercise that bootstraps and stress-tests them runs in a later phase that wires them into the app). `tools` adds a `redis/redisinsight` browser on `127.0.0.1:5540`; `cluster` adds a 3-master + 3-replica topology on ports `7000–7005` (config under `docker/cluster/`); `sentinel` adds 1 master + 2 replicas + 3 sentinels on `26379–26381` (config under `docker/sentinel/`). None of these start on a default `up` — each requires `--profile <name>`. All container ports stay bound to `127.0.0.1`. **RedisInsight is `5540`, NOT `8001` — `8001` is the legacy bundled `redis-stack` port and must not be used here.**
 
 ### Acceptance Criteria
 
-- [ ] `docker-compose.yml` gains a `redisinsight` service (image `redis/redisinsight`) gated by `profiles: ['tools']`, bound to `127.0.0.1:5540:5540`.
-- [ ] `cluster` profile: 3 master + 3 replica `redis:7-alpine` services on `127.0.0.1` ports `7000`–`7005`, all gated by `profiles: ['cluster']`, with config materialized under `docker/cluster/`.
-- [ ] `sentinel` profile: 1 master + 2 replicas + 3 sentinel `redis:7-alpine` services, sentinels on `127.0.0.1` ports `26379`–`26381`, all gated by `profiles: ['sentinel']`, with config materialized under `docker/sentinel/` (master name `mymaster`).
-- [ ] No profile service starts on a bare `docker compose up` (verified via `docker compose ps`).
-- [ ] Every profile service maps its host port to `127.0.0.1` (no `0.0.0.0` / bare mappings).
-- [ ] `docker compose --profile tools config`, `--profile cluster config`, and `--profile sentinel config` each validate without error.
+- [x] `docker-compose.yml` gains a `redisinsight` service (image `redis/redisinsight`) gated by `profiles: ['tools']`, bound to `127.0.0.1:5540:5540`.
+- [x] `cluster` profile: 3 master + 3 replica `redis:7-alpine` services on `127.0.0.1` ports `7000`–`7005`, all gated by `profiles: ['cluster']`, with config materialized under `docker/cluster/`.
+- [x] `sentinel` profile: 1 master + 2 replicas + 3 sentinel `redis:7-alpine` services, sentinels on `127.0.0.1` ports `26379`–`26381`, all gated by `profiles: ['sentinel']`, with config materialized under `docker/sentinel/` (master name `mymaster`).
+- [x] No profile service starts on a bare `docker compose up` (verified via `docker compose ps`).
+- [x] Every profile service maps its host port to `127.0.0.1` (no `0.0.0.0` / bare mappings).
+- [x] `docker compose --profile tools config`, `--profile cluster config`, and `--profile sentinel config` each validate without error.
 
 ### Files to create / modify
 
@@ -217,7 +217,7 @@ Add the three **opt-in** Docker Compose profiles (config only in this phase — 
 >        - redis
 >    ```
 >    RedisInsight serves on **5540** — do NOT use 8001 (that is the legacy `redis-stack` bundle port).
-> 2. **`cluster` profile** — add six `redis:7-alpine` services (`redis-cluster-0`..`redis-cluster-5`), each `profiles: ['cluster']`, host-bound `127.0.0.1:700N:700N` for N=0..5, started in cluster mode (`--cluster-enabled yes --cluster-config-file nodes.conf --port 700N`). Put a shared `docker/cluster/redis-cluster.conf` (cluster-enabled, appendonly off for dev, with comments) and mount it. 3 masters + 3 replicas — note in a comment that the `redis-cli --cluster create` bootstrap step is performed in Phase 11.
+> 2. **`cluster` profile** — add six `redis:7-alpine` services (`redis-cluster-0`..`redis-cluster-5`), each `profiles: ['cluster']`, host-bound `127.0.0.1:700N:700N` for N=0..5, started in cluster mode (`--cluster-enabled yes --cluster-config-file nodes.conf --port 700N`). Put a shared `docker/cluster/redis-cluster.conf` (cluster-enabled, appendonly off for dev, with comments) and mount it. 3 masters + 3 replicas — note in a comment that the `redis-cli --cluster create` bootstrap step runs once all nodes are healthy (performed when connection topologies are wired into the app).
 > 3. **`sentinel` profile** — add `redis-master`, `redis-replica-1`, `redis-replica-2`, and `redis-sentinel-1..3` (`redis:7-alpine`), each `profiles: ['sentinel']`. Sentinels bind `127.0.0.1:2637X:26379` for X=9,0,1 (host `26379`/`26380`/`26381`). Materialize `docker/sentinel/sentinel.conf` (`sentinel monitor mymaster <master-host> 6379 2`, with comments) and a master/replica `docker/sentinel/redis.conf` as needed; mount them.
 > 4. Confirm NONE of the new services start on a bare `up`: every one carries a `profiles:` key.
 >    Constraints:
@@ -226,7 +226,7 @@ Add the three **opt-in** Docker Compose profiles (config only in this phase — 
 > - ALL container ports bound to `127.0.0.1` — no `0.0.0.0`, no bare `PORT:PORT`.
 > - Default `up` starts Redis ONLY — profiles are strictly opt-in (`--profile <name>`).
 > - RedisInsight is `5540`, NOT `8001`.
-> - This is configuration only — do NOT add app wiring or a cluster-bootstrap entrypoint that runs on default `up`; the live exercise is Phase 11.
+> - This is configuration only — do NOT add app wiring or a cluster-bootstrap entrypoint that runs on default `up`; the live exercise (bootstrapping, stress-testing, app wiring) runs when connection topologies are implemented.
 > - Do NOT use `--no-verify`.
 >   Verification:
 > - `docker compose --profile tools config` — expected: validates, exits 0; shows `redisinsight` bound to `127.0.0.1:5540`.
@@ -250,23 +250,23 @@ Add the three **opt-in** Docker Compose profiles (config only in this phase — 
 
 ## P1-4 — `.env.example` (api + web) — every spec §9 variable
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `Phase 0`
 
 ### Description
 
-Author the two `.env.example` templates that document every runtime variable the apps consume. The API template covers the full spec §9.1 registry (validated by a Zod schema in Phase 3); the web template covers the two `NEXT_PUBLIC_*` vars. These are committed (P0-7's `.gitignore` allow-lists `!.env.example` while ignoring real `.env*`) and are the contributor's copy-from source. Defaults match spec §9 exactly (e.g. `PORT=3001`, `CACHE_NAMESPACE=cache-example`, `ALLOW_FLUSH_IN_PRODUCTION=false`).
+Author the two `.env.example` templates that document every runtime variable the apps consume. The API template covers the full spec §9.1 registry (validated by the Zod-backed `ConfigService` in `apps/api`); the web template covers the two `NEXT_PUBLIC_*` vars. These are committed (P0-7's `.gitignore` allow-lists `!.env.example` while ignoring real `.env*`) and are the contributor's copy-from source. Defaults match spec §9 exactly (e.g. `PORT=3001`, `CACHE_NAMESPACE=cache-example`, `ALLOW_FLUSH_IN_PRODUCTION=false`).
 
 ### Acceptance Criteria
 
-- [ ] `apps/api/.env.example` exists and documents every spec §9.1 variable: `NODE_ENV`, `PORT` (=`3001`), `WEB_ORIGIN`, `REDIS_URL`, `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_DB`, `CACHE_MODE`, `CACHE_NAMESPACE` (=`cache-example`), `CACHE_KEY_SEPARATOR`, `CACHE_DEFAULT_TTL`, `CACHE_SERIALIZER`, `ALLOW_FLUSH_IN_PRODUCTION` (=`false`), `SHUTDOWN_TIMEOUT_MS`.
-- [ ] Default values match spec §9 (e.g. `PORT=3001`, `WEB_ORIGIN=http://localhost:3000`, `REDIS_URL=redis://localhost:6379`, `CACHE_MODE=standalone`, `CACHE_DEFAULT_TTL=60`, `CACHE_SERIALIZER=json`, `SHUTDOWN_TIMEOUT_MS=5000`).
-- [ ] `REDIS_PASSWORD` is present but empty (with a comment noting it is optional and never logged).
-- [ ] Each variable has a short inline comment describing its purpose (mirrors the §9.1 table).
-- [ ] `apps/web/.env.example` exists with `NEXT_PUBLIC_API_URL=http://localhost:3001` and `NEXT_PUBLIC_WS_URL=http://localhost:3001`.
-- [ ] Both files are tracked by Git (not ignored — the `!.env.example` allow-list from P0-7 applies).
+- [x] `apps/api/.env.example` exists and documents every spec §9.1 variable: `NODE_ENV`, `PORT` (=`3001`), `WEB_ORIGIN`, `REDIS_URL`, `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_DB`, `CACHE_MODE`, `CACHE_NAMESPACE` (=`cache-example`), `CACHE_KEY_SEPARATOR`, `CACHE_DEFAULT_TTL`, `CACHE_SERIALIZER`, `ALLOW_FLUSH_IN_PRODUCTION` (=`false`), `SHUTDOWN_TIMEOUT_MS`.
+- [x] Default values match spec §9 (e.g. `PORT=3001`, `WEB_ORIGIN=http://localhost:3000`, `REDIS_URL=redis://localhost:6379`, `CACHE_MODE=standalone`, `CACHE_DEFAULT_TTL=60`, `CACHE_SERIALIZER=json`, `SHUTDOWN_TIMEOUT_MS=5000`).
+- [x] `REDIS_PASSWORD` is present but empty (with a comment noting it is optional and never logged).
+- [x] Each variable has a short inline comment describing its purpose (mirrors the §9.1 table).
+- [x] `apps/web/.env.example` exists with `NEXT_PUBLIC_API_URL=http://localhost:3001` and `NEXT_PUBLIC_WS_URL=http://localhost:3001`.
+- [x] Both files are tracked by Git (not ignored — the `!.env.example` allow-list from P0-7 applies).
 
 ### Files to create / modify
 
@@ -316,7 +316,7 @@ Author the two `.env.example` templates that document every runtime variable the
 >
 > - Follow `docs/DEVELOPMENT_PLAN.md` §2 Global Conventions. English-only comments.
 > - Cover **every** §9.1 row in the api template — a missing variable fails this task.
-> - Do NOT add variables not in §9 (no scope creep); the Zod schema (Phase 3) will mirror this exact set.
+> - Do NOT add variables not in §9 (no scope creep); the Zod-validated `ConfigService` in `apps/api` will mirror this exact set.
 > - Do NOT use `--no-verify`.
 >   Verification:
 > - `for v in NODE_ENV PORT WEB_ORIGIN REDIS_URL REDIS_HOST REDIS_PORT REDIS_PASSWORD REDIS_DB CACHE_MODE CACHE_NAMESPACE CACHE_KEY_SEPARATOR CACHE_DEFAULT_TTL CACHE_SERIALIZER ALLOW_FLUSH_IN_PRODUCTION SHUTDOWN_TIMEOUT_MS; do grep -q "^$v=" apps/api/.env.example || echo "MISSING $v"; done` — expected: no `MISSING` output.
@@ -339,7 +339,7 @@ Author the two `.env.example` templates that document every runtime variable the
 
 ## P1-5 — Verification Gate (`pnpm infra:up` healthy · keyspace · `--profile tools`)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `P1-1`, `P1-2`, `P1-3`, `P1-4`
@@ -350,12 +350,12 @@ Phase 1 "Definition of done" gate per `DEVELOPMENT_PLAN.md`: prove the stack act
 
 ### Acceptance Criteria
 
-- [ ] `pnpm infra:up` (= `docker compose up -d --wait`) exits 0 and Redis reaches `healthy`.
-- [ ] `redis-cli config get notify-keyspace-events` returns a value containing both `E` and `x`.
-- [ ] `redis-cli ping` returns `PONG` against the loopback-bound `6379`.
-- [ ] `docker compose --profile tools up -d --wait` serves RedisInsight at `http://localhost:5540` (HTTP responds).
-- [ ] `pnpm infra:logs` streams the Redis container logs; `pnpm infra:down` stops the stack and `pnpm infra:nuke` removes the named volume.
-- [ ] On a bare `pnpm infra:up`, only the `redis` service is running (profiles dormant).
+- [x] `pnpm infra:up` (= `docker compose up -d --wait`) exits 0 and Redis reaches `healthy`.
+- [x] `redis-cli config get notify-keyspace-events` returns a value containing both `E` and `x`.
+- [x] `redis-cli ping` returns `PONG` against the loopback-bound `6379`.
+- [x] `docker compose --profile tools up -d --wait` serves RedisInsight at `http://localhost:5540` (HTTP responds).
+- [x] `pnpm infra:logs` streams the Redis container logs; `pnpm infra:down` stops the stack and `pnpm infra:nuke` removes the named volume.
+- [x] On a bare `pnpm infra:up`, only the `redis` service is running (profiles dormant).
 
 ### Files to create / modify
 
@@ -405,3 +405,10 @@ When this task is 🟢, Phase 1 is 5/5 — switch the Phase 1 row in `DEVELOPMEN
 ## Completion log
 
 _(Agents append one line per finished task, newest at the bottom.)_
+
+- P1-1 ✅ 2026-06-16 — Created `docker-compose.yml` with `redis:7-alpine`, healthcheck, loopback-bound port, named volume, and redis.conf mount.
+- P1-2 ✅ 2026-06-16 — Created `docker/redis/redis.conf` enabling keyspace expiry notifications (`Ex`) and disabling persistence for dev.
+- P1-3 ✅ 2026-06-16 — Added `tools` (RedisInsight :5540), `cluster` (6 nodes :7000–7005), and `sentinel` (1 master + 2 replicas + 3 sentinels :26379–26381) Docker Compose profiles with their config files.
+- P1-4 ✅ 2026-06-16 — Created `apps/api/.env.example` (all 15 spec §9.1 vars) and `apps/web/.env.example` (2 `NEXT_PUBLIC_*` vars).
+- P1-5 ✅ 2026-06-16 — Verified full stack: `infra:up` healthy, keyspace `xE`, PONG, RedisInsight HTTP 200 at :5540, `infra:down`/`infra:nuke` working.
+- P1-3 (post-review fix) ✅ 2026-06-16 — Applied security/code-review findings: added `--cluster-announce-ip 127.0.0.1` to all 6 cluster nodes, added healthchecks to cluster/sentinel services, added `depends_on: condition: service_healthy` to sentinels, removed `:ro` from sentinel.conf mounts (Sentinel rewrites config on failover), pinned `redis/redisinsight:2` image, scrubbed phase-stage comment refs.

@@ -1,0 +1,297 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: nest-cache-example-redis
+    restart: unless-stopped
+    command: ['redis-server', '/usr/local/etc/redis/redis.conf']
+    ports:
+      - '127.0.0.1:6379:6379'
+    volumes:
+      - redis-data:/data
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  redisinsight:
+    image: redis/redisinsight:2
+    container_name: nest-cache-example-redisinsight
+    profiles: ['tools']
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:5540:5540'
+    depends_on:
+      - redis
+
+  redis-cluster-0:
+    image: redis:7-alpine
+    container_name: nest-cache-example-cluster-0
+    profiles: ['cluster']
+    restart: unless-stopped
+    command:
+      [
+        'redis-server',
+        '/usr/local/etc/redis/redis-cluster.conf',
+        '--port',
+        '7000',
+        '--cluster-announce-ip',
+        '127.0.0.1',
+        '--cluster-announce-port',
+        '7000',
+        '--cluster-announce-bus-port',
+        '17000',
+      ]
+    ports:
+      - '127.0.0.1:7000:7000'
+    volumes:
+      - ./docker/cluster/redis-cluster.conf:/usr/local/etc/redis/redis-cluster.conf:ro
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-p', '7000', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  redis-cluster-1:
+    image: redis:7-alpine
+    container_name: nest-cache-example-cluster-1
+    profiles: ['cluster']
+    restart: unless-stopped
+    command:
+      [
+        'redis-server',
+        '/usr/local/etc/redis/redis-cluster.conf',
+        '--port',
+        '7001',
+        '--cluster-announce-ip',
+        '127.0.0.1',
+        '--cluster-announce-port',
+        '7001',
+        '--cluster-announce-bus-port',
+        '17001',
+      ]
+    ports:
+      - '127.0.0.1:7001:7001'
+    volumes:
+      - ./docker/cluster/redis-cluster.conf:/usr/local/etc/redis/redis-cluster.conf:ro
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-p', '7001', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  redis-cluster-2:
+    image: redis:7-alpine
+    container_name: nest-cache-example-cluster-2
+    profiles: ['cluster']
+    restart: unless-stopped
+    command:
+      [
+        'redis-server',
+        '/usr/local/etc/redis/redis-cluster.conf',
+        '--port',
+        '7002',
+        '--cluster-announce-ip',
+        '127.0.0.1',
+        '--cluster-announce-port',
+        '7002',
+        '--cluster-announce-bus-port',
+        '17002',
+      ]
+    ports:
+      - '127.0.0.1:7002:7002'
+    volumes:
+      - ./docker/cluster/redis-cluster.conf:/usr/local/etc/redis/redis-cluster.conf:ro
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-p', '7002', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  redis-cluster-3:
+    image: redis:7-alpine
+    container_name: nest-cache-example-cluster-3
+    profiles: ['cluster']
+    restart: unless-stopped
+    command:
+      [
+        'redis-server',
+        '/usr/local/etc/redis/redis-cluster.conf',
+        '--port',
+        '7003',
+        '--cluster-announce-ip',
+        '127.0.0.1',
+        '--cluster-announce-port',
+        '7003',
+        '--cluster-announce-bus-port',
+        '17003',
+      ]
+    ports:
+      - '127.0.0.1:7003:7003'
+    volumes:
+      - ./docker/cluster/redis-cluster.conf:/usr/local/etc/redis/redis-cluster.conf:ro
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-p', '7003', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  redis-cluster-4:
+    image: redis:7-alpine
+    container_name: nest-cache-example-cluster-4
+    profiles: ['cluster']
+    restart: unless-stopped
+    command:
+      [
+        'redis-server',
+        '/usr/local/etc/redis/redis-cluster.conf',
+        '--port',
+        '7004',
+        '--cluster-announce-ip',
+        '127.0.0.1',
+        '--cluster-announce-port',
+        '7004',
+        '--cluster-announce-bus-port',
+        '17004',
+      ]
+    ports:
+      - '127.0.0.1:7004:7004'
+    volumes:
+      - ./docker/cluster/redis-cluster.conf:/usr/local/etc/redis/redis-cluster.conf:ro
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-p', '7004', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  redis-cluster-5:
+    image: redis:7-alpine
+    container_name: nest-cache-example-cluster-5
+    profiles: ['cluster']
+    restart: unless-stopped
+    command:
+      [
+        'redis-server',
+        '/usr/local/etc/redis/redis-cluster.conf',
+        '--port',
+        '7005',
+        '--cluster-announce-ip',
+        '127.0.0.1',
+        '--cluster-announce-port',
+        '7005',
+        '--cluster-announce-bus-port',
+        '17005',
+      ]
+    ports:
+      - '127.0.0.1:7005:7005'
+    volumes:
+      - ./docker/cluster/redis-cluster.conf:/usr/local/etc/redis/redis-cluster.conf:ro
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-p', '7005', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  # Sentinel topology — 1 master + 2 replicas + 3 sentinels (gated by --profile sentinel).
+  # Connect the app with mode=sentinel, sentinels at 127.0.0.1:26379/26380/26381, name=mymaster.
+  redis-master:
+    image: redis:7-alpine
+    container_name: nest-cache-example-sentinel-master
+    profiles: ['sentinel']
+    restart: unless-stopped
+    command: ['redis-server', '/usr/local/etc/redis/redis.conf']
+    ports:
+      - '127.0.0.1:6380:6379'
+    volumes:
+      - ./docker/sentinel/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  redis-replica-1:
+    image: redis:7-alpine
+    container_name: nest-cache-example-sentinel-replica-1
+    profiles: ['sentinel']
+    restart: unless-stopped
+    command:
+      ['redis-server', '/usr/local/etc/redis/redis.conf', '--replicaof', 'redis-master', '6379']
+    ports:
+      - '127.0.0.1:6381:6379'
+    volumes:
+      - ./docker/sentinel/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    depends_on:
+      redis-master:
+        condition: service_healthy
+
+  redis-replica-2:
+    image: redis:7-alpine
+    container_name: nest-cache-example-sentinel-replica-2
+    profiles: ['sentinel']
+    restart: unless-stopped
+    command:
+      ['redis-server', '/usr/local/etc/redis/redis.conf', '--replicaof', 'redis-master', '6379']
+    ports:
+      - '127.0.0.1:6382:6379'
+    volumes:
+      - ./docker/sentinel/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    depends_on:
+      redis-master:
+        condition: service_healthy
+
+  redis-sentinel-1:
+    image: redis:7-alpine
+    container_name: nest-cache-example-sentinel-1
+    profiles: ['sentinel']
+    restart: unless-stopped
+    command: ['redis-sentinel', '/usr/local/etc/redis/sentinel.conf']
+    ports:
+      - '127.0.0.1:26379:26379'
+    volumes:
+      # sentinel.conf is NOT mounted read-only — Redis Sentinel rewrites its own config
+      # during failover to persist the new master address and known-sentinel entries.
+      - ./docker/sentinel/sentinel.conf:/usr/local/etc/redis/sentinel.conf
+    depends_on:
+      redis-master:
+        condition: service_healthy
+
+  redis-sentinel-2:
+    image: redis:7-alpine
+    container_name: nest-cache-example-sentinel-2
+    profiles: ['sentinel']
+    restart: unless-stopped
+    command: ['redis-sentinel', '/usr/local/etc/redis/sentinel.conf']
+    ports:
+      - '127.0.0.1:26380:26379'
+    volumes:
+      - ./docker/sentinel/sentinel.conf:/usr/local/etc/redis/sentinel.conf
+    depends_on:
+      redis-master:
+        condition: service_healthy
+
+  redis-sentinel-3:
+    image: redis:7-alpine
+    container_name: nest-cache-example-sentinel-3
+    profiles: ['sentinel']
+    restart: unless-stopped
+    command: ['redis-sentinel', '/usr/local/etc/redis/sentinel.conf']
+    ports:
+      - '127.0.0.1:26381:26379'
+    volumes:
+      - ./docker/sentinel/sentinel.conf:/usr/local/etc/redis/sentinel.conf
+    depends_on:
+      redis-master:
+        condition: service_healthy
+
+volumes:
+  redis-data:
