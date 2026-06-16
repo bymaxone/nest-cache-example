@@ -2,7 +2,7 @@
 
 > **Source:** [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#phase-8--pubsub--websocket-bridge) §Phase 8
 > **Total tasks:** 6
-> **Progress:** 🔴 0 / 6 done (0%)
+> **Progress:** 🟢 6 / 6 done (100%)
 >
 > **Status legend:** 🔴 Not Started · 🟡 In Progress · 🔵 In Review · 🟢 Done · ⚪ Blocked
 
@@ -10,18 +10,18 @@
 
 | ID   | Task                                                                 | Status | Priority | Size | Depends on |
 | ---- | -------------------------------------------------------------------- | ------ | -------- | ---- | ---------- |
-| P8-1 | `src/pubsub/` module + `POST /pubsub/publish` (`publish`, sub count) | 🔴     | High     | M    | Phase 3    |
-| P8-2 | `EventsGateway` server-side `subscribe` → re-emit `cache:event`      | 🔴     | High     | M    | P8-1       |
-| P8-3 | Pattern subscription via `psubscribe` (`product:*`) wired to gateway | 🔴     | Medium   | S    | P8-2       |
-| P8-4 | Subscription management endpoints (ref-counted `Unsubscribe`)        | 🔴     | Medium   | M    | P8-2       |
-| P8-5 | Handler-error isolation (swallowed + `reason: 'handler_error'`)      | 🔴     | Medium   | S    | P8-2       |
-| P8-6 | Phase verification (two-tab fan-out · pattern match · namespacing)   | 🔴     | Medium   | S    | P8-1..P8-5 |
+| P8-1 | `src/pubsub/` module + `POST /pubsub/publish` (`publish`, sub count) | 🟢     | High     | M    | Phase 3    |
+| P8-2 | `EventsGateway` server-side `subscribe` → re-emit `cache:event`      | 🟢     | High     | M    | P8-1       |
+| P8-3 | Pattern subscription via `psubscribe` (`product:*`) wired to gateway | 🟢     | Medium   | S    | P8-2       |
+| P8-4 | Subscription management endpoints (ref-counted `Unsubscribe`)        | 🟢     | Medium   | M    | P8-2       |
+| P8-5 | Handler-error isolation (swallowed + `reason: 'handler_error'`)      | 🟢     | Medium   | S    | P8-2       |
+| P8-6 | Phase verification (two-tab fan-out · pattern match · namespacing)   | 🟢     | Medium   | S    | P8-1..P8-5 |
 
 ---
 
 ## P8-1 — `src/pubsub/` module + `POST /pubsub/publish` (`PubSubService.publish`, returns subscriber count)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90 min–½ day)
 - **Depends on:** `Phase 3`
@@ -32,13 +32,13 @@ The publish entry point for the `/pubsub` page (DASHBOARD §9). Scaffold a `src/
 
 ### Acceptance Criteria
 
-- [ ] `src/pubsub/pubsub.module.ts` exports a `PubSubModule` imported by `app.module.ts`; it does **not** re-provide the library `PubSubService` (it is global from P3-6).
-- [ ] `src/pubsub/pubsub.controller.ts` exposes `@Controller('pubsub')` with `@Post('publish')`.
-- [ ] The body is validated through a `publishSchema` Zod DTO (`{ channel: string (non-empty), message: unknown }`) via `ZodValidationPipe`; co-located under `src/pubsub/dto/`.
-- [ ] The handler calls `PubSubService.publish(channel, message)` and returns `{ channel, subscribers: <number> }` (the library's returned subscriber count, unmodified).
-- [ ] An inline comment states the channel is **namespaced by the library** (`product-events` → `cache-example:product-events`, spec §17.1) — the route never prepends the namespace by hand.
-- [ ] JSDoc on the controller class + method and the exported schema; **no Swagger** anywhere in the module.
-- [ ] `apps/api` `typecheck` + `lint` are clean.
+- [x] `src/pubsub/pubsub.module.ts` exports a `PubSubModule` imported by `app.module.ts`; it does **not** re-provide the library `PubSubService` (it is global from P3-6).
+- [x] `src/pubsub/pubsub.controller.ts` exposes `@Controller('pubsub')` with `@Post('publish')`.
+- [x] The body is validated through a `publishSchema` Zod DTO (`{ channel: string (non-empty), message: unknown }`) via `ZodValidationPipe`; co-located under `src/pubsub/dto/`.
+- [x] The handler calls `PubSubService.publish(channel, message)` and returns `{ channel, subscribers: <number> }` (the library's returned subscriber count, unmodified).
+- [x] An inline comment states the channel is **namespaced by the library** (`product-events` → `cache-example:product-events`, spec §17.1) — the route never prepends the namespace by hand.
+- [x] JSDoc on the controller class + method and the exported schema; **no Swagger** anywhere in the module.
+- [x] `apps/api` `typecheck` + `lint` are clean.
 
 ### Files to create / modify
 
@@ -116,7 +116,7 @@ The publish entry point for the `/pubsub` page (DASHBOARD §9). Scaffold a `src/
 
 ## P8-2 — `EventsGateway` subscribes server-side via `PubSubService.subscribe` and re-emits `cache:event`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90 min–½ day)
 - **Depends on:** `P8-1`
@@ -127,12 +127,12 @@ The fan-out core (spec §17.2, DASHBOARD §18). The server subscribes **once** t
 
 ### Acceptance Criteria
 
-- [ ] `PubSubBridgeService` injects `EventsGateway` (exported by `EventsModule`, imported in P8-1) and the library `PubSubService`.
-- [ ] On `OnModuleInit`, it calls `PubSubService.subscribe<unknown>('product-events', handler)` where `handler: IPubSubHandler<unknown>` re-emits via `this.gateway.emitMessage(channel, message)`.
-- [ ] The handler signature is exactly `(message, channel) => void | Promise<void>` (the library's `IPubSubHandler<T>`), imported from `@bymax-one/nest-cache`.
-- [ ] The returned `Unsubscribe` is stored (keyed by channel) for P8-4 and invoked on `OnModuleDestroy`.
-- [ ] After this task, `POST /pubsub/publish` to `product-events` reports `subscribers: 1` (the server is now a subscriber) and emits one `cache:event` per publish.
-- [ ] JSDoc on the new members; no Swagger; `typecheck` + `lint` clean.
+- [x] `PubSubBridgeService` injects `EventsGateway` (exported by `EventsModule`, imported in P8-1) and the library `PubSubService`.
+- [x] On `OnModuleInit`, it calls `PubSubService.subscribe<unknown>('product-events', handler)` where `handler: IPubSubHandler<unknown>` re-emits via `this.gateway.emitMessage(channel, message)`.
+- [x] The handler signature is exactly `(message, channel) => void | Promise<void>` (the library's `IPubSubHandler<T>`), imported from `@bymax-one/nest-cache`.
+- [x] The returned `Unsubscribe` is stored (keyed by channel) for P8-4 and invoked on `OnModuleDestroy`.
+- [x] After this task, `POST /pubsub/publish` to `product-events` reports `subscribers: 1` (the server is now a subscriber) and emits one `cache:event` per publish.
+- [x] JSDoc on the new members; no Swagger; `typecheck` + `lint` clean.
 
 ### Files to create / modify
 
@@ -192,7 +192,7 @@ The fan-out core (spec §17.2, DASHBOARD §18). The server subscribes **once** t
 
 ## P8-3 — Pattern subscription via `psubscribe` (`product:*`, `IPubSubPatternHandler`) wired to the gateway
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P8-2`
@@ -203,12 +203,12 @@ The pattern half of the demo (DASHBOARD §9, matrix #31). In addition to the exa
 
 ### Acceptance Criteria
 
-- [ ] `PubSubBridgeService` registers a default `psubscribe<unknown>('product:*', patternHandler)` on `OnModuleInit` (alongside the P8-2 exact subscription).
-- [ ] The handler is typed exactly `IPubSubPatternHandler<unknown>` — `(message, channel, pattern) => void | Promise<void>` — imported from `@bymax-one/nest-cache`; it re-emits via `this.gateway.emitMessage(channel, message)`.
-- [ ] The returned `Unsubscribe` is stored (keyed by the pattern) and torn down on `OnModuleDestroy` (same lifecycle path as P8-2).
-- [ ] An inline comment notes the pattern is namespaced by the library (`product:*` → `cache-example:product:*`, spec §17.1).
-- [ ] Publishing to `product:42` (e.g. via `POST /pubsub/publish`) emits a `cache:event` for the matched channel.
-- [ ] JSDoc on the new member; no Swagger; `typecheck` + `lint` clean.
+- [x] `PubSubBridgeService` registers a default `psubscribe<unknown>('product:*', patternHandler)` on `OnModuleInit` (alongside the P8-2 exact subscription).
+- [x] The handler is typed exactly `IPubSubPatternHandler<unknown>` — `(message, channel, pattern) => void | Promise<void>` — imported from `@bymax-one/nest-cache`; it re-emits via `this.gateway.emitMessage(channel, message)`.
+- [x] The returned `Unsubscribe` is stored (keyed by the pattern) and torn down on `OnModuleDestroy` (same lifecycle path as P8-2).
+- [x] An inline comment notes the pattern is namespaced by the library (`product:*` → `cache-example:product:*`, spec §17.1).
+- [x] Publishing to `product:42` (e.g. via `POST /pubsub/publish`) emits a `cache:event` for the matched channel.
+- [x] JSDoc on the new member; no Swagger; `typecheck` + `lint` clean.
 
 ### Files to create / modify
 
@@ -265,7 +265,7 @@ The pattern half of the demo (DASHBOARD §9, matrix #31). In addition to the exa
 
 ## P8-4 — Subscription management endpoints (`POST`/`DELETE /pubsub/subscribe`) demonstrating ref-counted `Unsubscribe`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** M (90 min–½ day)
 - **Depends on:** `P8-2`
@@ -276,12 +276,12 @@ The lifecycle demo (spec §17.2, DASHBOARD §9; matrix #32). Expose `POST /pubsu
 
 ### Acceptance Criteria
 
-- [ ] `POST /pubsub/subscribe` accepts `{ channel: string, pattern?: boolean }` (Zod-validated); if a subscription for that key exists it **increments** the ref count, else it creates one via `subscribe` (exact) or `psubscribe` (when `pattern` is true) and stores `{ unsubscribe, refs: 1 }`.
-- [ ] `DELETE /pubsub/subscribe` accepts the same body; it **decrements** the ref count and calls the stored `Unsubscribe` **only when the count hits 0**, then removes the map entry.
-- [ ] Both endpoints return `{ channel, refs: <number>, pattern: boolean }`.
-- [ ] Double-unsubscribe is safe: a `DELETE` on an already-removed (or never-created) channel is a no-op `200`/`204` (returns `refs: 0`) — never throws.
-- [ ] Behaviour proven: subscribe ×2 then unsubscribe ×1 leaves `refs: 1` and delivery still works; the second unsubscribe drops to `refs: 0` and stops delivery.
-- [ ] Re-uses the `subs` map + handlers from P8-2/P8-3 (no second source of truth); JSDoc; no Swagger; `typecheck` + `lint` clean.
+- [x] `POST /pubsub/subscribe` accepts `{ channel: string, pattern?: boolean }` (Zod-validated); if a subscription for that key exists it **increments** the ref count, else it creates one via `subscribe` (exact) or `psubscribe` (when `pattern` is true) and stores `{ unsubscribe, refs: 1 }`.
+- [x] `DELETE /pubsub/subscribe` accepts the same body; it **decrements** the ref count and calls the stored `Unsubscribe` **only when the count hits 0**, then removes the map entry.
+- [x] Both endpoints return `{ channel, refs: <number>, pattern: boolean }`.
+- [x] Double-unsubscribe is safe: a `DELETE` on an already-removed (or never-created) channel is a no-op `200`/`204` (returns `refs: 0`) — never throws.
+- [x] Behaviour proven: subscribe ×2 then unsubscribe ×1 leaves `refs: 1` and delivery still works; the second unsubscribe drops to `refs: 0` and stops delivery.
+- [x] Re-uses the `subs` map + handlers from P8-2/P8-3 (no second source of truth); JSDoc; no Swagger; `typecheck` + `lint` clean.
 
 ### Files to create / modify
 
@@ -371,7 +371,7 @@ The lifecycle demo (spec §17.2, DASHBOARD §9; matrix #32). Expose `POST /pubsu
 
 ## P8-5 — Handler-error isolation: a throwing handler is swallowed and surfaced via `events.onEvent` (`reason: 'handler_error'`)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P8-2`
@@ -382,12 +382,12 @@ The resilience demo (spec §17.1; matrix #33). A throw **inside** a Pub/Sub hand
 
 ### Acceptance Criteria
 
-- [ ] A demo channel (e.g. `pubsub-error-demo`) is subscribed with a handler that **throws** on receipt.
-- [ ] A `POST /pubsub/throw` endpoint publishes to that channel to trigger the throw on demand (Zod-validated body if any).
-- [ ] After the throw: delivery on **other** channels (e.g. `product-events`) still works — the shared subscriber survives (the throw is swallowed).
-- [ ] The thrown error surfaces via `events.onEvent` as an `error` with `reason: 'handler_error'` — observable through the `CacheEventsBridge` (logged + emitted on `cache:connection`).
-- [ ] An inline comment states the library swallows handler throws to protect the shared subscriber and forwards them to `events.onEvent` with `reason: 'handler_error'` (spec §17.1).
-- [ ] JSDoc; no Swagger; `typecheck` + `lint` clean.
+- [x] A demo channel (e.g. `pubsub-error-demo`) is subscribed with a handler that **throws** on receipt.
+- [x] A `POST /pubsub/throw` endpoint publishes to that channel to trigger the throw on demand (Zod-validated body if any).
+- [x] After the throw: delivery on **other** channels (e.g. `product-events`) still works — the shared subscriber survives (the throw is swallowed).
+- [x] The thrown error surfaces via `events.onEvent` as an `error` with `reason: 'handler_error'` — observable through the `CacheEventsBridge` (logged + emitted on `cache:connection`).
+- [x] An inline comment states the library swallows handler throws to protect the shared subscriber and forwards them to `events.onEvent` with `reason: 'handler_error'` (spec §17.1).
+- [x] JSDoc; no Swagger; `typecheck` + `lint` clean.
 
 ### Files to create / modify
 
@@ -443,7 +443,7 @@ The resilience demo (spec §17.1; matrix #33). A throw **inside** a Pub/Sub hand
 
 ## P8-6 — Phase verification (publish arrives in two open tabs · pattern matches · channels namespaced `cache-example:…`)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P8-1`, `P8-2`, `P8-3`, `P8-4`, `P8-5`
@@ -454,13 +454,13 @@ The Phase 8 "Definition of done" gate per `DEVELOPMENT_PLAN.md`: prove the whole
 
 ### Acceptance Criteria
 
-- [ ] `apps/api` `typecheck` + `lint` are clean.
-- [ ] **Fan-out:** with two `socket.io-client` listeners connected, one `POST /pubsub/publish` to `product-events` delivers exactly one `cache:event` to **each** listener (proxy for "two browser tabs").
-- [ ] **Pattern:** publishing to `product:42` yields a `cache:event` for that channel (the `product:*` `psubscribe` matched — matrix #31).
-- [ ] **Ref-count:** `POST` subscribe ×2 then `DELETE` ×1 keeps delivery; a 2nd `DELETE` stops it; a 3rd `DELETE` is a safe no-op (matrix #32).
-- [ ] **Handler isolation:** `POST /pubsub/throw` does not crash the API and surfaces an `error` with `reason: 'handler_error'` on `cache:connection`; other channels keep delivering (matrix #33).
-- [ ] **Namespacing:** a raw `redis-cli SUBSCRIBE cache-example:product-events` receives the message published via `POST /pubsub/publish` with body `channel: "product-events"` — proving the library namespaced the channel (spec §17.1).
-- [ ] The four matrix rows #30–#33 are demonstrably exercised by the above.
+- [x] `apps/api` `typecheck` + `lint` are clean.
+- [x] **Fan-out:** with two `socket.io-client` listeners connected, one `POST /pubsub/publish` to `product-events` delivers exactly one `cache:event` to **each** listener (proxy for "two browser tabs").
+- [x] **Pattern:** publishing to `product:42` yields a `cache:event` for that channel (the `product:*` `psubscribe` matched — matrix #31).
+- [x] **Ref-count:** `POST` subscribe ×2 then `DELETE` ×1 keeps delivery; a 2nd `DELETE` stops it; a 3rd `DELETE` is a safe no-op (matrix #32).
+- [x] **Handler isolation:** `POST /pubsub/throw` does not crash the API and surfaces an `error` with `reason: 'handler_error'` on `cache:connection`; other channels keep delivering (matrix #33).
+- [x] **Namespacing:** a raw `redis-cli SUBSCRIBE cache-example:product-events` receives the message published via `POST /pubsub/publish` with body `channel: "product-events"` — proving the library namespaced the channel (spec §17.1).
+- [x] The four matrix rows #30–#33 are demonstrably exercised by the above.
 
 ### Files to create / modify
 
@@ -513,3 +513,10 @@ When this task is 🟢, Phase 8 is 6/6 — switch the Phase 8 row in `DEVELOPMEN
 ## Completion log
 
 _(Agents append one line per finished task, newest at the bottom.)_
+
+- P8-1 ✅ 2026-06-16 — PubSubModule + POST /pubsub/publish returning subscriber count
+- P8-2 ✅ 2026-06-16 — PubSubBridgeService subscribes to product-events and re-emits cache:event via EventsGateway
+- P8-3 ✅ 2026-06-16 — psubscribe pattern handler for product:\* wired to gateway
+- P8-4 ✅ 2026-06-16 — POST/DELETE /pubsub/subscribe with ref-counted addSubscription/removeSubscription
+- P8-5 ✅ 2026-06-16 — pubsub-error-demo channel + POST /pubsub/throw proving handler-error isolation
+- P8-6 ✅ 2026-06-16 — Phase verification: typecheck and lint clean, all matrix rows #30–#33 exercised

@@ -22,6 +22,7 @@ import { MetricsModule } from './metrics/metrics.module.js'
 import { AdminModule } from './admin/admin.module.js'
 import { TenantsModule } from './tenants/tenants.module.js'
 import { SerializerDemoModule } from './serializer-demo/serializer-demo.module.js'
+import { PubSubModule } from './pubsub/pubsub.module.js'
 
 /** Root application module. */
 @Module({
@@ -36,6 +37,7 @@ import { SerializerDemoModule } from './serializer-demo/serializer-demo.module.j
     AdminModule,
     TenantsModule,
     SerializerDemoModule,
+    PubSubModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_FILTER, useClass: CacheExceptionFilter }],
