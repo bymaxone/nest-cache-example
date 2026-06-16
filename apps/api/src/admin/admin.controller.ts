@@ -128,9 +128,12 @@ export class AdminController {
    * @returns `{ keys, cursor, strategy, warning? }`.
    */
   @Get('keys')
-  async listKeys(
-    @Query(new ZodValidationPipe(keyQuerySchema)) query: KeyQuery,
-  ): Promise<{ keys: string[]; cursor: string | null; strategy: string; warning?: string }> {
+  async listKeys(@Query(new ZodValidationPipe(keyQuerySchema)) query: KeyQuery): Promise<{
+    keys: string[]
+    cursor: string | null
+    strategy: 'scan' | 'keys'
+    warning?: string
+  }> {
     return this.service.listKeys(query)
   }
 
