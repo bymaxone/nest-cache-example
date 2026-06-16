@@ -18,7 +18,7 @@
 ## Goals
 
 1. Show every public feature of `@bymax-one/nest-cache` in a runnable, realistic scenario.
-2. Make invisible features *visible* — namespace isolation, TTL expiry, Pub/Sub events, and
+2. Make invisible features _visible_ — namespace isolation, TTL expiry, Pub/Sub events, and
    atomic Lua scripts are hard to appreciate from a README; a live dashboard makes them tangible.
 3. Serve as the canonical integration reference for Bymax projects that consume the library.
 
@@ -89,15 +89,15 @@ nest-cache-example/
 
 ## Tech stack
 
-| Layer | Technology | Notes |
-|---|---|---|
-| Cache library | `@bymax-one/nest-cache` | the lib under demonstration |
-| API runtime | NestJS 11 + Node.js 24 | no database — keeps infra minimal |
-| Real-time | `@nestjs/websockets` + socket.io | streams Pub/Sub events to the browser |
-| Frontend | Next.js 16 + React 19 + Tailwind 4 | minimal — no auth, no ORM |
-| Redis | Redis 7 (Docker) | keyspace notifications enabled |
-| Dev tooling | pnpm workspaces, TypeScript strict, ESLint 9 | same as other Bymax monorepos |
-| Optional UI | RedisInsight (Docker, port 8001) | native Redis browser for power users |
+| Layer         | Technology                                   | Notes                                 |
+| ------------- | -------------------------------------------- | ------------------------------------- |
+| Cache library | `@bymax-one/nest-cache`                      | the lib under demonstration           |
+| API runtime   | NestJS 11 + Node.js 24                       | no database — keeps infra minimal     |
+| Real-time     | `@nestjs/websockets` + socket.io             | streams Pub/Sub events to the browser |
+| Frontend      | Next.js 16 + React 19 + Tailwind 4           | minimal — no auth, no ORM             |
+| Redis         | Redis 7 (Docker)                             | keyspace notifications enabled        |
+| Dev tooling   | pnpm workspaces, TypeScript strict, ESLint 9 | same as other Bymax monorepos         |
+| Optional UI   | RedisInsight (Docker, port 8001)             | native Redis browser for power users  |
 
 No database (PostgreSQL) needed — the API uses in-memory data stores for the demo domain,
 keeping the `docker-compose.yml` to Redis only.
@@ -116,6 +116,7 @@ Each tenant's cache lives under its own namespace (`tenant-a:products:*`,
 hit/miss badge, and a "Flush namespace" button that only clears its own side.
 
 **API endpoints used:**
+
 ```
 GET    /tenants/:tenantId/products/:id   # reads from / writes to namespaced cache
 DELETE /tenants/:tenantId/cache          # flushNamespace for that tenant only
@@ -149,6 +150,7 @@ tabs receive it instantly.
 directly from the browser.
 
 **How it works:**
+
 - `POST /events/publish` → `CacheService.publish(channel, payload)`
 - `EventsGateway` subscribes to the same channel via `CacheService.subscribe` and
   emits a `cache:event` socket message to all connected clients
@@ -167,6 +169,7 @@ wait and then read from cache.
 which request acquired the lock, which ones waited, and the final hit rate.
 
 **API endpoint:**
+
 ```
 POST /demo/stampede?productId=42&concurrency=10
 ```
@@ -185,6 +188,7 @@ and a simple hit/miss counter tracked in the API process.
 A "Metrics" sidebar card shows cumulative hit/miss counts per namespace as a bar chart.
 
 **API endpoint:**
+
 ```
 GET /health          # Redis ping latency + connection status
 GET /metrics         # hit/miss counters per namespace (in-memory, reset on restart)
@@ -217,13 +221,13 @@ Swagger UI is enabled at `/api` (SwaggerModule). All endpoints are documented wi
 
 ## What this project intentionally does NOT include
 
-| Excluded | Why |
-|---|---|
-| Database (PostgreSQL, Prisma) | Would obscure the cache focus; in-memory data is enough |
-| Authentication / JWT | Out of scope — use `@bymax-one/nest-auth` for that |
-| Production deployment (Kubernetes, CI/CD publish) | This is a local dev reference, not a prod template |
+| Excluded                                            | Why                                                                              |
+| --------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Database (PostgreSQL, Prisma)                       | Would obscure the cache focus; in-memory data is enough                          |
+| Authentication / JWT                                | Out of scope — use `@bymax-one/nest-auth` for that                               |
+| Production deployment (Kubernetes, CI/CD publish)   | This is a local dev reference, not a prod template                               |
 | Real-time metrics persistence (Prometheus, Grafana) | RedisInsight covers Redis-level metrics; a Grafana stack would bloat the example |
-| Test coverage / mutation gates | Example apps don't need 100% coverage — a basic E2E smoke suite is enough |
+| Test coverage / mutation gates                      | Example apps don't need 100% coverage — a basic E2E smoke suite is enough        |
 
 ---
 
@@ -247,6 +251,7 @@ pnpm dev
 ```
 
 `.env.example` (api):
+
 ```
 REDIS_HOST=localhost
 REDIS_PORT=6379
@@ -270,6 +275,7 @@ real consumers install the package, ensuring the example validates the published
 rather than the local build.
 
 When testing against an unpublished local build, use `pnpm link`:
+
 ```bash
 cd ../nest-cache && pnpm build && pnpm link --global
 cd ../nest-cache-example && pnpm link --global @bymax-one/nest-cache
@@ -282,15 +288,15 @@ cd ../nest-cache-example && pnpm link --global @bymax-one/nest-cache
 A detailed `DEVELOPMENT_PLAN.md` with task-level breakdown will be added before
 implementation begins. The phases at a high level:
 
-| Phase | Deliverable |
-|---|---|
-| 0 | Repo scaffold — toolchain, docker-compose, pnpm workspace |
-| 1 | API foundation — CacheModule wired, health endpoint, Swagger |
-| 2 | Products domain — GET with TTL cache, cache-admin endpoints |
-| 3 | Namespace isolation — tenant endpoints + flush |
-| 4 | Pub/Sub — EventsGateway + WebSocket bridge |
-| 5 | Web dashboard — Next.js app, Explorer + Pub/Sub feed pages |
-| 6 | TTL countdown — keyspace notifications → WebSocket → UI |
-| 7 | Stampede demo — Lua script + StampedeDemo UI |
-| 8 | Metrics + health bar — hit/miss counters + Redis status badge |
-| 9 | Polish — README, Swagger examples, docker-compose --profile tools |
+| Phase | Deliverable                                                       |
+| ----- | ----------------------------------------------------------------- |
+| 0     | Repo scaffold — toolchain, docker-compose, pnpm workspace         |
+| 1     | API foundation — CacheModule wired, health endpoint, Swagger      |
+| 2     | Products domain — GET with TTL cache, cache-admin endpoints       |
+| 3     | Namespace isolation — tenant endpoints + flush                    |
+| 4     | Pub/Sub — EventsGateway + WebSocket bridge                        |
+| 5     | Web dashboard — Next.js app, Explorer + Pub/Sub feed pages        |
+| 6     | TTL countdown — keyspace notifications → WebSocket → UI           |
+| 7     | Stampede demo — Lua script + StampedeDemo UI                      |
+| 8     | Metrics + health bar — hit/miss counters + Redis status badge     |
+| 9     | Polish — README, Swagger examples, docker-compose --profile tools |

@@ -8,13 +8,13 @@
 
 ## Task index
 
-| ID    | Task                                                                          | Status | Priority | Size | Depends on   |
-| ----- | ----------------------------------------------------------------------------- | ------ | -------- | ---- | ------------ |
-| P12-1 | `apps/web` Next.js 16 + React 19 + Tailwind v4 + shadcn `new-york` scaffold   | 🔴     | High     | M    | Phase 3      |
-| P12-2 | `app/layout.tsx` (Geist + forced `dark`) + `app/providers.tsx`                | 🔴     | High     | M    | P12-1        |
-| P12-3 | `components/layout/` — Topbar (64px) + grouped Sidebar (250px) + `AppShell`   | 🔴     | High     | M    | P12-1, P12-2 |
-| P12-4 | `lib/api-client.ts` — typed `fetch` wrapper + `CacheErrorCode` error union    | 🔴     | High     | M    | P12-1        |
-| P12-5 | `lib/socket.ts` (3 channels) + `hooks/use-cache-socket.ts` (ring buffer + rAF) | 🔴    | High     | M    | P12-1        |
+| ID    | Task                                                                           | Status | Priority | Size | Depends on   |
+| ----- | ------------------------------------------------------------------------------ | ------ | -------- | ---- | ------------ |
+| P12-1 | `apps/web` Next.js 16 + React 19 + Tailwind v4 + shadcn `new-york` scaffold    | 🔴     | High     | M    | Phase 3      |
+| P12-2 | `app/layout.tsx` (Geist + forced `dark`) + `app/providers.tsx`                 | 🔴     | High     | M    | P12-1        |
+| P12-3 | `components/layout/` — Topbar (64px) + grouped Sidebar (250px) + `AppShell`    | 🔴     | High     | M    | P12-1, P12-2 |
+| P12-4 | `lib/api-client.ts` — typed `fetch` wrapper + `CacheErrorCode` error union     | 🔴     | High     | M    | P12-1        |
+| P12-5 | `lib/socket.ts` (3 channels) + `hooks/use-cache-socket.ts` (ring buffer + rAF) | 🔴     | High     | M    | P12-1        |
 | P12-6 | `lib/cache-status.ts` + `lib/utils.ts` + `components/controls/` (nuqs URL)     | 🔴     | Medium   | M    | P12-2, P12-4 |
 | P12-7 | shadcn component set scaffold + phase verification (`build`, shell, status)    | 🔴     | High     | M    | P12-1..P12-6 |
 
@@ -159,6 +159,7 @@ Wire the root layout and the client-side providers — the two pieces that make 
 > Steps:
 >
 > 1. Create `apps/web/app/layout.tsx` (server component):
+>
 >    ```tsx
 >    import type { Metadata } from 'next'
 >    import { GeistSans } from 'geist/font/sans'
@@ -185,7 +186,9 @@ Wire the root layout and the client-side providers — the two pieces that make 
 >      )
 >    }
 >    ```
+>
 > 2. Create `apps/web/app/providers.tsx`:
+>
 >    ```tsx
 >    'use client'
 >
@@ -209,6 +212,7 @@ Wire the root layout and the client-side providers — the two pieces that make 
 >      )
 >    }
 >    ```
+>
 > 3. Import the `<NuqsAdapter>` from `nuqs/adapters/next/app` (the App-Router adapter). This is **mandatory** in nuqs v2 — omitting it makes the P12-6 controls throw at runtime.
 >    Constraints:
 >
@@ -273,37 +277,61 @@ Build the canonical app shell — the chrome that makes a `nest-cache-example` s
 > Steps:
 >
 > 1. Create `components/layout/nav-items.ts` — a typed table the Sidebar maps over (use the exact href/icon mapping from DASHBOARD §19 "Cache nav items"):
+>
 >    ```ts
 >    import {
->      LayoutDashboard, Search, Boxes, Building2,
->      Radio, Timer, Zap, Binary, TriangleAlert, PlugZap,
+>      LayoutDashboard,
+>      Search,
+>      Boxes,
+>      Building2,
+>      Radio,
+>      Timer,
+>      Zap,
+>      Binary,
+>      TriangleAlert,
+>      PlugZap,
 >      type LucideIcon,
 >    } from 'lucide-react'
 >
->    export interface NavItem { label: string; href: string; icon: LucideIcon }
->    export interface NavGroup { group: string; items: NavItem[] }
+>    export interface NavItem {
+>      label: string
+>      href: string
+>      icon: LucideIcon
+>    }
+>    export interface NavGroup {
+>      group: string
+>      items: NavItem[]
+>    }
 >
 >    export const NAV_GROUPS: NavGroup[] = [
->      { group: 'Observe', items: [
->        { label: 'Overview', href: '/', icon: LayoutDashboard },
->        { label: 'Explorer', href: '/explorer', icon: Search },
->        { label: 'Playground', href: '/playground', icon: Boxes },
->        { label: 'Tenants', href: '/tenants', icon: Building2 },
->      ] },
->      { group: 'Real-time', items: [
->        { label: 'Pub/Sub', href: '/pubsub', icon: Radio },
->        { label: 'TTL Live', href: '/ttl', icon: Timer },
->      ] },
->      { group: 'Labs', items: [
->        { label: 'Stampede', href: '/stampede', icon: Zap },
->        { label: 'Serializer', href: '/serializer', icon: Binary },
->        { label: 'Errors', href: '/errors', icon: TriangleAlert },
->      ] },
->      { group: 'System', items: [
->        { label: 'Connection', href: '/connection', icon: PlugZap },
->      ] },
+>      {
+>        group: 'Observe',
+>        items: [
+>          { label: 'Overview', href: '/', icon: LayoutDashboard },
+>          { label: 'Explorer', href: '/explorer', icon: Search },
+>          { label: 'Playground', href: '/playground', icon: Boxes },
+>          { label: 'Tenants', href: '/tenants', icon: Building2 },
+>        ],
+>      },
+>      {
+>        group: 'Real-time',
+>        items: [
+>          { label: 'Pub/Sub', href: '/pubsub', icon: Radio },
+>          { label: 'TTL Live', href: '/ttl', icon: Timer },
+>        ],
+>      },
+>      {
+>        group: 'Labs',
+>        items: [
+>          { label: 'Stampede', href: '/stampede', icon: Zap },
+>          { label: 'Serializer', href: '/serializer', icon: Binary },
+>          { label: 'Errors', href: '/errors', icon: TriangleAlert },
+>        ],
+>      },
+>      { group: 'System', items: [{ label: 'Connection', href: '/connection', icon: PlugZap }] },
 >    ]
 >    ```
+>
 > 2. Create `components/layout/Topbar.tsx` (`'use client'` is not required unless you read state; keep it a server component if it only renders children + a `right` slot). Fixed bar `h-16`, classes exactly as the acceptance criteria. The brand mark is the orange-bordered badge holding the stacked-layers SVG (the same `d="M12 2L2 7l10 5 10-5-10-5ZM2 17l10 5 10-5M2 12l10 5 10-5"` path, stroke `#ff6224`, from design_system.html §05). The wordmark is mono, `bg-gradient-to-r from-[#ff6224] to-amber-200 bg-clip-text text-transparent`, reading **`nest-cache-example`**. Accept a `right?: React.ReactNode` prop for the global-controls slot (P12-6 fills it).
 > 3. Create `components/layout/Sidebar.tsx` (`'use client'` — it calls `usePathname()`). Map `NAV_GROUPS`; each group renders a small uppercase label then its items. Active = `pathname === item.href` (exact match for `/`, `startsWith` for the rest). Apply the active/idle class recipe **verbatim**. Footer: a mono chip showing the namespace prefix (e.g. `:cache-example`).
 > 4. Create `components/layout/AppShell.tsx` composing them — Topbar (passing its `right` slot through) over `<div className="flex pt-16"><Sidebar/><main className="min-w-0 flex-1 px-6 py-8"><div className={cn('mx-auto', wide ? 'max-w-7xl' : 'max-w-5xl')}>{children}</div></main></div>`. Accept a `wide?: boolean` prop (Overview/Explorer pass `wide`).
@@ -369,6 +397,7 @@ The typed transport layer between the dashboard and `apps/api` — a thin `fetch
 > Steps:
 >
 > 1. Create `apps/web/lib/api-client.ts`:
+>
 >    ```ts
 >    import { CACHE_ERROR_CODES, type CacheErrorCode } from '@bymax-one/nest-cache/shared'
 >
@@ -386,11 +415,17 @@ The typed transport layer between the dashboard and `apps/api` — a thin `fetch
 >    const KNOWN = new Set<string>(Object.values(CACHE_ERROR_CODES))
 >
 >    function toApiError(status: number, body: unknown): ApiError {
->      const err = (body as { error?: { code?: string; message?: string; details?: unknown } })?.error
+>      const err = (body as { error?: { code?: string; message?: string; details?: unknown } })
+>        ?.error
 >      const rawCode = err?.code
 >      const code: CacheErrorCode | 'unknown' =
 >        rawCode && KNOWN.has(rawCode) ? (rawCode as CacheErrorCode) : 'unknown'
->      return { code, message: err?.message ?? `Request failed (${status})`, status, details: err?.details }
+>      return {
+>        code,
+>        message: err?.message ?? `Request failed (${status})`,
+>        status,
+>        details: err?.details,
+>      }
 >    }
 >
 >    /** Core typed fetch. Resolves ApiResult<T>; never throws on a structured API error. */
@@ -407,10 +442,14 @@ The typed transport layer between the dashboard and `apps/api` — a thin `fetch
 >    export const api = {
 >      get: <T>(path: string) => apiFetch<T>(path),
 >      post: <T>(path: string, json?: unknown) =>
->        apiFetch<T>(path, { method: 'POST', body: json === undefined ? undefined : JSON.stringify(json) }),
+>        apiFetch<T>(path, {
+>          method: 'POST',
+>          body: json === undefined ? undefined : JSON.stringify(json),
+>        }),
 >      del: <T>(path: string) => apiFetch<T>(path, { method: 'DELETE' }),
 >    }
 >    ```
+>
 > 2. Add a file-level JSDoc stating the contract (decodes `{ error: { code, message, details } }`; `code` narrowed against `CACHE_ERROR_CODES`; the `/shared` import keeps the browser bundle library-clean).
 > 3. Decide and document one error convention (the `ApiResult` union above is preferred over throwing — it composes cleanly with TanStack Query's `select`/error handling in later phases). Keep it consistent.
 >    Constraints:
@@ -472,6 +511,7 @@ The live-feeds layer. `lib/socket.ts` is a single `socket.io-client` connection 
 > Steps:
 >
 > 1. Create `apps/web/lib/socket.ts`:
+>
 >    ```ts
 >    import { io, type Socket } from 'socket.io-client'
 >    import { type CacheEventName } from '@bymax-one/nest-cache/shared'
@@ -485,10 +525,19 @@ The live-feeds layer. `lib/socket.ts` is a single `socket.io-client` connection 
 >    export class RingBuffer<T> {
 >      private buf: T[] = []
 >      constructor(private readonly capacity: number) {}
->      push(item: T): void { this.buf.push(item); if (this.buf.length > this.capacity) this.buf.shift() }
->      pushMany(items: T[]): void { for (const i of items) this.push(i) }
->      toArray(): readonly T[] { return this.buf }
->      get size(): number { return this.buf.length }
+>      push(item: T): void {
+>        this.buf.push(item)
+>        if (this.buf.length > this.capacity) this.buf.shift()
+>      }
+>      pushMany(items: T[]): void {
+>        for (const i of items) this.push(i)
+>      }
+>      toArray(): readonly T[] {
+>        return this.buf
+>      }
+>      get size(): number {
+>        return this.buf.length
+>      }
 >    }
 >
 >    export function createCacheSocket(): Socket {
@@ -496,7 +545,9 @@ The live-feeds layer. `lib/socket.ts` is a single `socket.io-client` connection 
 >      return io(url, { transports: ['websocket'], autoConnect: true })
 >    }
 >    ```
+>
 > 2. Create `apps/web/hooks/use-cache-socket.ts` (mirror the DASHBOARD §18 reference, with the typed union):
+>
 >    ```ts
 >    'use client'
 >    import { useEffect, useState } from 'react'
@@ -509,18 +560,36 @@ The live-feeds layer. `lib/socket.ts` is a single `socket.io-client` connection 
 >        const socket = createCacheSocket()
 >        const pending: CacheEvent[] = []
 >        let raf = 0
->        const flush = () => { buffer.pushMany(pending.splice(0)); raf = 0 }
->        const schedule = (e: CacheEvent) => { pending.push(e); raf ||= requestAnimationFrame(flush) }
->        socket.on('cache:connection', (m: { event: CacheEvent extends { kind: 'connection' } ? never : unknown }) =>
->          schedule({ kind: 'connection', ...(m as object) } as CacheEvent))
->        socket.on('cache:event', (m: object) => schedule({ kind: 'event', ...(m as object) } as CacheEvent))
->        socket.on('cache:expired', (m: object) => schedule({ kind: 'expired', ...(m as object) } as CacheEvent))
->        return () => { if (raf) cancelAnimationFrame(raf); socket.close() }
+>        const flush = () => {
+>          buffer.pushMany(pending.splice(0))
+>          raf = 0
+>        }
+>        const schedule = (e: CacheEvent) => {
+>          pending.push(e)
+>          raf ||= requestAnimationFrame(flush)
+>        }
+>        socket.on(
+>          'cache:connection',
+>          (m: { event: CacheEvent extends { kind: 'connection' } ? never : unknown }) =>
+>            schedule({ kind: 'connection', ...(m as object) } as CacheEvent),
+>        )
+>        socket.on('cache:event', (m: object) =>
+>          schedule({ kind: 'event', ...(m as object) } as CacheEvent),
+>        )
+>        socket.on('cache:expired', (m: object) =>
+>          schedule({ kind: 'expired', ...(m as object) } as CacheEvent),
+>        )
+>        return () => {
+>          if (raf) cancelAnimationFrame(raf)
+>          socket.close()
+>        }
 >      }, [enabled, buffer])
 >      return buffer
 >    }
 >    ```
+>
 >    (Adjust the per-channel mappers so each produces a correctly-tagged `CacheEvent`; the gateway payloads are `{ event, data, at }`, `{ channel, payload, at }`, `{ key, at }` respectively — spec §18.)
+>
 > 3. Keep the socket **receive-only** — do not call `socket.emit` with app data anywhere in the web app.
 >    Constraints:
 >
@@ -595,7 +664,9 @@ The accessible status mapping, the `cn()` utility, and the four global controls 
 >    import { clsx, type ClassValue } from 'clsx'
 >    import { twMerge } from 'tailwind-merge'
 >    /** Merge Tailwind class lists, de-duping conflicts. */
->    export function cn(...inputs: ClassValue[]): string { return twMerge(clsx(inputs)) }
+>    export function cn(...inputs: ClassValue[]): string {
+>      return twMerge(clsx(inputs))
+>    }
 >    ```
 > 2. `apps/web/lib/cache-status.ts` — import `type CacheConnectionStatus` from `@bymax-one/nest-cache/shared`; export `connectionStatusMeta`, `hitMissMeta`, `dataTypeMeta`, each returning `{ color: string; icon: LucideIcon; label: string }`. Use the exact §14.4 palette (ready `#22c55e`, connecting `#60a5fa`, reconnecting `#f59e0b`, closed/end `#ef4444`, error `#a855f7`; hit green / miss amber; string blue / hash purple / set green). Choose sensible lucide icons (e.g. `CheckCircle2`, `Loader2`, `RefreshCw`, `XCircle`, `AlertTriangle`).
 > 3. `apps/web/lib/filters.ts` — define `nuqs` parsers (`parseAsString`, `parseAsBoolean`, `parseAsStringLiteral` for the range presets). Export the `tenant`, `live` (boolean, default false), and `range` (`'5m' | '15m' | '1h'`, default `'15m'`) parsers; stub the Explorer filter parsers (`prefix`, `pattern`, `type`, `hasTtl`, `strategy`) for Phase 13 to flesh out.

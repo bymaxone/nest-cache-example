@@ -8,14 +8,14 @@
 
 ## Task index
 
-| ID   | Task                                                                  | Status | Priority | Size | Depends on       |
-| ---- | --------------------------------------------------------------------- | ------ | -------- | ---- | ---------------- |
-| P5-1 | `GET /admin/keys` — cursor-paged listing (`scan` \| `keys` strategy)  | 🔴     | High     | M    | Phase 3          |
-| P5-2 | Single-key ops — inspect / delete / persist / expire                  | 🔴     | High     | M    | P5-1             |
-| P5-3 | `POST /admin/seed?count=N` — bulk seed via `pipeline()`               | 🔴     | Medium   | S    | P5-1             |
-| P5-4 | `DELETE /admin/namespace` — guarded `flushNamespace()`                | 🔴     | High     | S    | P5-1             |
-| P5-5 | `GET /admin/info` + `GET /admin/keyspace` (INFO parser + breakdowns)  | 🔴     | High     | M    | P5-1             |
-| P5-6 | `KeyQuery` Zod DTO + phase verification                               | 🔴     | Medium   | S    | P5-1..P5-5       |
+| ID   | Task                                                                 | Status | Priority | Size | Depends on |
+| ---- | -------------------------------------------------------------------- | ------ | -------- | ---- | ---------- |
+| P5-1 | `GET /admin/keys` — cursor-paged listing (`scan` \| `keys` strategy) | 🔴     | High     | M    | Phase 3    |
+| P5-2 | Single-key ops — inspect / delete / persist / expire                 | 🔴     | High     | M    | P5-1       |
+| P5-3 | `POST /admin/seed?count=N` — bulk seed via `pipeline()`              | 🔴     | Medium   | S    | P5-1       |
+| P5-4 | `DELETE /admin/namespace` — guarded `flushNamespace()`               | 🔴     | High     | S    | P5-1       |
+| P5-5 | `GET /admin/info` + `GET /admin/keyspace` (INFO parser + breakdowns) | 🔴     | High     | M    | P5-1       |
+| P5-6 | `KeyQuery` Zod DTO + phase verification                              | 🔴     | Medium   | S    | P5-1..P5-5 |
 
 ---
 
@@ -87,6 +87,7 @@ Build the key-browser endpoint that backs the Explorer's main list (DASHBOARD §
 >    ```
 >
 >    Define `KEYS_BLOCKING_WARNING = 'O(N) command — blocks the Redis server, dev only'` and the `KeyListResult` return type (`{ keys: string[]; cursor: string | null; strategy: 'scan' | 'keys'; warning?: string }`).
+>
 > 3. Create `apps/api/src/admin/admin.controller.ts` with `@Controller('admin')` and a `@Get('keys')` handler that reads the query through the `ZodValidationPipe` (from `common/`, Phase 3) bound to the `KeyQuery` schema, then delegates to `AdminService.listKeys`. Until P5-6 lands the shared schema, define a local `keyQuerySchema` inline and re-point it to `admin/dto/key-query.dto.ts` in P5-6.
 > 4. Do **not** catch `CacheException` — let it propagate to the global `CacheExceptionFilter` (so the cluster `cache.unsupported_in_cluster` case yields the structured `{ error: { code, message, details } }` body automatically).
 >    Constraints:
@@ -272,7 +273,7 @@ The Explorer/Tenants "Seed N keys" action (DASHBOARD §6, §8). Writes `N` demo 
 
 ### Description
 
-The Explorer header "Flush namespace" button and the Tenants isolation proof (DASHBOARD §6, §8; spec §12.3). `DELETE /admin/namespace` calls `CacheService.flushNamespace()`, which SCANs + UNLINKs every key scoped to `{namespace}{sep}*` (i.e. `cache-example:*`) and returns the count removed — proving keys seeded under a *foreign* namespace survive. The endpoint must surface the library's **production guard** honestly: `flushNamespace()` throws `FLUSH_DISABLED_IN_PRODUCTION` (→ HTTP `403`, code `cache.flush_disabled_in_production`) unless the module was configured with `allowFlushInProduction: true`; in **cluster** mode it throws `UNSUPPORTED_IN_CLUSTER`. Both must reach the client as the structured filter body (matrix #27; error story in spec §19, DASHBOARD §13).
+The Explorer header "Flush namespace" button and the Tenants isolation proof (DASHBOARD §6, §8; spec §12.3). `DELETE /admin/namespace` calls `CacheService.flushNamespace()`, which SCANs + UNLINKs every key scoped to `{namespace}{sep}*` (i.e. `cache-example:*`) and returns the count removed — proving keys seeded under a _foreign_ namespace survive. The endpoint must surface the library's **production guard** honestly: `flushNamespace()` throws `FLUSH_DISABLED_IN_PRODUCTION` (→ HTTP `403`, code `cache.flush_disabled_in_production`) unless the module was configured with `allowFlushInProduction: true`; in **cluster** mode it throws `UNSUPPORTED_IN_CLUSTER`. Both must reach the client as the structured filter body (matrix #27; error story in spec §19, DASHBOARD §13).
 
 ### Acceptance Criteria
 

@@ -8,14 +8,14 @@
 
 ## Task index
 
-| ID    | Task                                                                          | Status | Priority | Size | Depends on   |
-| ----- | ----------------------------------------------------------------------------- | ------ | -------- | ---- | ------------ |
-| P11-1 | `cache.config.ts` — `buildSentinelBlock`/`buildClusterBlock` + `CACHE_MODE`   | 🔴     | High     | M    | Phase 3      |
-| P11-2 | `docker/cluster/` + `docker/sentinel/` compose profiles made runnable         | 🔴     | Medium   | M    | Phase 3      |
-| P11-3 | `src/errors-demo/` — `POST /errors/:code` triggering all 15 error codes       | 🔴     | High     | M    | Phase 3      |
-| P11-4 | Cluster-restriction demo (`scan`/`flushNamespace`/`getClient` → unsupported)  | 🔴     | Medium   | S    | P11-1, P11-3 |
-| P11-5 | Typed error handling — import `CacheErrorCode` from `@bymax-one/nest-cache/shared` | 🔴 | Medium   | S    | P11-3        |
-| P11-6 | Phase verification (HTTP statuses · cluster restrictions · prod-guard 403)     | 🔴     | Medium   | S    | P11-1..P11-5 |
+| ID    | Task                                                                               | Status | Priority | Size | Depends on   |
+| ----- | ---------------------------------------------------------------------------------- | ------ | -------- | ---- | ------------ |
+| P11-1 | `cache.config.ts` — `buildSentinelBlock`/`buildClusterBlock` + `CACHE_MODE`        | 🔴     | High     | M    | Phase 3      |
+| P11-2 | `docker/cluster/` + `docker/sentinel/` compose profiles made runnable              | 🔴     | Medium   | M    | Phase 3      |
+| P11-3 | `src/errors-demo/` — `POST /errors/:code` triggering all 15 error codes            | 🔴     | High     | M    | Phase 3      |
+| P11-4 | Cluster-restriction demo (`scan`/`flushNamespace`/`getClient` → unsupported)       | 🔴     | Medium   | S    | P11-1, P11-3 |
+| P11-5 | Typed error handling — import `CacheErrorCode` from `@bymax-one/nest-cache/shared` | 🔴     | Medium   | S    | P11-3        |
+| P11-6 | Phase verification (HTTP statuses · cluster restrictions · prod-guard 403)         | 🔴     | Medium   | S    | P11-1..P11-5 |
 
 ---
 
@@ -78,7 +78,9 @@ Extend the canonical `apps/api/src/cache/cache.config.ts` factory (created in Ph
 >    export function buildSentinelBlock(
 >      config: ConfigService<Env, true>,
 >    ): BymaxCacheSentinelConnection {
->      const sentinels: SentinelAddress[] = parseNodes(config.get('REDIS_SENTINELS', { infer: true }))
+>      const sentinels: SentinelAddress[] = parseNodes(
+>        config.get('REDIS_SENTINELS', { infer: true }),
+>      )
 >      return {
 >        sentinels,
 >        name: config.get('REDIS_SENTINEL_MASTER', { infer: true }),

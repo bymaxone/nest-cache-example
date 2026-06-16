@@ -56,19 +56,19 @@ It deliberately mirrors the **common-denominator feature set** of RedisInsight (
 
 Every principle is lifted from a real source and applied to this app.
 
-| # | Principle | What it means here | Source |
-|---|---|---|---|
-| 1 | **Overview → drill-down** | Pages flow general→specific: hit-rate/health strip → breakdowns (by type, by prefix) → Key Explorer → a single key. Every panel click narrows the Explorer. | Grafana dashboard best-practices |
-| 2 | **Cache golden signals** | The health strip = **Hit rate · Throughput (ops/sec) · Latency · Memory (saturation) · Evictions**. The four golden signals, specialized for a cache (hit rate replaces "errors" as the headline). | Google SRE Book · Datadog "Monitor Redis" |
-| 3 | **Hit rate is the headline** | Surface `keyspace_hits / (keyspace_hits + keyspace_misses)` prominently; healthy is **> 90%** (a cache should beat **50%**). Show it as a gauge **and** a trend, plus a per-prefix breakdown so a cold prefix is visible. | Redis observability docs · SigNoz · ScaleGrid |
-| 4 | **Percentiles, never averages** | Command latency as **p50/p95/p99** lines (a mean hides spikes). Redis cache latency is sub-millisecond (400–600µs typical), so render in **ms with µs precision** and never round to "0ms". | Google SRE Book · Redis docs |
-| 5 | **Aggregate on bounded dimensions** | Group only by **data-type** (string/hash/set), **key prefix/namespace**, and **tenant** — RedisInsight's "Key Summary by Type / by Prefix". **Never** chart per-key (unbounded); individual keys are for search/drill-down only. | RedisInsight Memory Analysis · Grafana cardinality |
-| 6 | **Make the invisible visible** | TTL as a draining **radial ring**; expiry as a live **event**; Pub/Sub as a **fan-out feed**; a stampede as a **single-flight timeline**. This is the example's reason to exist. | spec §1 (G2) |
-| 7 | **Accessible status & severity** | Connection status, hit/miss, and error codes use **color + icon + text** (never color alone): left-border accent + lucide icon + label. | PatternFly · Astro UXDS |
-| 8 | **Skeletons, not spinners** | Explorer/feed/chart fetches show skeleton screens; spinners only for short blocking actions (a single op submit). | NN/g · Onething |
-| 9 | **Action-oriented empty states** | "No keys in this namespace yet — seed one from the Playground →" with a primary action, never a blank pane. | NN/g empty-state design |
-| 10 | **Shareable deep-links** | Explorer filters (prefix, pattern, tenant, scan strategy) and the time range live in the **URL** (`nuqs` typed params), so any view is a copy-paste link. | Grafana / Datadog |
-| 11 | **Live, but guarded** | Real-time feeds (events, expiry, Pub/Sub) push over WebSocket; high-rate streams use a **bounded ring buffer + rAF batching**, and the ops/sec stream offers a **pause** control (no unstoppable motion — accessibility). | MDN · WAI-ARIA (motion) |
+| #   | Principle                           | What it means here                                                                                                                                                                                                               | Source                                             |
+| --- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| 1   | **Overview → drill-down**           | Pages flow general→specific: hit-rate/health strip → breakdowns (by type, by prefix) → Key Explorer → a single key. Every panel click narrows the Explorer.                                                                      | Grafana dashboard best-practices                   |
+| 2   | **Cache golden signals**            | The health strip = **Hit rate · Throughput (ops/sec) · Latency · Memory (saturation) · Evictions**. The four golden signals, specialized for a cache (hit rate replaces "errors" as the headline).                               | Google SRE Book · Datadog "Monitor Redis"          |
+| 3   | **Hit rate is the headline**        | Surface `keyspace_hits / (keyspace_hits + keyspace_misses)` prominently; healthy is **> 90%** (a cache should beat **50%**). Show it as a gauge **and** a trend, plus a per-prefix breakdown so a cold prefix is visible.        | Redis observability docs · SigNoz · ScaleGrid      |
+| 4   | **Percentiles, never averages**     | Command latency as **p50/p95/p99** lines (a mean hides spikes). Redis cache latency is sub-millisecond (400–600µs typical), so render in **ms with µs precision** and never round to "0ms".                                      | Google SRE Book · Redis docs                       |
+| 5   | **Aggregate on bounded dimensions** | Group only by **data-type** (string/hash/set), **key prefix/namespace**, and **tenant** — RedisInsight's "Key Summary by Type / by Prefix". **Never** chart per-key (unbounded); individual keys are for search/drill-down only. | RedisInsight Memory Analysis · Grafana cardinality |
+| 6   | **Make the invisible visible**      | TTL as a draining **radial ring**; expiry as a live **event**; Pub/Sub as a **fan-out feed**; a stampede as a **single-flight timeline**. This is the example's reason to exist.                                                 | spec §1 (G2)                                       |
+| 7   | **Accessible status & severity**    | Connection status, hit/miss, and error codes use **color + icon + text** (never color alone): left-border accent + lucide icon + label.                                                                                          | PatternFly · Astro UXDS                            |
+| 8   | **Skeletons, not spinners**         | Explorer/feed/chart fetches show skeleton screens; spinners only for short blocking actions (a single op submit).                                                                                                                | NN/g · Onething                                    |
+| 9   | **Action-oriented empty states**    | "No keys in this namespace yet — seed one from the Playground →" with a primary action, never a blank pane.                                                                                                                      | NN/g empty-state design                            |
+| 10  | **Shareable deep-links**            | Explorer filters (prefix, pattern, tenant, scan strategy) and the time range live in the **URL** (`nuqs` typed params), so any view is a copy-paste link.                                                                        | Grafana / Datadog                                  |
+| 11  | **Live, but guarded**               | Real-time feeds (events, expiry, Pub/Sub) push over WebSocket; high-rate streams use a **bounded ring buffer + rAF batching**, and the ops/sec stream offers a **pause** control (no unstoppable motion — accessibility).        | MDN · WAI-ARIA (motion)                            |
 
 ---
 
@@ -101,18 +101,18 @@ A left nav with ten destinations in four groups: the **daily drivers**, the **re
 └────────────┴──────────────────────────────────────────────────────────────────┘
 ```
 
-| Route | Page | Primary job | Headline library surface |
-|---|---|---|---|
-| `/` | **Overview** | Cache health at a glance — golden signals, hit-rate trend, keys-by-type/prefix, expiry analysis | `info`, `isHealthy`, `ping`, app metrics |
-| `/explorer` | **Key Explorer** | Browse the namespace, inspect any key's value + TTL, delete, pin, flush | `scan` · `keys` · `getRaw` · `ttl` · `del` · `persist` · `flushNamespace` |
-| `/playground` | **Data Types Playground** | Fire every cache op by hand: strings, numerics, hashes, sets, batch | `get/set/setNx/exists` · `incr/decr` · `hset/hgetall/hdel` · `sadd/smembers/...` · `mget/mset` |
-| `/tenants` | **Namespace & Tenants** | Prove namespace isolation + per-tenant prefix scoping | `KeyBuilder` · `scan` · `delMany` · `getClient` (foreign-ns) · `flushNamespace` |
-| `/pubsub` | **Pub/Sub** | Publish from the browser; watch fan-out across tabs; pattern subscriptions | `PubSubService.publish/subscribe/psubscribe` · `Unsubscribe` |
-| `/ttl` | **TTL Live** | Live countdown rings + a keyspace-notification expiry feed | `set(ttl)` · `expire` · `ttl` · `BYMAX_CACHE_CONNECTION` raw subscriber |
-| `/stampede` | **Stampede Lab** | Fire N concurrent misses; watch a single-flight Lua lock | `ScriptManagerService` · `eval` |
-| `/serializer` | **Serializer Lab** | JSON vs MessagePack: stored bytes vs decoded value | `getRaw/setRaw` · `BYMAX_CACHE_SERIALIZER` · `SerializableValue` |
-| `/errors` | **Error Explorer** | Trigger each `CacheException`; read code + HTTP status + body | `CACHE_ERROR_CODES` · `CacheException` · `/shared` types |
-| `/connection` | **Connection & Topology** | Lifecycle event feed, mode (standalone/sentinel/cluster), `INFO` | `events.onEvent` · `CacheConnectionStatus` · `info` |
+| Route         | Page                      | Primary job                                                                                     | Headline library surface                                                                       |
+| ------------- | ------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `/`           | **Overview**              | Cache health at a glance — golden signals, hit-rate trend, keys-by-type/prefix, expiry analysis | `info`, `isHealthy`, `ping`, app metrics                                                       |
+| `/explorer`   | **Key Explorer**          | Browse the namespace, inspect any key's value + TTL, delete, pin, flush                         | `scan` · `keys` · `getRaw` · `ttl` · `del` · `persist` · `flushNamespace`                      |
+| `/playground` | **Data Types Playground** | Fire every cache op by hand: strings, numerics, hashes, sets, batch                             | `get/set/setNx/exists` · `incr/decr` · `hset/hgetall/hdel` · `sadd/smembers/...` · `mget/mset` |
+| `/tenants`    | **Namespace & Tenants**   | Prove namespace isolation + per-tenant prefix scoping                                           | `KeyBuilder` · `scan` · `delMany` · `getClient` (foreign-ns) · `flushNamespace`                |
+| `/pubsub`     | **Pub/Sub**               | Publish from the browser; watch fan-out across tabs; pattern subscriptions                      | `PubSubService.publish/subscribe/psubscribe` · `Unsubscribe`                                   |
+| `/ttl`        | **TTL Live**              | Live countdown rings + a keyspace-notification expiry feed                                      | `set(ttl)` · `expire` · `ttl` · `BYMAX_CACHE_CONNECTION` raw subscriber                        |
+| `/stampede`   | **Stampede Lab**          | Fire N concurrent misses; watch a single-flight Lua lock                                        | `ScriptManagerService` · `eval`                                                                |
+| `/serializer` | **Serializer Lab**        | JSON vs MessagePack: stored bytes vs decoded value                                              | `getRaw/setRaw` · `BYMAX_CACHE_SERIALIZER` · `SerializableValue`                               |
+| `/errors`     | **Error Explorer**        | Trigger each `CacheException`; read code + HTTP status + body                                   | `CACHE_ERROR_CODES` · `CacheException` · `/shared` types                                       |
+| `/connection` | **Connection & Topology** | Lifecycle event feed, mode (standalone/sentinel/cluster), `INFO`                                | `events.onEvent` · `CacheConnectionStatus` · `info`                                            |
 
 ---
 
@@ -205,6 +205,7 @@ The daily driver — a namespace key browser modeled on RedisInsight's Browser +
 **Filter rail** — `prefix`, `type` (string/hash/set), and `ttl` (has-TTL / no-TTL) as facets; the active `tenant` from the global control scopes the default prefix. All filters live in the URL.
 
 **Scan strategy toggle `(scan | keys)`** — the teaching control:
+
 - **`scan`** (default) → `CacheService.scan(prefix, pattern, count)`, a cursor-based async iterable, **non-blocking**, safe in production, with infinite-scroll paging.
 - **`keys`** → `CacheService.keys(prefix, pattern)`, shown with a persistent **⚠ "O(N) — blocks the server, dev only"** warning badge.
 - In **cluster mode** both are disabled with a callout (`UNSUPPORTED_IN_CLUSTER`, spec §15.4).
@@ -213,6 +214,7 @@ The daily driver — a namespace key browser modeled on RedisInsight's Browser +
 **Key list** — a virtualized table (TanStack Table + Virtual): columns `key` (mono), `type` (chip), `ttl` (a small **draining ring** + `mm:ss`, `∞` for persisted, `—` for none), `size` (`MEMORY USAGE`, fetched lazily/on-demand). Newest-first; cursor paging via SCAN.
 
 **Detail drawer** (row click) — four tabs:
+
 1. **Value** — the deserialized value (`get` / `hgetall` / `smembers` by type) in a collapsible `@uiw/react-json-view` tree.
 2. **Raw** — the raw stored string (`getRaw`) — for the serializer story (§12), shows exactly what bytes Redis holds.
 3. **TTL** — live countdown ring + **[Extend +60s]** (`expire`) and **[Persist ∞]** (`persist`).
@@ -248,6 +250,7 @@ The "fire every cache operation by hand" page — the analog of how the sibling 
 ```
 
 **Specifics:**
+
 - Each card maps 1:1 to a `CacheService` group (spec matrix rows 13–22). Inputs are typed; results render as a JSON tree or a scalar badge.
 - **Honest labels:** the Sets card notes "**raw string members** — the serializer is intentionally not applied to set members" (library behaviour). The Strings card's `getRaw` shows the serialized string beside `get`'s decoded value.
 - Every fired op toasts (`sonner`) the operation + result and offers **"View in Explorer →"**.
@@ -277,6 +280,7 @@ Proves the two isolation stories honestly (spec §12.3–§12.4): app-level **na
 ```
 
 **Specifics:**
+
 - **TenantSplit** — two side-by-side panels; "Clear this tenant" runs `scan('tenant:{id}', '*')` → `delMany`, leaving the other tenant intact (proves prefix scoping).
 - **Isolation proof** — "Seed foreign namespace" writes `other-app:demo` via `getClient()` (raw, un-namespaced — the documented anti-pattern, labelled as such); "Flush namespace" runs `flushNamespace()` and the result line shows the `cache-example:*` keys gone and the foreign key **surviving** — proving the namespace boundary.
 - A callout restates the design honesty: _"`namespace` is fixed per instance; tenants are prefixes. The production 'namespace per tenant' pattern is one app instance per tenant with `namespace` from env (spec §12.4)."_
@@ -303,6 +307,7 @@ Publish from the browser, watch the message fan out to every connected tab. Demo
 ```
 
 **Specifics:**
+
 - **Publish** card → `POST /pubsub/publish` → `PubSubService.publish(channel, payload)`; the response shows the **subscriber count** the library returns.
 - **Subscriptions** card → toggle exact-channel `subscribe` and pattern `psubscribe` (e.g. `product:*`); shows the **ref-count** per channel and demonstrates that subscribing twice + unsubscribing once keeps delivery alive (the library's ref-counted `Unsubscribe`); double-unsubscribe is safe.
 - **Live feed** — an `EventFeed` of `cache:event` socket messages (channel + payload + timestamp), newest on top, bounded ring buffer; pattern-matched messages show the matching pattern.
@@ -329,6 +334,7 @@ The headline "watch it expire" page. Live countdown rings driven by `ttl`, and a
 ```
 
 **Specifics:**
+
 - **Countdown wall** — `TtlRing` components (custom SVG radial progress) that drain client-side from the `ttl` value; on reaching zero they wait for the server's expiry event to confirm (no optimistic removal).
 - **Expiry feed** — when a key expires, Redis fires `__keyevent@0__:expired`; the `ttl-events` service (raw subscriber via `BYMAX_CACHE_CONNECTION` → `createSubscriberClient()`, filtered by `KeyBuilder.getNamespacePrefix()`, spec §17.3) emits `cache:expired`; the UI fades the matching card and toasts **"Key expired — re-fetching…"**, then the next read re-populates.
 - A callout explains why this uses the **raw subscriber, not `PubSubService`** (the library namespaces app channels; Redis keyspace channels are fixed and outside the namespace) — and that `redis.conf` must set `notify-keyspace-events Ex` (spec §21.2).
@@ -355,6 +361,7 @@ Fire N concurrent requests for an uncached key and watch a single-flight Lua loc
 ```
 
 **Specifics:**
+
 - **Controls** → `POST /stampede?productId=&concurrency=&lockMs=`; shows the registered script name and its resolved **SHA1** (via `ScriptManagerService.load('acquireLock')`).
 - **StampedeTimeline** — a custom swimlane: the lock **winner** (`eval` returns `1`) shows LOCK WON → origin fetch → SET → release; **losers** (`0`) show a brief wait → cache HIT. The result strip shows origin-fetches vs hits and the multiplier saved.
 - Callout: _"keys are **namespaced by `eval`** (`cache-example:stampede:77`); the Lua body is declared in code (`IScriptDefinition`), never built from request input (spec §18, §24)."_
@@ -422,6 +429,7 @@ The library's connection lifecycle and Redis-server view.
 ```
 
 **Specifics:**
+
 - **Status** — `CacheConnectionStatus` badge (color+icon+text), `ping()` latency, mode. The mode selector documents the active `CACHE_MODE` and, with the matching Docker profile up, lets the reader watch the same admin action **succeed in standalone** and **fail with `UNSUPPORTED_IN_CLUSTER`** in cluster (spec §15.4).
 - **Lifecycle feed** — `cache:connection` socket messages from the `events.onEvent` bridge (`connect/ready/error/close/reconnecting/end`), each rendered with the status palette.
 - **INFO** — a section picker (`server/clients/memory/stats/replication`) rendering parsed `info(section)` output as a mono key/value grid.
@@ -434,25 +442,25 @@ The library's connection lifecycle and Redis-server view.
 
 Every chart is fed by a **server-side endpoint** (`/metrics`, `/admin/info`, `/admin/keyspace`); the browser never crunches raw keys. Library: **Recharts v3** via shadcn chart primitives, plus two bespoke SVG components (`TtlRing`, `StampedeTimeline`).
 
-| Panel | Chart type | Source | Notes |
-|---|---|---|---|
-| Hit rate tile | **Gauge** + sparkline | app counters ⨉ `INFO stats` | green > 90%, amber 50–90%, red < 50%; numeric % beside |
-| Throughput tile | Stat + sparkline | `INFO stats.instantaneous_ops_per_sec` | ops/sec |
-| Latency tile | Stat | sampled `ping` / command timings | p95, µs precision |
-| Memory tile | **Bullet / gauge** | `INFO memory.used_memory` / `maxmemory` | saturation % |
-| Keys tile | Stat + Δ | `DBSIZE` scoped to namespace (SCAN count) | total keys in ns |
-| Expired/evicted tile | Stat | `INFO stats.expired_keys` / `evicted_keys` | per window |
-| **Hit / miss over time** | **Stacked area (brushable)** | per-bucket app counters | signature panel + time selector |
-| Ops/sec | **Streaming area** | `instantaneous_ops_per_sec` series | pause control (a11y); GET/SET/DEL series |
-| Latency percentiles | **Lines (p50/p95/p99)** | sampled command timings | never average; µs precision |
-| Keys by type | **Donut** | SCAN + `TYPE` sample / app registry | bounded (string/hash/set) |
-| Memory by prefix | **Horizontal bar** | `MEMORY USAGE` sampled per prefix | RedisInsight "by prefix" |
-| Expiry analysis | **Stacked bar / donut** | SCAN + `TTL` sample | % with vs without TTL |
-| Top prefixes | **Horizontal bar** | key-count by prefix (top-N) | bounded |
-| TTL countdown | **Radial ring (custom SVG)** | `ttl(prefix,id)` | drains client-side; confirmed by expiry event |
-| Stampede timeline | **Swimlane (custom SVG)** | `/stampede` result log | one lane per request |
-| Pub/Sub feed | **Event list** | `cache:event` socket | ring-buffered, newest-on-top |
-| Lifecycle feed | **Event list** | `cache:connection` socket | status palette |
+| Panel                    | Chart type                   | Source                                     | Notes                                                  |
+| ------------------------ | ---------------------------- | ------------------------------------------ | ------------------------------------------------------ |
+| Hit rate tile            | **Gauge** + sparkline        | app counters ⨉ `INFO stats`                | green > 90%, amber 50–90%, red < 50%; numeric % beside |
+| Throughput tile          | Stat + sparkline             | `INFO stats.instantaneous_ops_per_sec`     | ops/sec                                                |
+| Latency tile             | Stat                         | sampled `ping` / command timings           | p95, µs precision                                      |
+| Memory tile              | **Bullet / gauge**           | `INFO memory.used_memory` / `maxmemory`    | saturation %                                           |
+| Keys tile                | Stat + Δ                     | `DBSIZE` scoped to namespace (SCAN count)  | total keys in ns                                       |
+| Expired/evicted tile     | Stat                         | `INFO stats.expired_keys` / `evicted_keys` | per window                                             |
+| **Hit / miss over time** | **Stacked area (brushable)** | per-bucket app counters                    | signature panel + time selector                        |
+| Ops/sec                  | **Streaming area**           | `instantaneous_ops_per_sec` series         | pause control (a11y); GET/SET/DEL series               |
+| Latency percentiles      | **Lines (p50/p95/p99)**      | sampled command timings                    | never average; µs precision                            |
+| Keys by type             | **Donut**                    | SCAN + `TYPE` sample / app registry        | bounded (string/hash/set)                              |
+| Memory by prefix         | **Horizontal bar**           | `MEMORY USAGE` sampled per prefix          | RedisInsight "by prefix"                               |
+| Expiry analysis          | **Stacked bar / donut**      | SCAN + `TTL` sample                        | % with vs without TTL                                  |
+| Top prefixes             | **Horizontal bar**           | key-count by prefix (top-N)                | bounded                                                |
+| TTL countdown            | **Radial ring (custom SVG)** | `ttl(prefix,id)`                           | drains client-side; confirmed by expiry event          |
+| Stampede timeline        | **Swimlane (custom SVG)**    | `/stampede` result log                     | one lane per request                                   |
+| Pub/Sub feed             | **Event list**               | `cache:event` socket                       | ring-buffered, newest-on-top                           |
+| Lifecycle feed           | **Event list**               | `cache:connection` socket                  | status palette                                         |
 
 > **Bounded-dimension rule:** chart `group by` is only ever **data-type**, **key prefix**, **namespace**, or **tenant**. Individual keys / ids are **search/drill-down only** — never a chart dimension (unbounded cardinality).
 
@@ -464,41 +472,41 @@ Every chart is fed by a **server-side endpoint** (`/metrics`, `/admin/info`, `/a
 
 The dashboard is powered by the feature + admin modules in `apps/api` (spec §10–§11). No new datastore — it reads the one Redis through the library, plus an in-process metrics counter. Same filter object across the admin reads so the Explorer is transparent.
 
-| Method & route | Purpose | Notes |
-|---|---|---|
-| `GET /admin/keys` | Key browser page | `?prefix=&pattern=&tenant=&strategy=scan\|keys&cursor=&limit=`; SCAN cursor |
-| `GET /admin/keys/:key` | Inspect a key | value (`get`/`hgetall`/`smembers` by type) + `getRaw` + `ttl` + `MEMORY USAGE` |
-| `DELETE /admin/keys/:key` | Delete a key | `del` |
-| `POST /admin/keys/:key/persist` · `/expire` | TTL ops | `persist` / `expire` |
-| `POST /admin/seed?count=N` | Bulk seed | `pipeline()` |
-| `DELETE /admin/namespace` | Flush namespace | `flushNamespace()` (guarded) |
-| `GET /admin/info?section=` | Redis INFO | `info(section?)` parsed to key/value |
-| `GET /admin/keyspace` | Breakdown panels | keys-by-type, memory-by-prefix, expiry analysis (sampled) |
-| `GET /metrics` | App hit/miss + ops series | in-process per-prefix counters + sampled INFO |
-| `GET /health` | Status chip | `isHealthy` + `ping` latency |
-| `GET /catalog/*` · `/counters/*` · `/collections/*` | Playground ops | the data-structure groups |
-| `GET/DELETE /tenants/*` | Tenants page | prefix scoping + foreign-ns seed |
-| `POST /pubsub/publish` · `/subscribe` | Pub/Sub | `publish` / `subscribe` / `psubscribe` |
-| `POST /stampede` | Stampede lab | Lua `eval` |
-| `POST /serializer/roundtrip` | Serializer lab | `getRaw`/`setRaw` + codec |
-| `GET /serializer/active` | Serializer lab | injected `BYMAX_CACHE_SERIALIZER` |
-| `POST /serializer/caveat` | Serializer lab | `Date` caveat (lossy JSON vs msgpack) |
-| `POST /errors/:code` | Error Explorer | per-code triggers |
-| **WS** `cache:connection` · `cache:event` · `cache:expired` | Live feeds | socket.io gateway (§18) |
+| Method & route                                              | Purpose                   | Notes                                                                          |
+| ----------------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------ |
+| `GET /admin/keys`                                           | Key browser page          | `?prefix=&pattern=&tenant=&strategy=scan\|keys&cursor=&limit=`; SCAN cursor    |
+| `GET /admin/keys/:key`                                      | Inspect a key             | value (`get`/`hgetall`/`smembers` by type) + `getRaw` + `ttl` + `MEMORY USAGE` |
+| `DELETE /admin/keys/:key`                                   | Delete a key              | `del`                                                                          |
+| `POST /admin/keys/:key/persist` · `/expire`                 | TTL ops                   | `persist` / `expire`                                                           |
+| `POST /admin/seed?count=N`                                  | Bulk seed                 | `pipeline()`                                                                   |
+| `DELETE /admin/namespace`                                   | Flush namespace           | `flushNamespace()` (guarded)                                                   |
+| `GET /admin/info?section=`                                  | Redis INFO                | `info(section?)` parsed to key/value                                           |
+| `GET /admin/keyspace`                                       | Breakdown panels          | keys-by-type, memory-by-prefix, expiry analysis (sampled)                      |
+| `GET /metrics`                                              | App hit/miss + ops series | in-process per-prefix counters + sampled INFO                                  |
+| `GET /health`                                               | Status chip               | `isHealthy` + `ping` latency                                                   |
+| `GET /catalog/*` · `/counters/*` · `/collections/*`         | Playground ops            | the data-structure groups                                                      |
+| `GET/DELETE /tenants/*`                                     | Tenants page              | prefix scoping + foreign-ns seed                                               |
+| `POST /pubsub/publish` · `/subscribe`                       | Pub/Sub                   | `publish` / `subscribe` / `psubscribe`                                         |
+| `POST /stampede`                                            | Stampede lab              | Lua `eval`                                                                     |
+| `POST /serializer/roundtrip`                                | Serializer lab            | `getRaw`/`setRaw` + codec                                                      |
+| `GET /serializer/active`                                    | Serializer lab            | injected `BYMAX_CACHE_SERIALIZER`                                              |
+| `POST /serializer/caveat`                                   | Serializer lab            | `Date` caveat (lossy JSON vs msgpack)                                          |
+| `POST /errors/:code`                                        | Error Explorer            | per-code triggers                                                              |
+| **WS** `cache:connection` · `cache:event` · `cache:expired` | Live feeds                | socket.io gateway (§18)                                                        |
 
 **Shared filter DTO** (Zod-validated; spec §23.4 — no Swagger):
 
 ```typescript
 // admin/dto/key-query.dto.ts
 export interface KeyQuery {
-  prefix?: string                 // entity-group prefix (e.g. 'product')
-  pattern?: string                // glob for the id segment (default '*')
-  tenant?: string                 // scopes prefix to `tenant:{id}:…`
+  prefix?: string // entity-group prefix (e.g. 'product')
+  pattern?: string // glob for the id segment (default '*')
+  tenant?: string // scopes prefix to `tenant:{id}:…`
   type?: 'string' | 'hash' | 'set'
   hasTtl?: boolean
-  strategy: 'scan' | 'keys'       // scan (cursor, default) | keys (dev-only, blocks)
-  cursor?: string                 // opaque SCAN cursor
-  limit?: number                  // default 200
+  strategy: 'scan' | 'keys' // scan (cursor, default) | keys (dev-only, blocks)
+  cursor?: string // opaque SCAN cursor
+  limit?: number // default 200
 }
 ```
 
@@ -524,17 +532,19 @@ for await (const key of cache.scan(matchPrefix, pattern ?? '*', 200)) {
 
 `CacheService.info(section)` → parsed to a record. The dashboard reads:
 
-| Field | Panel |
-|---|---|
-| `stats.keyspace_hits` / `keyspace_misses` | hit rate (server-wide cross-check) |
-| `stats.instantaneous_ops_per_sec` | throughput |
-| `memory.used_memory` / `maxmemory` / `mem_fragmentation_ratio` | memory saturation |
-| `stats.expired_keys` / `evicted_keys` | expiry/eviction tiles |
-| `clients.connected_clients`, `server.uptime_in_seconds` | connection panel |
+| Field                                                          | Panel                              |
+| -------------------------------------------------------------- | ---------------------------------- |
+| `stats.keyspace_hits` / `keyspace_misses`                      | hit rate (server-wide cross-check) |
+| `stats.instantaneous_ops_per_sec`                              | throughput                         |
+| `memory.used_memory` / `maxmemory` / `mem_fragmentation_ratio` | memory saturation                  |
+| `stats.expired_keys` / `evicted_keys`                          | expiry/eviction tiles              |
+| `clients.connected_clients`, `server.uptime_in_seconds`        | connection panel                   |
 
 ```typescript
 // admin/info.parser.ts — Redis INFO is `field:value\r\n` grouped by `# Section`
-export function parseInfo(raw: string): Record<string, Record<string, string>> { /* … */ }
+export function parseInfo(raw: string): Record<string, Record<string, string>> {
+  /* … */
+}
 ```
 
 ### 17.3 Hit/miss per prefix (in-process, precise)
@@ -587,12 +597,17 @@ export function useCacheSocket(enabled: boolean) {
     let raf = 0
     const onAny = (e: CacheEvent) => {
       pending.push(e)
-      raf ||= requestAnimationFrame(() => { buffer.pushMany(pending.splice(0)); raf = 0 })
+      raf ||= requestAnimationFrame(() => {
+        buffer.pushMany(pending.splice(0))
+        raf = 0
+      })
     }
     socket.on('cache:event', onAny)
     socket.on('cache:expired', onAny)
     socket.on('cache:connection', onAny)
-    return () => { socket.close() }
+    return () => {
+      socket.close()
+    }
   }, [enabled])
   return buffer
 }
@@ -610,22 +625,22 @@ The TTL wall and Pub/Sub feed read from the buffer; follow-mode (auto-scroll whe
 
 ### Tech stack
 
-| Concern | Choice | Why |
-|---|---|---|
-| Framework | **Next.js `^16`** (App Router) + **React `^19`** + TypeScript | matches the sibling examples |
-| Styling | **Tailwind CSS v4** (`@tailwindcss/postcss` only — no `autoprefixer`/`postcss-import`) + **shadcn/ui `new-york`** | identical to the siblings |
-| Icons | **`lucide-react`** | shadcn `iconLibrary: lucide` |
-| Fonts | **`geist`** (`GeistSans` + `GeistMono`) | body = Sans; headings/brand/keys/metrics = Mono |
-| Theme | **forced dark** (`dark` on `<html>`) — **no `next-themes`** | the system is dark-only by design |
-| Charts | **Recharts v3** via shadcn chart primitives | fed by `/metrics` + `/admin/*`, never raw keys; custom SVG for `TtlRing` + `StampedeTimeline` |
-| Server state | **TanStack Query v5** | `useQuery` (panels), `useInfiniteQuery` (Explorer SCAN paging) |
-| Live feeds | **`socket.io-client`** | multiplexed `cache:connection` / `cache:event` / `cache:expired` |
-| Table | **TanStack Table v8** + **Virtual v3** | virtualized key list at 60fps |
-| Filter state | **`nuqs` v2** typed URL params | shareable deep-links (Explorer filters, time range) — needs `<NuqsAdapter>` in root layout |
-| JSON viewer | **`@uiw/react-json-view`** | key value inspector (collapsible, clipboard) |
-| Toasts | **`sonner`** (glass `Toaster`) | identical config to siblings |
-| Class utils | **`cva` + `clsx` + `tailwind-merge`** | the `cn()` util + button/badge variants |
-| Types | **`@bymax-one/nest-cache/shared`** | `CACHE_ERROR_CODES`, `CacheErrorCode`, `CacheConnectionStatus`, `CacheEventName`, `SerializableValue` — the zero-dep subpath, in the **browser bundle** (spec §8.2) |
+| Concern      | Choice                                                                                                            | Why                                                                                                                                                                 |
+| ------------ | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework    | **Next.js `^16`** (App Router) + **React `^19`** + TypeScript                                                     | matches the sibling examples                                                                                                                                        |
+| Styling      | **Tailwind CSS v4** (`@tailwindcss/postcss` only — no `autoprefixer`/`postcss-import`) + **shadcn/ui `new-york`** | identical to the siblings                                                                                                                                           |
+| Icons        | **`lucide-react`**                                                                                                | shadcn `iconLibrary: lucide`                                                                                                                                        |
+| Fonts        | **`geist`** (`GeistSans` + `GeistMono`)                                                                           | body = Sans; headings/brand/keys/metrics = Mono                                                                                                                     |
+| Theme        | **forced dark** (`dark` on `<html>`) — **no `next-themes`**                                                       | the system is dark-only by design                                                                                                                                   |
+| Charts       | **Recharts v3** via shadcn chart primitives                                                                       | fed by `/metrics` + `/admin/*`, never raw keys; custom SVG for `TtlRing` + `StampedeTimeline`                                                                       |
+| Server state | **TanStack Query v5**                                                                                             | `useQuery` (panels), `useInfiniteQuery` (Explorer SCAN paging)                                                                                                      |
+| Live feeds   | **`socket.io-client`**                                                                                            | multiplexed `cache:connection` / `cache:event` / `cache:expired`                                                                                                    |
+| Table        | **TanStack Table v8** + **Virtual v3**                                                                            | virtualized key list at 60fps                                                                                                                                       |
+| Filter state | **`nuqs` v2** typed URL params                                                                                    | shareable deep-links (Explorer filters, time range) — needs `<NuqsAdapter>` in root layout                                                                          |
+| JSON viewer  | **`@uiw/react-json-view`**                                                                                        | key value inspector (collapsible, clipboard)                                                                                                                        |
+| Toasts       | **`sonner`** (glass `Toaster`)                                                                                    | identical config to siblings                                                                                                                                        |
+| Class utils  | **`cva` + `clsx` + `tailwind-merge`**                                                                             | the `cn()` util + button/badge variants                                                                                                                             |
+| Types        | **`@bymax-one/nest-cache/shared`**                                                                                | `CACHE_ERROR_CODES`, `CacheErrorCode`, `CacheConnectionStatus`, `CacheEventName`, `SerializableValue` — the zero-dep subpath, in the **browser bundle** (spec §8.2) |
 
 Install: `next@^16 react@^19 react-dom@^19 tailwindcss@^4 @tailwindcss/postcss geist lucide-react sonner class-variance-authority clsx tailwind-merge` + data libs (`@tanstack/react-query @tanstack/react-table @tanstack/react-virtual nuqs @uiw/react-json-view recharts socket.io-client`). **Do not** add `next-themes`, `autoprefixer`, or `postcss-import`. Remember `<NuqsAdapter>` in the root layout.
 
@@ -639,18 +654,18 @@ Reuse the sibling Topbar + Sidebar shell **classes verbatim**; only the brand la
 
 **Cache nav items** (lucide icons), grouped:
 
-| Group | Label | href | Icon |
-|---|---|---|---|
-| Observe | Overview | `/` | `LayoutDashboard` |
-| Observe | Explorer | `/explorer` | `Search` |
-| Observe | Playground | `/playground` | `Boxes` |
-| Observe | Tenants | `/tenants` | `Building2` |
-| Real-time | Pub/Sub | `/pubsub` | `Radio` |
-| Real-time | TTL Live | `/ttl` | `Timer` |
-| Labs | Stampede | `/stampede` | `Zap` |
-| Labs | Serializer | `/serializer` | `Binary` |
-| Labs | Errors | `/errors` | `TriangleAlert` |
-| System | Connection | `/connection` | `PlugZap` |
+| Group     | Label      | href          | Icon              |
+| --------- | ---------- | ------------- | ----------------- |
+| Observe   | Overview   | `/`           | `LayoutDashboard` |
+| Observe   | Explorer   | `/explorer`   | `Search`          |
+| Observe   | Playground | `/playground` | `Boxes`           |
+| Observe   | Tenants    | `/tenants`    | `Building2`       |
+| Real-time | Pub/Sub    | `/pubsub`     | `Radio`           |
+| Real-time | TTL Live   | `/ttl`        | `Timer`           |
+| Labs      | Stampede   | `/stampede`   | `Zap`             |
+| Labs      | Serializer | `/serializer` | `Binary`          |
+| Labs      | Errors     | `/errors`     | `TriangleAlert`   |
+| System    | Connection | `/connection` | `PlugZap`         |
 
 ### Component recipes (verbatim) + cache-specific components
 
@@ -665,12 +680,12 @@ Reuse the sibling Topbar + Sidebar shell **classes verbatim**; only the brand la
 
 Reuse the design-system severity pattern, mapping `CacheConnectionStatus` / `CacheEventName` and hit/miss to the palette (full table in spec §14.4):
 
-| Surface | Value → palette |
-|---|---|
-| Connection | `ready` green · `connecting` blue · `reconnecting` amber · `closed`/`end` red · `error` purple |
-| Cache result | `hit` green · `miss` amber |
-| Error code | 4xx amber · 5xx red · 504 purple (Error Explorer) |
-| Data type | `string` blue · `hash` purple · `set` green (chips) |
+| Surface      | Value → palette                                                                                |
+| ------------ | ---------------------------------------------------------------------------------------------- |
+| Connection   | `ready` green · `connecting` blue · `reconnecting` amber · `closed`/`end` red · `error` purple |
+| Cache result | `hit` green · `miss` amber                                                                     |
+| Error code   | 4xx amber · 5xx red · 504 purple (Error Explorer)                                              |
+| Data type    | `string` blue · `hash` purple · `set` green (chips)                                            |
 
 > **Net effect:** drop a `nest-cache-example` screenshot beside a `nest-logger-example` or `nest-auth-example` one and the chrome (topbar, sidebar, cards, buttons, fonts, orange brand, glass) is indistinguishable — only the content (keys, TTL rings, hit-rate gauges) differs.
 

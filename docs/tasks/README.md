@@ -4,25 +4,25 @@
 
 ## Phase files
 
-| Phase | File                                  | Scope                                                                  |
-| ----- | ------------------------------------- | ---------------------------------------------------------------------- |
-| 0     | `phase-00-repo-foundation.md`         | pnpm monorepo, strict TS/ESLint/Prettier, husky/commitlint, renovate   |
-| 1     | `phase-01-redis-stack.md`             | docker-compose `redis:7` + keyspace notifications + tools/cluster/sentinel profiles |
-| 2     | `phase-02-library-consumption.md`     | consume `@bymax-one/nest-cache` (local link); `.` + `./shared` subpath probe |
-| 3     | `phase-03-api-skeleton-wiring.md`     | NestJS 11, `forRootAsync`, events bridge, `CacheExceptionFilter`, gateway skeleton, `/health` |
-| 4     | `phase-04-domain-data-structures.md`  | catalog / counters / collections + app metrics — strings/numerics/hashes/sets/batch/TTL |
+| Phase | File                                  | Scope                                                                                           |
+| ----- | ------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| 0     | `phase-00-repo-foundation.md`         | pnpm monorepo, strict TS/ESLint/Prettier, husky/commitlint, renovate                            |
+| 1     | `phase-01-redis-stack.md`             | docker-compose `redis:7` + keyspace notifications + tools/cluster/sentinel profiles             |
+| 2     | `phase-02-library-consumption.md`     | consume `@bymax-one/nest-cache` (local link); `.` + `./shared` subpath probe                    |
+| 3     | `phase-03-api-skeleton-wiring.md`     | NestJS 11, `forRootAsync`, events bridge, `CacheExceptionFilter`, gateway skeleton, `/health`   |
+| 4     | `phase-04-domain-data-structures.md`  | catalog / counters / collections + app metrics — strings/numerics/hashes/sets/batch/TTL         |
 | 5     | `phase-05-cache-admin-api.md`         | `scan`/`keys`/`info`/`keyspace`/`pipeline` seed/`flushNamespace`/get-del — the Explorer backend |
-| 6     | `phase-06-namespace-tenants.md`       | per-tenant prefix scoping + foreign-namespace seed + `flushNamespace` isolation proof |
-| 7     | `phase-07-serialization.md`           | default `JsonSerializer` + custom `MsgPackSerializer` + serializer-demo |
-| 8     | `phase-08-pubsub-websocket.md`        | `PubSubService` publish/subscribe/psubscribe + socket.io gateway bridge |
-| 9     | `phase-09-ttl-events.md`              | raw keyspace subscriber (`BYMAX_CACHE_CONNECTION` → `createSubscriberClient`) |
-| 10    | `phase-10-lua-stampede.md`            | `ScriptManagerService` + `CacheService.eval` single-flight lock        |
+| 6     | `phase-06-namespace-tenants.md`       | per-tenant prefix scoping + foreign-namespace seed + `flushNamespace` isolation proof           |
+| 7     | `phase-07-serialization.md`           | default `JsonSerializer` + custom `MsgPackSerializer` + serializer-demo                         |
+| 8     | `phase-08-pubsub-websocket.md`        | `PubSubService` publish/subscribe/psubscribe + socket.io gateway bridge                         |
+| 9     | `phase-09-ttl-events.md`              | raw keyspace subscriber (`BYMAX_CACHE_CONNECTION` → `createSubscriberClient`)                   |
+| 10    | `phase-10-lua-stampede.md`            | `ScriptManagerService` + `CacheService.eval` single-flight lock                                 |
 | 11    | `phase-11-topologies-errors.md`       | sentinel/cluster config + profiles; `errors-demo` (each `CacheException`); cluster restrictions |
-| 12    | `phase-12-web-skeleton-design.md`     | Next.js 16 + **the copied design system** + app shell + api-client/socket + `./shared` import |
-| 13    | `phase-13-dashboard-observe.md`       | Overview + Explorer + Playground + Tenants pages                       |
-| 14    | `phase-14-dashboard-realtime-labs.md` | Pub/Sub + TTL Live + Stampede + Serializer + Errors + Connection pages  |
-| 15    | `phase-15-testing.md`                 | E2E smoke (Testcontainers `redis:7-alpine` + `ioredis-mock`) + web Playwright smoke |
-| 16    | `phase-16-docs-readme-audit.md`       | README (badges, journeys) + curl walkthroughs + export-usage audit     |
+| 12    | `phase-12-web-skeleton-design.md`     | Next.js 16 + **the copied design system** + app shell + api-client/socket + `./shared` import   |
+| 13    | `phase-13-dashboard-observe.md`       | Overview + Explorer + Playground + Tenants pages                                                |
+| 14    | `phase-14-dashboard-realtime-labs.md` | Pub/Sub + TTL Live + Stampede + Serializer + Errors + Connection pages                          |
+| 15    | `phase-15-testing.md`                 | E2E smoke (Testcontainers `redis:7-alpine` + `ioredis-mock`) + web Playwright smoke             |
+| 16    | `phase-16-docs-readme-audit.md`       | README (badges, journeys) + curl walkthroughs + export-usage audit                              |
 
 ## Task-file conventions
 
