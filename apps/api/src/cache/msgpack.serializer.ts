@@ -29,13 +29,20 @@ export class MsgPackSerializer implements ISerializer {
   /**
    * Decodes a base64-wrapped MessagePack string back into a value.
    *
-   * Fails closed: propagates the @msgpack/msgpack decode error on malformed input.
+   * Fails closed: validates the base64 format before decoding, then propagates any
+   * @msgpack/msgpack decode error. Node's `Buffer.from(raw, 'base64')` is permissive
+   * and silently ignores invalid characters — the explicit regex guard enforces the
+   * contract so callers receive a throw, not a silently-corrupted value.
    *
    * @param raw - The base64-encoded MessagePack string.
    * @returns The decoded value, typed as T.
-   * @throws When `raw` is not valid base64 MessagePack (fails closed — never returns partial data).
+   * @throws {Error} When `raw` is not valid base64 (format guard).
+   * @throws When `raw` decodes to malformed MessagePack (decode error propagated).
    */
   deserialize<T>(raw: string): T {
+    if (!/^[A-Za-z0-9+/]*={0,2}$/.test(raw)) {
+      throw new Error(`MsgPackSerializer: malformed base64 input`)
+    }
     return decode(Buffer.from(raw, 'base64')) as T
   }
 }

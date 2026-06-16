@@ -72,9 +72,12 @@ export class SerializerDemoService {
     const decoded = await this.cache.get(DEMO_PREFIX, 'last')
     // setRaw stores the string verbatim (codec bypassed on write);
     // getRaw reads it back verbatim (codec bypassed on read) — see TECHNICAL_SPECIFICATION.md §4.1.
-    // When raw is null the key was evicted between set and getRaw; store null sentinel to surface the miss.
-    await this.cache.setRaw(DEMO_PREFIX, 'raw', raw ?? 'null')
-    const rawBypass = await this.cache.getRaw(DEMO_PREFIX, 'raw')
+    // Skip the bypass write/read when raw is null (key evicted); return null to surface the miss clearly.
+    let rawBypass: string | null = null
+    if (raw !== null) {
+      await this.cache.setRaw(DEMO_PREFIX, 'raw', raw)
+      rawBypass = await this.cache.getRaw(DEMO_PREFIX, 'raw')
+    }
     return { raw, decoded, rawBytes: raw === null ? 0 : Buffer.byteLength(raw), rawBypass }
   }
 
