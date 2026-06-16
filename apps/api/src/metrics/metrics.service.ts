@@ -55,8 +55,9 @@ export class MetricsService {
   snapshot(): MetricsSnapshot {
     const now = Date.now()
     const elapsedMs = Math.max(now - this.windowStart, 1)
-    const instantaneousOpsPerSec =
-      elapsedMs >= SAMPLE_WINDOW_MS ? Math.round((this.opCount / elapsedMs) * 1_000) : this.opCount
+    const instantaneousOpsPerSec = Math.round(
+      (this.opCount / Math.max(elapsedMs, SAMPLE_WINDOW_MS)) * 1_000,
+    )
 
     this.opCount = 0
     this.windowStart = now
