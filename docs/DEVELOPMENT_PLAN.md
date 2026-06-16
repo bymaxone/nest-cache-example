@@ -33,12 +33,12 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 >
 > **All 17 phase files are scaffolded** under [`docs/tasks/`](tasks/) — the per-phase totals below are firm.
 >
-> **Overall progress: 8 / 107 tasks done (7%)**
+> **Overall progress: 13 / 107 tasks done (12%)**
 
 | #   | Phase                                     | Tasks file                            | Size | Done / Total | %    | Status |
 | --- | ----------------------------------------- | ------------------------------------- | ---- | ------------ | ---- | ------ |
 | 0   | Repository Foundation & Tooling           | `phase-00-repo-foundation.md`         | M    | 8 / 8        | 100% | 🟢     |
-| 1   | Local Redis Stack & Docker                | `phase-01-redis-stack.md`             | M    | 0 / 5        | 0%   | 🔴     |
+| 1   | Local Redis Stack & Docker                | `phase-01-redis-stack.md`             | M    | 5 / 5        | 100% | 🟢     |
 | 2   | Library Consumption & Workspace Bootstrap | `phase-02-library-consumption.md`     | S    | 0 / 3        | 0%   | 🔴     |
 | 3   | `apps/api` Skeleton + Cache Module Wiring | `phase-03-api-skeleton-wiring.md`     | L    | 0 / 9        | 0%   | 🔴     |
 | 4   | Domain & Core Data Structures             | `phase-04-domain-data-structures.md`  | L    | 0 / 9        | 0%   | 🔴     |
