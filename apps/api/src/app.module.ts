@@ -1,11 +1,11 @@
 /**
  * Root module — assembles config validation, cache wiring, WebSocket hub,
- * global exception filter, and health endpoint.
+ * global exception filter, and all feature modules.
  *
- * Layer: root. `ConfigModule.forRoot` runs `validateEnv` at bootstrap; an invalid
- * env throws before Nest initializes any provider. `CacheModule` registers
- * `BymaxCacheModule` globally (`isGlobal: true`) so `CacheService` and peers are
- * injectable app-wide without additional imports.
+ * Layer: root. `ConfigModule.forRoot` runs `validateEnv` at bootstrap; an
+ * invalid env throws before Nest initializes any provider. `CacheModule`
+ * registers `BymaxCacheModule` globally (`isGlobal: true`) so `CacheService`
+ * is injectable app-wide without additional imports.
  */
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
@@ -15,6 +15,10 @@ import { EventsModule } from './events/events.module.js'
 import { CacheModule } from './cache/cache.module.js'
 import { CacheExceptionFilter } from './common/cache-exception.filter.js'
 import { HealthController } from './health/health.controller.js'
+import { CatalogModule } from './catalog/catalog.module.js'
+import { CountersModule } from './counters/counters.module.js'
+import { CollectionsModule } from './collections/collections.module.js'
+import { MetricsModule } from './metrics/metrics.module.js'
 
 /** Root application module. */
 @Module({
@@ -22,6 +26,10 @@ import { HealthController } from './health/health.controller.js'
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnv }),
     EventsModule,
     CacheModule,
+    CatalogModule,
+    CountersModule,
+    CollectionsModule,
+    MetricsModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_FILTER, useClass: CacheExceptionFilter }],

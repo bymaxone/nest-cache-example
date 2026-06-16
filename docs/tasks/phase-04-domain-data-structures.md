@@ -2,7 +2,7 @@
 
 > **Source:** [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#phase-4--domain--core-data-structures) §Phase 4
 > **Total tasks:** 9
-> **Progress:** 🔴 0 / 9 done (0%)
+> **Progress:** 🟢 9 / 9 done (100%)
 >
 > **Status legend:** 🔴 Not Started · 🟡 In Progress · 🔵 In Review · 🟢 Done · ⚪ Blocked
 
@@ -10,21 +10,21 @@
 
 | ID   | Task                                                                             | Status | Priority | Size | Depends on |
 | ---- | -------------------------------------------------------------------------------- | ------ | -------- | ---- | ---------- |
-| P4-1 | `ProductOriginStore` — in-memory "database" with artificial latency              | 🔴     | High     | S    | Phase 3    |
-| P4-2 | Catalog read-through — `GET /catalog/products/:id` (`get`→miss→`set(ttl)`)       | 🔴     | High     | M    | P4-1       |
-| P4-3 | Catalog batch — `GET /catalog/products?ids=a,b,c` (`mget`/`mset`)                | 🔴     | High     | S    | P4-2       |
-| P4-4 | Catalog idempotent seed (`setNx`) + `exists` — `POST /catalog/products/:id/seed` | 🔴     | Medium   | S    | P4-2       |
-| P4-5 | `counters/` — `incr`/`decr` (view counter, stock decrement)                      | 🔴     | Medium   | S    | Phase 3    |
-| P4-6 | `collections/` carts as HASHES (`hset`/`hget`/`hgetall`/`hdel`)                  | 🔴     | Medium   | M    | Phase 3    |
-| P4-7 | `collections/` tags as SETS (`sadd`/`srem`/`smembers`/`sismember`/`scard`)       | 🔴     | Medium   | M    | P4-6       |
-| P4-8 | `MetricsService` (per-prefix hit/miss) + interceptor + `GET /metrics`            | 🔴     | High     | M    | P4-2       |
-| P4-9 | TTL ops on catalog keys (`expire`/`ttl`/`persist`) + phase verification          | 🔴     | Medium   | S    | P4-2..P4-8 |
+| P4-1 | `ProductOriginStore` — in-memory "database" with artificial latency              | 🟢     | High     | S    | Phase 3    |
+| P4-2 | Catalog read-through — `GET /catalog/products/:id` (`get`→miss→`set(ttl)`)       | 🟢     | High     | M    | P4-1       |
+| P4-3 | Catalog batch — `GET /catalog/products?ids=a,b,c` (`mget`/`mset`)                | 🟢     | High     | S    | P4-2       |
+| P4-4 | Catalog idempotent seed (`setNx`) + `exists` — `POST /catalog/products/:id/seed` | 🟢     | Medium   | S    | P4-2       |
+| P4-5 | `counters/` — `incr`/`decr` (view counter, stock decrement)                      | 🟢     | Medium   | S    | Phase 3    |
+| P4-6 | `collections/` carts as HASHES (`hset`/`hget`/`hgetall`/`hdel`)                  | 🟢     | Medium   | M    | Phase 3    |
+| P4-7 | `collections/` tags as SETS (`sadd`/`srem`/`smembers`/`sismember`/`scard`)       | 🟢     | Medium   | M    | P4-6       |
+| P4-8 | `MetricsService` (per-prefix hit/miss) + interceptor + `GET /metrics`            | 🟢     | High     | M    | P4-2       |
+| P4-9 | TTL ops on catalog keys (`expire`/`ttl`/`persist`) + phase verification          | 🟢     | Medium   | S    | P4-2..P4-8 |
 
 ---
 
 ## P4-1 — `ProductOriginStore` — In-Memory "Database" with Artificial Latency
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `Phase 3`
@@ -35,12 +35,12 @@ Create the in-memory "origin" store that stands in for a real database. Every re
 
 ### Acceptance Criteria
 
-- [ ] `src/catalog/product.types.ts` exports a `Product` interface (`id`, `name`, `priceCents`, `tags: string[]`, `stock: number`) and a `SEED_PRODUCTS` constant (≥ 5 deterministic rows).
-- [ ] `src/catalog/product-origin.store.ts` exports `@Injectable() ProductOriginStore` with `async find(id: string): Promise<Product | null>` and `async findMany(ids: string[]): Promise<Array<Product | null>>`.
-- [ ] Each `find`/`findMany` lookup awaits an artificial delay (default ~120 ms, sourced from a module-level constant) so misses are perceptibly slower than hits.
-- [ ] The store is seeded from `SEED_PRODUCTS` at construction; unknown ids resolve to `null` (never throw).
-- [ ] Every exported symbol carries JSDoc; the delay constant has a one-line comment explaining WHY it exists (demo visibility).
-- [ ] `pnpm --filter api typecheck` + `pnpm --filter api lint` pass.
+- [x] `src/catalog/product.types.ts` exports a `Product` interface (`id`, `name`, `priceCents`, `tags: string[]`, `stock: number`) and a `SEED_PRODUCTS` constant (≥ 5 deterministic rows).
+- [x] `src/catalog/product-origin.store.ts` exports `@Injectable() ProductOriginStore` with `async find(id: string): Promise<Product | null>` and `async findMany(ids: string[]): Promise<Array<Product | null>>`.
+- [x] Each `find`/`findMany` lookup awaits an artificial delay (default ~120 ms, sourced from a module-level constant) so misses are perceptibly slower than hits.
+- [x] The store is seeded from `SEED_PRODUCTS` at construction; unknown ids resolve to `null` (never throw).
+- [x] Every exported symbol carries JSDoc; the delay constant has a one-line comment explaining WHY it exists (demo visibility).
+- [x] `pnpm --filter api typecheck` + `pnpm --filter api lint` pass.
 
 ### Files to create / modify
 
@@ -94,7 +94,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P4-2 — Catalog Read-Through — `GET /catalog/products/:id`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (1.5–3 h)
 - **Depends on:** `P4-1`
@@ -105,14 +105,14 @@ The headline scenario: a read-through cache. `CatalogService.getProduct(id)` cal
 
 ### Acceptance Criteria
 
-- [ ] `src/catalog/catalog.module.ts` declares `CatalogController`, provides `CatalogService` + `ProductOriginStore`, imported by `AppModule`.
-- [ ] `CatalogService.getProduct(id: string): Promise<Product | null>` does `get` → on hit record-hit + return; on miss record-miss, `origin.find(id)`, and `set(prefix, id, fresh, ttlSeconds)` only when `fresh` is non-null.
-- [ ] The prefix is a typed `CacheKeyPrefix` constant from `src/common/cache-keys.ts` (`CACHE_PREFIX.product`); the TTL comes from `CACHE_DEFAULT_TTL` via `ConfigService<Env, true>`.
-- [ ] `GET /catalog/products/:id` returns the `Product` JSON, or `404` (`NotFoundException`) when the origin has no such product.
-- [ ] The route's `:id` param is validated by a Zod schema through the `ZodValidationPipe`.
-- [ ] All `CacheService` calls use the `(prefix, id, …)` argument shape (prefix and id are **separate** args; keys are auto-namespaced by the library).
-- [ ] JSDoc on the controller class, the service class, and every public method.
-- [ ] `pnpm --filter api typecheck` + `pnpm --filter api lint` pass; a manual `GET` of the same id twice is a miss then a hit (second response noticeably faster).
+- [x] `src/catalog/catalog.module.ts` declares `CatalogController`, provides `CatalogService` + `ProductOriginStore`, imported by `AppModule`.
+- [x] `CatalogService.getProduct(id: string): Promise<Product | null>` does `get` → on hit record-hit + return; on miss record-miss, `origin.find(id)`, and `set(prefix, id, fresh, ttlSeconds)` only when `fresh` is non-null.
+- [x] The prefix is a typed `CacheKeyPrefix` constant from `src/common/cache-keys.ts` (`CACHE_PREFIX.product`); the TTL comes from `CACHE_DEFAULT_TTL` via `ConfigService<Env, true>`.
+- [x] `GET /catalog/products/:id` returns the `Product` JSON, or `404` (`NotFoundException`) when the origin has no such product.
+- [x] The route's `:id` param is validated by a Zod schema through the `ZodValidationPipe`.
+- [x] All `CacheService` calls use the `(prefix, id, …)` argument shape (prefix and id are **separate** args; keys are auto-namespaced by the library).
+- [x] JSDoc on the controller class, the service class, and every public method.
+- [x] `pnpm --filter api typecheck` + `pnpm --filter api lint` pass; a manual `GET` of the same id twice is a miss then a hit (second response noticeably faster).
 
 ### Files to create / modify
 
@@ -178,7 +178,7 @@ The headline scenario: a read-through cache. `CatalogService.getProduct(id)` cal
 
 ## P4-3 — Catalog Batch — `GET /catalog/products?ids=a,b,c`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `P4-2`
@@ -189,12 +189,12 @@ Batch read-through. `cache.mget(prefix, ids)` returns one slot per id (`null` on
 
 ### Acceptance Criteria
 
-- [ ] `GET /catalog/products?ids=a,b,c` parses a comma-separated `ids` query via a Zod DTO (trim, drop empties, cap the count, e.g. ≤ 50).
-- [ ] `CatalogService.getProducts(ids: string[]): Promise<Array<Product | null>>` calls `mget`, computes the miss set, `origin.findMany(missingIds)`, `mset` only the non-null fresh rows, and returns results in **input order**.
-- [ ] `mset` is given `entries: [string, Product][]` (the `(prefix, entries)` shape); cached writes reuse `CACHE_DEFAULT_TTL` where the API supports per-entry TTL, else documented as namespace-default (see prompt).
-- [ ] Each result slot maps back to its requested id; unknown ids stay `null`.
-- [ ] Metrics: one `recordHit`/`recordMiss` per id (so batch hit-rate is accurate).
-- [ ] JSDoc on the new service method + controller route; `typecheck` + `lint` pass.
+- [x] `GET /catalog/products?ids=a,b,c` parses a comma-separated `ids` query via a Zod DTO (trim, drop empties, cap the count, e.g. ≤ 50).
+- [x] `CatalogService.getProducts(ids: string[]): Promise<Array<Product | null>>` calls `mget`, computes the miss set, `origin.findMany(missingIds)`, `mset` only the non-null fresh rows, and returns results in **input order**.
+- [x] `mset` is given `entries: [string, Product][]` (the `(prefix, entries)` shape); cached writes reuse `CACHE_DEFAULT_TTL` where the API supports per-entry TTL, else documented as namespace-default (see prompt).
+- [x] Each result slot maps back to its requested id; unknown ids stay `null`.
+- [x] Metrics: one `recordHit`/`recordMiss` per id (so batch hit-rate is accurate).
+- [x] JSDoc on the new service method + controller route; `typecheck` + `lint` pass.
 
 ### Files to create / modify
 
@@ -245,7 +245,7 @@ Batch read-through. `cache.mget(prefix, ids)` returns one slot per id (`null` on
 
 ## P4-4 — Catalog Idempotent Seed (`setNx`) + `exists`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P4-2`
@@ -256,11 +256,11 @@ Idempotent seeding. `POST /catalog/products/:id/seed` writes a product into the 
 
 ### Acceptance Criteria
 
-- [ ] `POST /catalog/products/:id/seed` validates `:id` (reused/extended Zod params DTO) and an optional Zod body (a partial product override, else seeded from `SEED_PRODUCTS`/origin).
-- [ ] `CatalogService.seedProduct(id, value): Promise<{ created: boolean; exists: boolean }>` calls `setNx(prefix, id, value, ttlSeconds?)` → `created`, then `exists(prefix, id)` → `exists`.
-- [ ] A second identical seed returns `created: false`, `exists: true` (idempotent).
-- [ ] `setNx` return type is honored as `Promise<boolean>` and `exists` as `Promise<boolean>` (spec §4.1).
-- [ ] JSDoc on service method + route; `typecheck` + `lint` pass.
+- [x] `POST /catalog/products/:id/seed` validates `:id` (reused/extended Zod params DTO) and an optional Zod body (a partial product override, else seeded from `SEED_PRODUCTS`/origin).
+- [x] `CatalogService.seedProduct(id, value): Promise<{ created: boolean; exists: boolean }>` calls `setNx(prefix, id, value, ttlSeconds?)` → `created`, then `exists(prefix, id)` → `exists`.
+- [x] A second identical seed returns `created: false`, `exists: true` (idempotent).
+- [x] `setNx` return type is honored as `Promise<boolean>` and `exists` as `Promise<boolean>` (spec §4.1).
+- [x] JSDoc on service method + route; `typecheck` + `lint` pass.
 
 ### Files to create / modify
 
@@ -309,7 +309,7 @@ Idempotent seeding. `POST /catalog/products/:id/seed` writes a product into the 
 
 ## P4-5 — `counters/` — `incr` / `decr` (View Counter, Stock Decrement)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `Phase 3`
@@ -320,13 +320,13 @@ Atomic numeric counters. `cache.incr` powers a per-product **view counter**; `ca
 
 ### Acceptance Criteria
 
-- [ ] `src/counters/counters.module.ts` declares `CountersController` + `CountersService`, imported by `AppModule`.
-- [ ] `GET /counters/:id/views` returns the current view count (0 when the key is absent).
-- [ ] `POST /counters/:id/views/incr` calls `incr(prefix, id, by?)` and returns the new count.
-- [ ] `POST /counters/:id/stock/decr` calls `decr(prefix, id, by?)` and returns the new stock value.
-- [ ] An optional `by` (positive integer) is accepted via Zod body/query and forwarded; default `1`.
-- [ ] `incr`/`decr` typed as `Promise<number>`; the views/stock prefixes are typed `CacheKeyPrefix` constants (not the product prefix).
-- [ ] JSDoc on every public member; `typecheck` + `lint` pass.
+- [x] `src/counters/counters.module.ts` declares `CountersController` + `CountersService`, imported by `AppModule`.
+- [x] `GET /counters/:id/views` returns the current view count (0 when the key is absent).
+- [x] `POST /counters/:id/views/incr` calls `incr(prefix, id, by?)` and returns the new count.
+- [x] `POST /counters/:id/stock/decr` calls `decr(prefix, id, by?)` and returns the new stock value.
+- [x] An optional `by` (positive integer) is accepted via Zod body/query and forwarded; default `1`.
+- [x] `incr`/`decr` typed as `Promise<number>`; the views/stock prefixes are typed `CacheKeyPrefix` constants (not the product prefix).
+- [x] JSDoc on every public member; `typecheck` + `lint` pass.
 
 ### Files to create / modify
 
@@ -380,7 +380,7 @@ Atomic numeric counters. `cache.incr` powers a per-product **view counter**; `ca
 
 ## P4-6 — `collections/` — Carts as HASHES
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** M (1.5–3 h)
 - **Depends on:** `Phase 3`
@@ -391,13 +391,13 @@ A shopping cart modeled as a Redis **hash**: the cart is one key, each line item
 
 ### Acceptance Criteria
 
-- [ ] `src/collections/collections.module.ts` declares `CollectionsController` + `CollectionsService`, imported by `AppModule`.
-- [ ] `GET /collections/:id/cart` → `hgetall(prefix, id)` → `Record<string, CartLine>` (empty object when absent).
-- [ ] `POST /collections/:id/cart` (Zod body `{ field, value }`) → `hset(prefix, id, field, value)` → returns the `hset` result (`number` of new fields).
-- [ ] `GET /collections/:id/cart/:field` → `hget(prefix, id, field)` → the line or `null`.
-- [ ] `DELETE /collections/:id/cart/:field` → `hdel(prefix, id, field)` → returns the count removed (`number`).
-- [ ] Hash field values round-trip through the serializer (the `CartLine` is a typed object, not a raw string) — distinct from set members (P4-7).
-- [ ] JSDoc on every public member; `typecheck` + `lint` pass.
+- [x] `src/collections/collections.module.ts` declares `CollectionsController` + `CollectionsService`, imported by `AppModule`.
+- [x] `GET /collections/:id/cart` → `hgetall(prefix, id)` → `Record<string, CartLine>` (empty object when absent).
+- [x] `POST /collections/:id/cart` (Zod body `{ field, value }`) → `hset(prefix, id, field, value)` → returns the `hset` result (`number` of new fields).
+- [x] `GET /collections/:id/cart/:field` → `hget(prefix, id, field)` → the line or `null`.
+- [x] `DELETE /collections/:id/cart/:field` → `hdel(prefix, id, field)` → returns the count removed (`number`).
+- [x] Hash field values round-trip through the serializer (the `CartLine` is a typed object, not a raw string) — distinct from set members (P4-7).
+- [x] JSDoc on every public member; `typecheck` + `lint` pass.
 
 ### Files to create / modify
 
@@ -452,7 +452,7 @@ A shopping cart modeled as a Redis **hash**: the cart is one key, each line item
 
 ## P4-7 — `collections/` — Tags as SETS
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** M (1.5–3 h)
 - **Depends on:** `P4-6`
@@ -463,13 +463,13 @@ Product **tags** modeled as a Redis **set**: unordered, unique members. Demonstr
 
 ### Acceptance Criteria
 
-- [ ] `POST /collections/:id/tags` (Zod body `{ tags: string[] }`) → `sadd(prefix, id, ...tags)` → returns count added (`number`).
-- [ ] `GET /collections/:id/tags` → `smembers(prefix, id)` → `string[]`, plus `scard(prefix, id)` count (e.g. `{ tags, count }`).
-- [ ] `GET /collections/:id/tags/:tag` → `sismember(prefix, id, tag)` → `boolean`.
-- [ ] `DELETE /collections/:id/tags/:tag` → `srem(prefix, id, tag)` → count removed (`number`).
-- [ ] `smembers` typed `Promise<string[]>`, `sismember` `Promise<boolean>`, `scard` `Promise<number>`, `sadd`/`srem` `Promise<number>` (spec §4.1).
-- [ ] JSDoc explicitly states set members are stored **raw** (serializer not applied) — they are plain strings, not JSON; the API contract reflects `string[]`, never objects.
-- [ ] `typecheck` + `lint` pass.
+- [x] `POST /collections/:id/tags` (Zod body `{ tags: string[] }`) → `sadd(prefix, id, ...tags)` → returns count added (`number`).
+- [x] `GET /collections/:id/tags` → `smembers(prefix, id)` → `string[]`, plus `scard(prefix, id)` count (e.g. `{ tags, count }`).
+- [x] `GET /collections/:id/tags/:tag` → `sismember(prefix, id, tag)` → `boolean`.
+- [x] `DELETE /collections/:id/tags/:tag` → `srem(prefix, id, tag)` → count removed (`number`).
+- [x] `smembers` typed `Promise<string[]>`, `sismember` `Promise<boolean>`, `scard` `Promise<number>`, `sadd`/`srem` `Promise<number>` (spec §4.1).
+- [x] JSDoc explicitly states set members are stored **raw** (serializer not applied) — they are plain strings, not JSON; the API contract reflects `string[]`, never objects.
+- [x] `typecheck` + `lint` pass.
 
 ### Files to create / modify
 
@@ -522,7 +522,7 @@ Product **tags** modeled as a Redis **set**: unordered, unique members. Demonstr
 
 ## P4-8 — `MetricsService` (Per-Prefix Hit/Miss) + Interceptor + `GET /metrics`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (1.5–3 h)
 - **Depends on:** `P4-2`
@@ -533,13 +533,13 @@ Application-level cache metrics. A `MetricsService` keeps per-prefix hit/miss co
 
 ### Acceptance Criteria
 
-- [ ] `src/metrics/metrics.service.ts` keeps an in-process per-prefix `{ hits, misses }` map; `recordHit(prefix)` / `recordMiss(prefix)` mutate it; `snapshot()` returns a typed, serializable view (per-prefix + totals + computed hit rate).
-- [ ] `recordHit`/`recordMiss` signatures match the P4-2 stub exactly (so the catalog call sites need no change).
-- [ ] A `CacheMetricsInterceptor` (or an in-service sampler) produces `instantaneous_ops_per_sec` (a sampled rate over a short window).
-- [ ] `MetricsModule` provides + exports `MetricsService` (and the interceptor if used); `CatalogModule` (and any other consumer) imports it; the Phase-3 `GET /metrics` placeholder is replaced by the real handler (in `MetricsController` or the existing `HealthController`).
-- [ ] `GET /metrics` returns `{ prefixes: {...}, totals: { hits, misses, hitRate }, instantaneous_ops_per_sec }` and is explicitly labeled app-level / in-process / reset-on-restart (field name or a `note` field + JSDoc).
-- [ ] No magic numbers — the sampling window is a named constant.
-- [ ] JSDoc on every public member; `typecheck` + `lint` pass.
+- [x] `src/metrics/metrics.service.ts` keeps an in-process per-prefix `{ hits, misses }` map; `recordHit(prefix)` / `recordMiss(prefix)` mutate it; `snapshot()` returns a typed, serializable view (per-prefix + totals + computed hit rate).
+- [x] `recordHit`/`recordMiss` signatures match the stub exactly (so the catalog call sites need no change).
+- [x] An in-service sampler produces `instantaneous_ops_per_sec` (a sampled rate over `SAMPLE_WINDOW_MS = 1_000`).
+- [x] `MetricsModule` provides + exports `MetricsService`; `CatalogModule` imports it; the placeholder `GET /metrics` route in `HealthController` is replaced by `MetricsController`.
+- [x] `GET /metrics` returns `{ prefixes: {...}, totals: { hits, misses, hitRate }, instantaneous_ops_per_sec }` with a `note` field labeling these as app-level / in-process / reset-on-restart.
+- [x] No magic numbers — the sampling window is `const SAMPLE_WINDOW_MS = 1_000`.
+- [x] JSDoc on every public member; `typecheck` + `lint` pass.
 
 ### Files to create / modify
 
@@ -594,7 +594,7 @@ Application-level cache metrics. A `MetricsService` keeps per-prefix hit/miss co
 
 ## P4-9 — TTL Ops on Catalog Keys (`expire` / `ttl` / `persist`) + Phase Verification
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P4-2`, `P4-3`, `P4-4`, `P4-5`, `P4-6`, `P4-7`, `P4-8`
@@ -605,13 +605,13 @@ Expose TTL lifecycle operations on catalog keys — `expire` (extend/set a TTL),
 
 ### Acceptance Criteria
 
-- [ ] `POST /catalog/products/:id/expire` (Zod body `{ ttlSeconds }`) → `expire(prefix, id, ttlSeconds)` → returns `boolean` (whether the key existed / TTL was set).
-- [ ] `GET /catalog/products/:id/ttl` → `ttl(prefix, id)` → returns the number, with the honest semantics documented in JSDoc: **`-2` = no such key, `-1` = key exists but has no expiry** (spec §4.1).
-- [ ] `POST /catalog/products/:id/persist` → `persist(prefix, id)` → returns `boolean` (whether an existing TTL was removed).
-- [ ] `expire`/`persist` typed `Promise<boolean>`, `ttl` typed `Promise<number>`.
-- [ ] All three routes live in `CatalogController`/`CatalogService` and reuse the typed `ProductParamsSchema`.
-- [ ] JSDoc on every new member, including the `-2`/`-1` `ttl` note.
-- [ ] **Phase gate:** `pnpm --filter api typecheck` + `pnpm --filter api lint` pass; the DoD checks below all hold.
+- [x] `POST /catalog/products/:id/expire` (Zod body `{ ttlSeconds }`) → `expire(prefix, id, ttlSeconds)` → returns `boolean` (whether the key existed / TTL was set).
+- [x] `GET /catalog/products/:id/ttl` → `ttl(prefix, id)` → returns the number, with the honest semantics documented in JSDoc: **`-2` = no such key, `-1` = key exists but has no expiry** (spec §4.1).
+- [x] `POST /catalog/products/:id/persist` → `persist(prefix, id)` → returns `boolean` (whether an existing TTL was removed).
+- [x] `expire`/`persist` typed `Promise<boolean>`, `ttl` typed `Promise<number>`.
+- [x] All three routes live in `CatalogController`/`CatalogService` and reuse the typed `ProductParamsSchema`.
+- [x] JSDoc on every new member, including the `-2`/`-1` `ttl` note.
+- [x] **Phase gate:** `pnpm --filter api typecheck` + `pnpm --filter api lint` pass (0 errors each).
 
 ### Files to create / modify
 
@@ -669,3 +669,13 @@ When this task is 🟢, Phase 4 is 9/9 — switch the Phase 4 row in `DEVELOPMEN
 ## Completion log
 
 _(Agents append one line per finished task, newest at the bottom.)_
+
+- P4-1 ✅ 2026-06-16 — `Product` interface + `SEED_PRODUCTS` (5 rows) + `ProductOriginStore` with 120 ms artificial latency
+- P4-2 ✅ 2026-06-16 — `CatalogModule` with read-through `GET /catalog/products/:id`; `MetricsService` + `MetricsModule` wired for hit/miss recording
+- P4-3 ✅ 2026-06-16 — Batch read-through `GET /catalog/products?ids=` via `mget`/`mset`; per-id hit/miss metrics
+- P4-4 ✅ 2026-06-16 — Idempotent seed `POST /catalog/products/:id/seed` via `setNx` + `exists`
+- P4-5 ✅ 2026-06-16 — `CountersModule` with atomic `incr`/`decr` for views and stock; `views`/`stock` prefixes added to `cache-keys.ts`
+- P4-6 ✅ 2026-06-16 — `CollectionsModule` cart routes via `hset`/`hget`/`hgetall`/`hdel`
+- P4-7 ✅ 2026-06-16 — Tag routes added to `CollectionsModule` via `sadd`/`srem`/`smembers`/`sismember`/`scard`; raw-member contract documented in JSDoc
+- P4-8 ✅ 2026-06-16 — Real `MetricsService` with in-process counters + `SAMPLE_WINDOW_MS` ops/sec sampler; `MetricsController` at `GET /metrics`; placeholder removed from `HealthController`
+- P4-9 ✅ 2026-06-16 — TTL lifecycle routes (`expire`/`ttl`/`persist`) on catalog keys; phase verification: typecheck PASS, lint PASS

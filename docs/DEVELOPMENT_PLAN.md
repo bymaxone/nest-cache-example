@@ -33,7 +33,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 >
 > **All 17 phase files are scaffolded** under [`docs/tasks/`](tasks/) — the per-phase totals below are firm.
 >
-> **Overall progress: 25 / 107 tasks done (23%)**
+> **Overall progress: 34 / 107 tasks done (32%)**
 
 | #   | Phase                                     | Tasks file                            | Size | Done / Total | %    | Status |
 | --- | ----------------------------------------- | ------------------------------------- | ---- | ------------ | ---- | ------ |
@@ -41,7 +41,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 | 1   | Local Redis Stack & Docker                | `phase-01-redis-stack.md`             | M    | 5 / 5        | 100% | 🟢     |
 | 2   | Library Consumption & Workspace Bootstrap | `phase-02-library-consumption.md`     | S    | 3 / 3        | 100% | 🟢     |
 | 3   | `apps/api` Skeleton + Cache Module Wiring | `phase-03-api-skeleton-wiring.md`     | L    | 9 / 9        | 100% | 🟢     |
-| 4   | Domain & Core Data Structures             | `phase-04-domain-data-structures.md`  | L    | 0 / 9        | 0%   | 🔴     |
+| 4   | Domain & Core Data Structures             | `phase-04-domain-data-structures.md`  | L    | 9 / 9        | 100% | 🟢     |
 | 5   | Cache Admin API (Explorer backend)        | `phase-05-cache-admin-api.md`         | M    | 0 / 6        | 0%   | 🔴     |
 | 6   | Namespace Isolation & Tenants             | `phase-06-namespace-tenants.md`       | M    | 0 / 5        | 0%   | 🔴     |
 | 7   | Serialization (default + custom)          | `phase-07-serialization.md`           | S    | 0 / 4        | 0%   | 🔴     |
