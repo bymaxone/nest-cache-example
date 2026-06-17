@@ -77,10 +77,13 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<Api
   if (!path.startsWith('/') || path.includes('..')) {
     throw new Error(`apiFetch: invalid path "${path}"`)
   }
-  const res = await fetch(`${BASE}${path}`, {
-    ...init,
-    headers: { 'content-type': 'application/json', ...init?.headers },
-  })
+  // Build headers via the Headers API so every `HeadersInit` form (a `Headers`
+  // instance, a `[name, value][]` array, or a record) merges correctly — an
+  // object spread would silently drop non-record forms. JSON is the default
+  // content type unless the caller already set one.
+  const headers = new Headers(init?.headers)
+  if (!headers.has('content-type')) headers.set('content-type', 'application/json')
+  const res = await fetch(`${BASE}${path}`, { ...init, headers })
   const body: unknown = res.status === 204 ? null : await res.json().catch(() => null)
   if (!res.ok) return { ok: false, error: toApiError(res.status, body) }
   return { ok: true, data: body as T }
