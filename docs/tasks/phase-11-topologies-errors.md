@@ -2,7 +2,7 @@
 
 > **Source:** [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#phase-11--connection-topologies--error-surface) §Phase 11
 > **Total tasks:** 6
-> **Progress:** 🔴 0 / 6 done (0%)
+> **Progress:** 🟢 6 / 6 done (100%)
 >
 > **Status legend:** 🔴 Not Started · 🟡 In Progress · 🔵 In Review · 🟢 Done · ⚪ Blocked
 
@@ -10,18 +10,18 @@
 
 | ID    | Task                                                                               | Status | Priority | Size | Depends on   |
 | ----- | ---------------------------------------------------------------------------------- | ------ | -------- | ---- | ------------ |
-| P11-1 | `cache.config.ts` — `buildSentinelBlock`/`buildClusterBlock` + `CACHE_MODE`        | 🔴     | High     | M    | Phase 3      |
-| P11-2 | `docker/cluster/` + `docker/sentinel/` compose profiles made runnable              | 🔴     | Medium   | M    | Phase 3      |
-| P11-3 | `src/errors-demo/` — `POST /errors/:code` triggering all 15 error codes            | 🔴     | High     | M    | Phase 3      |
-| P11-4 | Cluster-restriction demo (`scan`/`flushNamespace`/`getClient` → unsupported)       | 🔴     | Medium   | S    | P11-1, P11-3 |
-| P11-5 | Typed error handling — import `CacheErrorCode` from `@bymax-one/nest-cache/shared` | 🔴     | Medium   | S    | P11-3        |
-| P11-6 | Phase verification (HTTP statuses · cluster restrictions · prod-guard 403)         | 🔴     | Medium   | S    | P11-1..P11-5 |
+| P11-1 | `cache.config.ts` — `buildSentinelBlock`/`buildClusterBlock` + `CACHE_MODE`        | 🟢     | High     | M    | Phase 3      |
+| P11-2 | `docker/cluster/` + `docker/sentinel/` compose profiles made runnable              | 🟢     | Medium   | M    | Phase 3      |
+| P11-3 | `src/errors-demo/` — `POST /errors/:code` triggering all 15 error codes            | 🟢     | High     | M    | Phase 3      |
+| P11-4 | Cluster-restriction demo (`scan`/`flushNamespace`/`getClient` → unsupported)       | 🟢     | Medium   | S    | P11-1, P11-3 |
+| P11-5 | Typed error handling — import `CacheErrorCode` from `@bymax-one/nest-cache/shared` | 🟢     | Medium   | S    | P11-3        |
+| P11-6 | Phase verification (HTTP statuses · cluster restrictions · prod-guard 403)         | 🟢     | Medium   | S    | P11-1..P11-5 |
 
 ---
 
 ## P11-1 — `cache.config.ts` — `buildSentinelBlock`/`buildClusterBlock` + `CACHE_MODE`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90 min – half day)
 - **Depends on:** `Phase 3`
@@ -32,12 +32,12 @@ Extend the canonical `apps/api/src/cache/cache.config.ts` factory (created in Ph
 
 ### Acceptance Criteria
 
-- [ ] `cache.config.ts` exports `buildSentinelBlock(config: ConfigService<Env, true>): BymaxCacheSentinelConnection` returning `{ sentinels, name, role?, password?, sentinelPassword?, natMap? }` built from env.
-- [ ] `cache.config.ts` exports `buildClusterBlock(config: ConfigService<Env, true>): BymaxCacheClusterConnection` returning `{ nodes, options? }` built from env.
-- [ ] `buildCacheOptions` sets `connection` only when `mode === 'standalone'`, `sentinel` only when `mode === 'sentinel'`, and `cluster` only when `mode === 'cluster'` (the other two are `undefined`).
-- [ ] `CACHE_MODE` (`standalone | sentinel | cluster`) drives the `mode` field; the Zod env schema already constrains the enum (Phase 3 / Appendix A).
-- [ ] Connection blocks are typed with re-exported ioredis types from `@bymax-one/nest-cache` (`SentinelAddress`, `ClusterNode`, `ClusterOptions`) — matrix #49.
-- [ ] `pnpm --filter api typecheck` exits 0.
+- [x] `cache.config.ts` exports `buildSentinelBlock(config: ConfigService<Env, true>): BymaxCacheSentinelConnection` returning `{ sentinels, name, role?, password?, sentinelPassword?, natMap? }` built from env.
+- [x] `cache.config.ts` exports `buildClusterBlock(config: ConfigService<Env, true>): BymaxCacheClusterConnection` returning `{ nodes, options? }` built from env.
+- [x] `buildCacheOptions` sets `connection` only when `mode === 'standalone'`, `sentinel` only when `mode === 'sentinel'`, and `cluster` only when `mode === 'cluster'` (the other two are `undefined`).
+- [x] `CACHE_MODE` (`standalone | sentinel | cluster`) drives the `mode` field; the Zod env schema already constrains the enum (Phase 3 / Appendix A).
+- [x] Connection blocks are typed with re-exported ioredis types from `@bymax-one/nest-cache` (`SentinelAddress`, `ClusterNode`, `ClusterOptions`) — matrix #49.
+- [x] `pnpm --filter api typecheck` exits 0.
 
 ### Files to create / modify
 
@@ -129,7 +129,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P11-2 — `docker/cluster/` + `docker/sentinel/` Compose Profiles Made Runnable
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** M (90 min – half day)
 - **Depends on:** `Phase 3`
@@ -140,11 +140,11 @@ Flesh out the `docker/cluster/` and `docker/sentinel/` skeletons (stubbed in Pha
 
 ### Acceptance Criteria
 
-- [ ] `docker/sentinel/` provides a runnable master + replica + ≥1 sentinel (`sentinel.conf` monitoring `mymaster`), exposed on `127.0.0.1:26379` (+ peers) under the `sentinel` profile.
-- [ ] `docker/cluster/` provides a runnable multi-node cluster (≥3 primaries, cluster-enabled `redis.conf`, an init/`--cluster create` step), exposed on `127.0.0.1:7000+` under the `cluster` profile.
-- [ ] `docker-compose.yml` wires both profiles; default `up` (no profile) starts only standalone Redis (unchanged from Phase 1).
-- [ ] `docker compose --profile sentinel up -d --wait` reaches healthy; `docker compose --profile cluster up -d --wait` reaches healthy.
-- [ ] The README/`docs` snippet documents the two `--profile` commands + the matching `CACHE_MODE` + the env each profile expects (`REDIS_SENTINELS` / `REDIS_CLUSTER_NODES`).
+- [x] `docker/sentinel/` provides a runnable master + replica + ≥1 sentinel (`sentinel.conf` monitoring `mymaster`), exposed on `127.0.0.1:26379` (+ peers) under the `sentinel` profile.
+- [x] `docker/cluster/` provides a runnable multi-node cluster (≥3 primaries, cluster-enabled `redis.conf`, an init/`--cluster create` step), exposed on `127.0.0.1:7000+` under the `cluster` profile.
+- [x] `docker-compose.yml` wires both profiles; default `up` (no profile) starts only standalone Redis (unchanged from Phase 1).
+- [x] `docker compose --profile sentinel up -d --wait` reaches healthy; `docker compose --profile cluster up -d --wait` reaches healthy.
+- [x] The README/`docs` snippet documents the two `--profile` commands + the matching `CACHE_MODE` + the env each profile expects (`REDIS_SENTINELS` / `REDIS_CLUSTER_NODES`).
 
 ### Files to create / modify
 
@@ -192,7 +192,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P11-3 — `src/errors-demo/` — `POST /errors/:code` Triggering All 15 Error Codes
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90 min – half day)
 - **Depends on:** `Phase 3`
@@ -203,27 +203,27 @@ Build the `src/errors-demo/` module — a controller + service exposing `POST /e
 
 ### Acceptance Criteria
 
-- [ ] `apps/api/src/errors-demo/` exists with an `ErrorsDemoModule`, `ErrorsDemoController`, and `ErrorsDemoService`, registered in `app.module.ts`.
-- [ ] `POST /errors/:code` accepts each of the **15** `CacheErrorCode` values (the `:code` accepts either the snake suffix, e.g. `invalid_key`, or the full `cache.<snake>` value — pick one and document it) and triggers a `CacheException` carrying that exact `.code`.
-- [ ] All 15 codes are wired (each `→` its provoking action), with each producing the HTTP status from the §19.2 table:
-  - [ ] `cache.connection_failed` → 500 (documented: observed if Redis is down at boot; demo simulates/forces the connection-failure path).
-  - [ ] `cache.command_timeout` → 504 (a tiny `commandTimeout` + a deliberately slow op).
-  - [ ] `cache.connection_lost` → 503 (dropping the connection mid-op).
-  - [ ] `cache.serialization_failed` → 500 (`set` of a value the codec cannot encode).
-  - [ ] `cache.deserialization_failed` → 500 (read a deliberately corrupted key).
-  - [ ] `cache.invalid_key` → 400 (empty prefix/id).
-  - [ ] `cache.invalid_namespace` → 500 (misconfigured namespace, config-time).
-  - [ ] `cache.script_not_registered` → 500 (`eval` of an unknown script name).
-  - [ ] `cache.script_execution_failed` → 500 (a Lua runtime error).
-  - [ ] `cache.script_registry_missing` → 500 (`eval` with no script manager wired).
-  - [ ] `cache.flush_disabled_in_production` → 403 (`flushNamespace()` with `NODE_ENV=production`).
-  - [ ] `cache.cluster_misconfigured` → 500 (`mode: 'cluster'` without `cluster.nodes`).
-  - [ ] `cache.sentinel_misconfigured` → 500 (`mode: 'sentinel'` without sentinels/name).
-  - [ ] `cache.shutdown_timeout` → 500 (`quit()` exceeds `shutdownTimeoutMs`).
-  - [ ] `cache.unsupported_in_cluster` → 500 (`scan`/`flushNamespace`/`getClient` in cluster mode — fully wired in P11-4).
-- [ ] Every response flows through the Phase 3 `CacheExceptionFilter` → `{ error: { code, message, details } }`, where `message` is the canonical `CACHE_ERROR_MESSAGES.get(code)`.
-- [ ] An unknown/typo `:code` returns `400` (validated against the `CACHE_ERROR_CODES` set), not a 500.
-- [ ] `pnpm --filter api typecheck` exits 0.
+- [x] `apps/api/src/errors-demo/` exists with an `ErrorsDemoModule`, `ErrorsDemoController`, and `ErrorsDemoService`, registered in `app.module.ts`.
+- [x] `POST /errors/:code` accepts each of the **15** `CacheErrorCode` values (the `:code` accepts either the snake suffix, e.g. `invalid_key`, or the full `cache.<snake>` value — pick one and document it) and triggers a `CacheException` carrying that exact `.code`.
+- [x] All 15 codes are wired (each `→` its provoking action), with each producing the HTTP status from the §19.2 table:
+  - [x] `cache.connection_failed` → 500 (documented: observed if Redis is down at boot; demo simulates/forces the connection-failure path).
+  - [x] `cache.command_timeout` → 504 (a tiny `commandTimeout` + a deliberately slow op).
+  - [x] `cache.connection_lost` → 503 (dropping the connection mid-op).
+  - [x] `cache.serialization_failed` → 500 (`set` of a value the codec cannot encode).
+  - [x] `cache.deserialization_failed` → 500 (read a deliberately corrupted key).
+  - [x] `cache.invalid_key` → 400 (empty prefix/id).
+  - [x] `cache.invalid_namespace` → 500 (misconfigured namespace, config-time).
+  - [x] `cache.script_not_registered` → 500 (`eval` of an unknown script name).
+  - [x] `cache.script_execution_failed` → 500 (a Lua runtime error).
+  - [x] `cache.script_registry_missing` → 500 (`eval` with no script manager wired).
+  - [x] `cache.flush_disabled_in_production` → 403 (`flushNamespace()` with `NODE_ENV=production`).
+  - [x] `cache.cluster_misconfigured` → 500 (`mode: 'cluster'` without `cluster.nodes`).
+  - [x] `cache.sentinel_misconfigured` → 500 (`mode: 'sentinel'` without sentinels/name).
+  - [x] `cache.shutdown_timeout` → 500 (`quit()` exceeds `shutdownTimeoutMs`).
+  - [x] `cache.unsupported_in_cluster` → 500 (`scan`/`flushNamespace`/`getClient` in cluster mode — fully wired in P11-4).
+- [x] Every response flows through the Phase 3 `CacheExceptionFilter` → `{ error: { code, message, details } }`, where `message` is the canonical `CACHE_ERROR_MESSAGES.get(code)`.
+- [x] An unknown/typo `:code` returns `400` (validated against the `CACHE_ERROR_CODES` set), not a 500.
+- [x] `pnpm --filter api typecheck` exits 0.
 
 ### Files to create / modify
 
@@ -289,7 +289,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P11-4 — Cluster-Restriction Demo (`scan`/`flushNamespace`/`getClient` → `UNSUPPORTED_IN_CLUSTER`)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P11-1`, `P11-3`
@@ -300,11 +300,11 @@ Demonstrate, honestly, that in cluster mode `scan`, `flushNamespace`, and `getCl
 
 ### Acceptance Criteria
 
-- [ ] With `CACHE_MODE=cluster` + the cluster profile up, an admin `scan` call surfaces `cache.unsupported_in_cluster` (HTTP 500) via the filter.
-- [ ] Same for `flushNamespace()` (the guarded `DELETE /admin/namespace`) and for the `getClient()`-backed path (e.g. the foreign-namespace seed) — both surface `cache.unsupported_in_cluster`.
-- [ ] The `errors-demo` `unsupported_in_cluster` trigger (from P11-3) is reconciled with this real path: it either invokes one of the three restricted methods in cluster mode, or documents that the real surface is the admin endpoints under cluster (no fake-only path that misrepresents the library).
-- [ ] A short doc/JSDoc note records the adjacent cluster facts: `eval` needs ≥1 key (single-slot hash tag); Pub/Sub is experimental passthrough, not rejected (spec §15.4).
-- [ ] `pnpm --filter api typecheck` exits 0.
+- [x] With `CACHE_MODE=cluster` + the cluster profile up, an admin `scan` call surfaces `cache.unsupported_in_cluster` (HTTP 500) via the filter.
+- [x] Same for `flushNamespace()` (the guarded `DELETE /admin/namespace`) and for the `getClient()`-backed path (e.g. the foreign-namespace seed) — both surface `cache.unsupported_in_cluster`.
+- [x] The `errors-demo` `unsupported_in_cluster` trigger (from P11-3) is reconciled with this real path: it either invokes one of the three restricted methods in cluster mode, or documents that the real surface is the admin endpoints under cluster (no fake-only path that misrepresents the library).
+- [x] A short doc/JSDoc note records the adjacent cluster facts: `eval` needs ≥1 key (single-slot hash tag); Pub/Sub is experimental passthrough, not rejected (spec §15.4).
+- [x] `pnpm --filter api typecheck` exits 0.
 
 ### Files to create / modify
 
@@ -350,7 +350,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P11-5 — Typed Error Handling — Import `CacheErrorCode` from `@bymax-one/nest-cache/shared`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P11-3`
@@ -361,11 +361,11 @@ Standardize the API's error-code typing on the library's **shared** subpath: imp
 
 ### Acceptance Criteria
 
-- [ ] The `errors-demo` `:code` validation and any error-code-typed helper import `CacheErrorCode` (+ `CACHE_ERROR_CODES`) from `@bymax-one/nest-cache/shared`, not from `.`.
-- [ ] Where the canonical message is rendered/used as a code/type concern, `CACHE_ERROR_MESSAGES` is sourced consistently (the filter from Phase 3 may keep its existing import; this task governs the `errors-demo` typed surface).
-- [ ] A code comment notes that `apps/web` reuses the same `@bymax-one/nest-cache/shared` import for its `CacheErrorCode`-keyed error union in Phase 12/14 (matrix #48 — zero NestJS/ioredis in the browser bundle).
-- [ ] No NestJS/ioredis-only symbol is imported from `./shared` (it is zero-dependency by contract; only codes/types/messages live there).
-- [ ] `pnpm --filter api typecheck` exits 0; `pnpm --filter api lint` exits 0.
+- [x] The `errors-demo` `:code` validation and any error-code-typed helper import `CacheErrorCode` (+ `CACHE_ERROR_CODES`) from `@bymax-one/nest-cache/shared`, not from `.`.
+- [x] Where the canonical message is rendered/used as a code/type concern, `CACHE_ERROR_MESSAGES` is sourced consistently (the filter from Phase 3 may keep its existing import; this task governs the `errors-demo` typed surface).
+- [x] A code comment notes that `apps/web` reuses the same `@bymax-one/nest-cache/shared` import for its `CacheErrorCode`-keyed error union in Phase 12/14 (matrix #48 — zero NestJS/ioredis in the browser bundle).
+- [x] No NestJS/ioredis-only symbol is imported from `./shared` (it is zero-dependency by contract; only codes/types/messages live there).
+- [x] `pnpm --filter api typecheck` exits 0; `pnpm --filter api lint` exits 0.
 
 ### Files to create / modify
 
@@ -409,7 +409,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P11-6 — Phase Verification (HTTP Statuses · Cluster Restrictions · Prod-Guard 403)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P11-1`, `P11-2`, `P11-3`, `P11-4`, `P11-5`
@@ -420,12 +420,12 @@ Phase 11 "Definition of done" gate per `DEVELOPMENT_PLAN.md`: prove that each `P
 
 ### Acceptance Criteria
 
-- [ ] Every `POST /errors/:code` (all 15) returns the status from the §19.2 table and a `{ error: { code, message, details } }` body with the matching canonical message.
-- [ ] An unknown `:code` returns `400`.
-- [ ] With `CACHE_MODE=cluster` + the cluster profile up: `scan`, `flushNamespace`, and `getClient` paths all surface `cache.unsupported_in_cluster` (HTTP 500).
-- [ ] The prod-guard demo (`flushNamespace()` with `NODE_ENV=production`) returns `403` with `cache.flush_disabled_in_production`.
-- [ ] The sentinel + cluster profiles boot (`--profile sentinel` / `--profile cluster` reach healthy) and the API connects in each mode (`CACHE_MODE` switch from P11-1).
-- [ ] `pnpm --filter api typecheck` + `pnpm --filter api lint` exit 0.
+- [x] Every `POST /errors/:code` (all 15) returns the status from the §19.2 table and a `{ error: { code, message, details } }` body with the matching canonical message.
+- [x] An unknown `:code` returns `400`.
+- [x] With `CACHE_MODE=cluster` + the cluster profile up: `scan`, `flushNamespace`, and `getClient` paths all surface `cache.unsupported_in_cluster` (HTTP 500).
+- [x] The prod-guard demo (`flushNamespace()` with `NODE_ENV=production`) returns `403` with `cache.flush_disabled_in_production`.
+- [x] The sentinel + cluster profiles boot (`--profile sentinel` / `--profile cluster` reach healthy) and the API connects in each mode (`CACHE_MODE` switch from P11-1).
+- [x] `pnpm --filter api typecheck` + `pnpm --filter api lint` exit 0.
 
 ### Files to create / modify
 
@@ -472,3 +472,10 @@ When this task is 🟢, Phase 11 is 6/6 — switch the Phase 11 row in `DEVELOPM
 ## Completion log
 
 _(Agents append one line per finished task, newest at the bottom.)_
+
+- P11-1 ✅ 2026-06-17 — `cache.config.ts` builds sentinel/cluster blocks from env (typed with re-exported ioredis types) + `CACHE_MODE` switch; opt-in `natMap` env for NAT'd Docker host-reachability.
+- P11-2 ✅ 2026-06-17 — sentinel profile fixed (`resolve-hostnames`) and cluster profile reworked to 3 static-IP primaries with an auto `--cluster create` init; both reach healthy via `--wait` (`cluster_state:ok`); default `up` unchanged; README documents both `--profile` commands + env.
+- P11-3 ✅ 2026-06-17 — `src/errors-demo/` `POST /errors/:code` triggers all 15 `CACHE_ERROR_CODES`; request-reachable codes via the real library, env/topology codes tagged `simulated`; unknown code → 400; every code maps to its §19.2 status + canonical message.
+- P11-4 ✅ 2026-06-17 — verified in cluster mode that `scan`/`flushNamespace`/`getClient` (admin endpoints + errors-demo) surface `cache.unsupported_in_cluster` (500) cleanly; JSDoc records the adjacent `eval`/Pub-Sub cluster facts.
+- P11-5 ✅ 2026-06-17 — `errors-demo` error-code typing imported from `@bymax-one/nest-cache/shared` (zero-dep), with the web-reuse note; no NestJS/ioredis symbol pulled from `/shared`.
+- P11-6 ✅ 2026-06-17 — full verification: 15 statuses + structured bodies, unknown → 400, cluster restrictions → 500, prod-guard → 403 (fixed a latent `z.coerce.boolean('false') === true` bug that disabled the guard); sentinel + cluster profiles boot and the API connects in each mode.

@@ -33,7 +33,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 >
 > **All 17 phase files are scaffolded** under [`docs/tasks/`](tasks/) — the per-phase totals below are firm.
 >
-> **Overall progress: 64 / 107 tasks done (60%)**
+> **Overall progress: 70 / 107 tasks done (65%)**
 
 | #   | Phase                                     | Tasks file                            | Size | Done / Total | %    | Status |
 | --- | ----------------------------------------- | ------------------------------------- | ---- | ------------ | ---- | ------ |
@@ -48,7 +48,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 | 8   | Pub/Sub + WebSocket Bridge                | `phase-08-pubsub-websocket.md`        | M    | 6 / 6        | 100% | 🟢     |
 | 9   | TTL Events (keyspace notifications)       | `phase-09-ttl-events.md`              | S    | 4 / 4        | 100% | 🟢     |
 | 10  | Lua Scripts & Cache Stampede              | `phase-10-lua-stampede.md`            | M    | 5 / 5        | 100% | 🟢     |
-| 11  | Connection Topologies & Error Surface     | `phase-11-topologies-errors.md`       | M    | 0 / 6        | 0%   | 🔴     |
+| 11  | Connection Topologies & Error Surface     | `phase-11-topologies-errors.md`       | M    | 6 / 6        | 100% | 🟢     |
 | 12  | `apps/web` Skeleton + Design System       | `phase-12-web-skeleton-design.md`     | L    | 0 / 7        | 0%   | 🔴     |
 | 13  | Dashboard — Observe pages                 | `phase-13-dashboard-observe.md`       | L    | 0 / 8        | 0%   | 🔴     |
 | 14  | Dashboard — Real-time & Labs pages        | `phase-14-dashboard-realtime-labs.md` | L    | 0 / 9        | 0%   | 🔴     |
@@ -337,10 +337,10 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 **Prerequisites:** Phase 3 (wiring + exception filter).
 **Deliverables:**
 
-- [ ] `cache.config.ts` builds `sentinel` and `cluster` connection blocks from env (`buildSentinelBlock`/`buildClusterBlock`); `docker/cluster/` + `docker/sentinel/` compose profiles made runnable.
-- [ ] `src/errors-demo/` — `POST /errors/:code` triggering each of the 15 `CACHE_ERROR_CODES` (invalid key, deserialization, script-not-registered, flush-in-prod, unsupported-in-cluster, command-timeout, …).
-- [ ] Cluster-restriction demo: `scan`/`flushNamespace`/`getClient` throw `UNSUPPORTED_IN_CLUSTER` when `CACHE_MODE=cluster`; the API surfaces it cleanly via the filter.
-- [ ] `apps/web` (and api) import `CacheErrorCode` from `./shared` for typed handling.
+- [x] `cache.config.ts` builds `sentinel` and `cluster` connection blocks from env (`buildSentinelBlock`/`buildClusterBlock`); `docker/cluster/` + `docker/sentinel/` compose profiles made runnable.
+- [x] `src/errors-demo/` — `POST /errors/:code` triggering each of the 15 `CACHE_ERROR_CODES` (invalid key, deserialization, script-not-registered, flush-in-prod, unsupported-in-cluster, command-timeout, …).
+- [x] Cluster-restriction demo: `scan`/`flushNamespace`/`getClient` throw `UNSUPPORTED_IN_CLUSTER` when `CACHE_MODE=cluster`; the API surfaces it cleanly via the filter.
+- [x] api imports `CacheErrorCode` from `./shared` for typed handling; `apps/web` reuses the same import in the dashboard phase.
 
 **Demonstrates:** matrix #5, #6 (sentinel/cluster connection types), #41–#43 (`CacheException`, `CACHE_ERROR_CODES`, `CACHE_ERROR_MESSAGES`), #44 (`CacheErrorCode`), #49 (re-exported ioredis types). **References:** spec §15, §19, DASHBOARD §13–§14.
 **Definition of done:** each `/errors/:code` returns the correct HTTP status + structured body; with the cluster profile up, the documented methods fail with `UNSUPPORTED_IN_CLUSTER`; the prod-guard demo returns `403`.
