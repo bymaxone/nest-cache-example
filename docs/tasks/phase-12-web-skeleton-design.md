@@ -2,7 +2,7 @@
 
 > **Source:** [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#phase-12--appsweb-skeleton--design-system) §Phase 12
 > **Total tasks:** 7
-> **Progress:** 🔴 0 / 7 done (0%)
+> **Progress:** 🟢 7 / 7 done (100%)
 >
 > **Status legend:** 🔴 Not Started · 🟡 In Progress · 🔵 In Review · 🟢 Done · ⚪ Blocked
 
@@ -10,19 +10,19 @@
 
 | ID    | Task                                                                           | Status | Priority | Size | Depends on   |
 | ----- | ------------------------------------------------------------------------------ | ------ | -------- | ---- | ------------ |
-| P12-1 | `apps/web` Next.js 16 + React 19 + Tailwind v4 + shadcn `new-york` scaffold    | 🔴     | High     | M    | Phase 3      |
-| P12-2 | `app/layout.tsx` (Geist + forced `dark`) + `app/providers.tsx`                 | 🔴     | High     | M    | P12-1        |
-| P12-3 | `components/layout/` — Topbar (64px) + grouped Sidebar (250px) + `AppShell`    | 🔴     | High     | M    | P12-1, P12-2 |
-| P12-4 | `lib/api-client.ts` — typed `fetch` wrapper + `CacheErrorCode` error union     | 🔴     | High     | M    | P12-1        |
-| P12-5 | `lib/socket.ts` (3 channels) + `hooks/use-cache-socket.ts` (ring buffer + rAF) | 🔴     | High     | M    | P12-1        |
-| P12-6 | `lib/cache-status.ts` + `lib/utils.ts` + `components/controls/` (nuqs URL)     | 🔴     | Medium   | M    | P12-2, P12-4 |
-| P12-7 | shadcn component set scaffold + phase verification (`build`, shell, status)    | 🔴     | High     | M    | P12-1..P12-6 |
+| P12-1 | `apps/web` Next.js 16 + React 19 + Tailwind v4 + shadcn `new-york` scaffold    | 🟢     | High     | M    | Phase 3      |
+| P12-2 | `app/layout.tsx` (Geist + forced `dark`) + `app/providers.tsx`                 | 🟢     | High     | M    | P12-1        |
+| P12-3 | `components/layout/` — Topbar (64px) + grouped Sidebar (250px) + `AppShell`    | 🟢     | High     | M    | P12-1, P12-2 |
+| P12-4 | `lib/api-client.ts` — typed `fetch` wrapper + `CacheErrorCode` error union     | 🟢     | High     | M    | P12-1        |
+| P12-5 | `lib/socket.ts` (3 channels) + `hooks/use-cache-socket.ts` (ring buffer + rAF) | 🟢     | High     | M    | P12-1        |
+| P12-6 | `lib/cache-status.ts` + `lib/utils.ts` + `components/controls/` (nuqs URL)     | 🟢     | Medium   | M    | P12-2, P12-4 |
+| P12-7 | shadcn component set scaffold + phase verification (`build`, shell, status)    | 🟢     | High     | M    | P12-1..P12-6 |
 
 ---
 
 ## P12-1 — `apps/web` Next.js 16 + React 19 + Tailwind v4 + shadcn `new-york` scaffold
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90 min – half day)
 - **Depends on:** `Phase 3`
@@ -33,14 +33,14 @@ Create the `apps/web` package — a Next.js 16 (App Router) + React 19 + Tailwin
 
 ### Acceptance Criteria
 
-- [ ] `apps/web/package.json` exists with `"name": "web"`, `"private": true`, `"type": "module"`, and scripts `dev` (`next dev -p 3000`), `build` (`next build`), `start`, `lint`, `typecheck` (`tsc --noEmit`).
-- [ ] Dependencies installed (exact set): `next@^16`, `react@^19`, `react-dom@^19`, `tailwindcss@^4`, `@tailwindcss/postcss`, `geist`, `lucide-react`, `sonner`, `class-variance-authority`, `clsx`, `tailwind-merge`, `@tanstack/react-query`, `@tanstack/react-table`, `@tanstack/react-virtual`, `nuqs`, `@uiw/react-json-view`, `recharts`, `socket.io-client`, plus the library `@bymax-one/nest-cache` (the `file:` link from Phase 2) for its `/shared` subpath.
-- [ ] **NOT** present in `package.json`: `next-themes`, `autoprefixer`, `postcss-import` (Tailwind v4 forces dark via a class and auto-prefixes — these break the v4 pipeline).
-- [ ] `app/globals.css`, `tailwind.config.ts`, `components.json`, `postcss.config.mjs` are copied **verbatim** from a sibling `apps/web` (the `.dark` token set is the live one; brand orange `#ff6224`).
-- [ ] `postcss.config.mjs` contains **only** `@tailwindcss/postcss` (no `autoprefixer`).
-- [ ] `components.json` is shadcn `new-york`, `cssVariables: true`, `baseColor: neutral`, `iconLibrary: lucide`.
-- [ ] `apps/web/tsconfig.json` extends `../../tsconfig.base.json` and adds the Next.js plugin + JSX settings; `apps/web/.env.example` declares `NEXT_PUBLIC_API_URL=http://localhost:3001` and `NEXT_PUBLIC_WS_URL=http://localhost:3001`.
-- [ ] `pnpm install` succeeds and `pnpm --filter web exec next --version` prints a `16.x` version.
+- [x] `apps/web/package.json` exists with `"name": "web"`, `"private": true`, `"type": "module"`, and scripts `dev` (`next dev -p 3000`), `build` (`next build`), `start`, `lint`, `typecheck` (`tsc --noEmit`).
+- [x] Dependencies installed (exact set): `next@^16`, `react@^19`, `react-dom@^19`, `tailwindcss@^4`, `@tailwindcss/postcss`, `geist`, `lucide-react`, `sonner`, `class-variance-authority`, `clsx`, `tailwind-merge`, `@tanstack/react-query`, `@tanstack/react-table`, `@tanstack/react-virtual`, `nuqs`, `@uiw/react-json-view`, `recharts`, `socket.io-client`, plus the library `@bymax-one/nest-cache` (the `file:` link from Phase 2) for its `/shared` subpath.
+- [x] **NOT** present in `package.json`: `next-themes`, `autoprefixer`, `postcss-import` (Tailwind v4 forces dark via a class and auto-prefixes — these break the v4 pipeline).
+- [x] `app/globals.css`, `tailwind.config.ts`, `components.json`, `postcss.config.mjs` are copied **verbatim** from a sibling `apps/web` (the `.dark` token set is the live one; brand orange `#ff6224`).
+- [x] `postcss.config.mjs` contains **only** `@tailwindcss/postcss` (no `autoprefixer`).
+- [x] `components.json` is shadcn `new-york`, `cssVariables: true`, `baseColor: neutral`, `iconLibrary: lucide`.
+- [x] `apps/web/tsconfig.json` extends `../../tsconfig.base.json` and adds the Next.js plugin + JSX settings; `apps/web/.env.example` declares `NEXT_PUBLIC_API_URL=http://localhost:3001` and `NEXT_PUBLIC_WS_URL=http://localhost:3001`.
+- [x] `pnpm install` succeeds and `pnpm --filter web exec next --version` prints a `16.x` version.
 
 ### Files to create / modify
 
@@ -127,7 +127,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P12-2 — `app/layout.tsx` (Geist + forced `dark`) + `app/providers.tsx`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90 min – half day)
 - **Depends on:** `P12-1`
@@ -138,13 +138,13 @@ Wire the root layout and the client-side providers — the two pieces that make 
 
 ### Acceptance Criteria
 
-- [ ] `app/layout.tsx` is a server component importing `GeistSans` from `geist/font/sans`, `GeistMono` from `geist/font/mono`, and `./globals.css`.
-- [ ] `<html>` className is `` `${GeistSans.variable} ${GeistMono.variable} dark` `` with `lang="en"` and `suppressHydrationWarning`; `<body>` wraps `children` in `<Providers>`.
-- [ ] Layout exports `metadata` with `title: 'nest-cache-example'` and a one-line description.
-- [ ] `app/providers.tsx` starts with `'use client'` and wraps children in `QueryClientProvider` → `<NuqsAdapter>` → children, with a `<Toaster theme="dark" position="bottom-right" />` sibling.
-- [ ] The `QueryClient` is created **once** via `useState(() => new QueryClient({ defaultOptions: { queries: { staleTime: 5_000, refetchOnWindowFocus: false } } }))` (not re-created per render).
-- [ ] **No `next-themes`** import anywhere; dark is forced solely by the `dark` class on `<html>`.
-- [ ] `pnpm --filter web exec tsc --noEmit` passes.
+- [x] `app/layout.tsx` is a server component importing `GeistSans` from `geist/font/sans`, `GeistMono` from `geist/font/mono`, and `./globals.css`.
+- [x] `<html>` className is `` `${GeistSans.variable} ${GeistMono.variable} dark` `` with `lang="en"` and `suppressHydrationWarning`; `<body>` wraps `children` in `<Providers>`.
+- [x] Layout exports `metadata` with `title: 'nest-cache-example'` and a one-line description.
+- [x] `app/providers.tsx` starts with `'use client'` and wraps children in `QueryClientProvider` → `<NuqsAdapter>` → children, with a `<Toaster theme="dark" position="bottom-right" />` sibling.
+- [x] The `QueryClient` is created **once** via `useState(() => new QueryClient({ defaultOptions: { queries: { staleTime: 5_000, refetchOnWindowFocus: false } } }))` (not re-created per render).
+- [x] **No `next-themes`** import anywhere; dark is forced solely by the `dark` class on `<html>`.
+- [x] `pnpm --filter web exec tsc --noEmit` passes.
 
 ### Files to create / modify
 
@@ -243,7 +243,7 @@ Wire the root layout and the client-side providers — the two pieces that make 
 
 ## P12-3 — `components/layout/` — Topbar (64px) + grouped Sidebar (250px) + `AppShell`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90 min – half day)
 - **Depends on:** `P12-1`, `P12-2`
@@ -254,12 +254,12 @@ Build the canonical app shell — the chrome that makes a `nest-cache-example` s
 
 ### Acceptance Criteria
 
-- [ ] `components/layout/Topbar.tsx` renders a fixed `h-16` bar: `bg-[rgba(10,10,10,0.85)] backdrop-blur-md border-b border-[rgba(255,255,255,0.07)] z-200`, with the brand mark (`border-[rgba(255,98,36,0.4)] bg-[rgba(255,98,36,0.15)]` badge + stacked-layers SVG stroke `#ff6224`) + gradient mono wordmark `nest-cache-example` (`from-[#ff6224] to-amber-200 bg-clip-text text-transparent`) on the left; a right slot accepts the global-controls children (filled in P12-6).
-- [ ] `components/layout/Sidebar.tsx` renders `w-[250px] bg-[rgba(12,12,12,0.98)] border-r border-[rgba(255,255,255,0.08)] lg:sticky lg:top-16 lg:h-[calc(100vh-64px)]`, with the nav grouped into **OBSERVE / REAL-TIME / LABS / SYSTEM** and a footer namespace-prefix chip.
-- [ ] Nav items use the exact recipe — base `flex items-center gap-3 rounded-lg border-l-2 px-3 py-[10px] text-sm transition-all duration-150`; **active** `border-l-[#ff6224] bg-[rgba(255,98,36,0.1)] font-semibold text-[#ff6224]`; inactive `border-l-transparent text-[rgba(255,255,255,0.55)] hover:bg-[rgba(255,255,255,0.05)]`. Active state is derived from the current pathname (`usePathname`).
-- [ ] All ten cache routes are present with the correct lucide icons: Overview `/` `LayoutDashboard`, Explorer `/explorer` `Search`, Playground `/playground` `Boxes`, Tenants `/tenants` `Building2`, Pub/Sub `/pubsub` `Radio`, TTL Live `/ttl` `Timer`, Stampede `/stampede` `Zap`, Serializer `/serializer` `Binary`, Errors `/errors` `TriangleAlert`, Connection `/connection` `PlugZap`.
-- [ ] `components/layout/AppShell.tsx` composes them: `<Topbar/>` then `<div className="flex pt-16"><Sidebar/><main className="min-w-0 flex-1 px-6 py-8"><div className="mx-auto max-w-5xl">{children}</div></main></div>` (the inner wrapper widens to `max-w-7xl` on chart-heavy pages via a prop).
-- [ ] A placeholder `app/page.tsx` renders `<AppShell>` with a glass `Card` so the shell is visible; `pnpm --filter web build` succeeds and the shell renders the orange/glass dark theme.
+- [x] `components/layout/Topbar.tsx` renders a fixed `h-16` bar: `bg-[rgba(10,10,10,0.85)] backdrop-blur-md border-b border-[rgba(255,255,255,0.07)] z-200`, with the brand mark (`border-[rgba(255,98,36,0.4)] bg-[rgba(255,98,36,0.15)]` badge + stacked-layers SVG stroke `#ff6224`) + gradient mono wordmark `nest-cache-example` (`from-[#ff6224] to-amber-200 bg-clip-text text-transparent`) on the left; a right slot accepts the global-controls children (filled in P12-6).
+- [x] `components/layout/Sidebar.tsx` renders `w-[250px] bg-[rgba(12,12,12,0.98)] border-r border-[rgba(255,255,255,0.08)] lg:sticky lg:top-16 lg:h-[calc(100vh-64px)]`, with the nav grouped into **OBSERVE / REAL-TIME / LABS / SYSTEM** and a footer namespace-prefix chip.
+- [x] Nav items use the exact recipe — base `flex items-center gap-3 rounded-lg border-l-2 px-3 py-[10px] text-sm transition-all duration-150`; **active** `border-l-[#ff6224] bg-[rgba(255,98,36,0.1)] font-semibold text-[#ff6224]`; inactive `border-l-transparent text-[rgba(255,255,255,0.55)] hover:bg-[rgba(255,255,255,0.05)]`. Active state is derived from the current pathname (`usePathname`).
+- [x] All ten cache routes are present with the correct lucide icons: Overview `/` `LayoutDashboard`, Explorer `/explorer` `Search`, Playground `/playground` `Boxes`, Tenants `/tenants` `Building2`, Pub/Sub `/pubsub` `Radio`, TTL Live `/ttl` `Timer`, Stampede `/stampede` `Zap`, Serializer `/serializer` `Binary`, Errors `/errors` `TriangleAlert`, Connection `/connection` `PlugZap`.
+- [x] `components/layout/AppShell.tsx` composes them: `<Topbar/>` then `<div className="flex pt-16"><Sidebar/><main className="min-w-0 flex-1 px-6 py-8"><div className="mx-auto max-w-5xl">{children}</div></main></div>` (the inner wrapper widens to `max-w-7xl` on chart-heavy pages via a prop).
+- [x] A placeholder `app/page.tsx` renders `<AppShell>` with a glass `Card` so the shell is visible; `pnpm --filter web build` succeeds and the shell renders the orange/glass dark theme.
 
 ### Files to create / modify
 
@@ -366,7 +366,7 @@ Build the canonical app shell — the chrome that makes a `nest-cache-example` s
 
 ## P12-4 — `lib/api-client.ts` — typed `fetch` wrapper + `CacheErrorCode` error union
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90 min – half day)
 - **Depends on:** `P12-1`
@@ -377,13 +377,13 @@ The typed transport layer between the dashboard and `apps/api` — a thin `fetch
 
 ### Acceptance Criteria
 
-- [ ] `lib/api-client.ts` imports `CACHE_ERROR_CODES` and `type CacheErrorCode` from `@bymax-one/nest-cache/shared` (never the server subpath).
-- [ ] Exports an `ApiError` type: `{ code: CacheErrorCode | 'unknown'; message: string; status: number; details?: unknown }`.
-- [ ] Exports an `ApiResult<T>` discriminated union (e.g. `{ ok: true; data: T } | { ok: false; error: ApiError }`) **or** a wrapper that throws a typed `ApiError` — pick one and use it consistently; document the choice in a file-level JSDoc.
-- [ ] A core `apiFetch<T>(path, init?)` reads `NEXT_PUBLIC_API_URL`, sends/accepts JSON, and on a non-2xx response parses the `{ error: { code, message, details } }` body and narrows `code` against `CACHE_ERROR_CODES` (falls back to `'unknown'` if the code isn't a known cache code).
-- [ ] Typed helper methods exist for the verbs the pages need: `get`, `post`, `del` (thin wrappers over `apiFetch`).
-- [ ] No `any` in the public surface; no axios; no `useEffect`+fetch (data fetching is via TanStack Query hooks built on this client).
-- [ ] `pnpm --filter web exec tsc --noEmit` passes and the `/shared` import resolves.
+- [x] `lib/api-client.ts` imports `CACHE_ERROR_CODES` and `type CacheErrorCode` from `@bymax-one/nest-cache/shared` (never the server subpath).
+- [x] Exports an `ApiError` type: `{ code: CacheErrorCode | 'unknown'; message: string; status: number; details?: unknown }`.
+- [x] Exports an `ApiResult<T>` discriminated union (e.g. `{ ok: true; data: T } | { ok: false; error: ApiError }`) **or** a wrapper that throws a typed `ApiError` — pick one and use it consistently; document the choice in a file-level JSDoc.
+- [x] A core `apiFetch<T>(path, init?)` reads `NEXT_PUBLIC_API_URL`, sends/accepts JSON, and on a non-2xx response parses the `{ error: { code, message, details } }` body and narrows `code` against `CACHE_ERROR_CODES` (falls back to `'unknown'` if the code isn't a known cache code).
+- [x] Typed helper methods exist for the verbs the pages need: `get`, `post`, `del` (thin wrappers over `apiFetch`).
+- [x] No `any` in the public surface; no axios; no `useEffect`+fetch (data fetching is via TanStack Query hooks built on this client).
+- [x] `pnpm --filter web exec tsc --noEmit` passes and the `/shared` import resolves.
 
 ### Files to create / modify
 
@@ -480,7 +480,7 @@ The typed transport layer between the dashboard and `apps/api` — a thin `fetch
 
 ## P12-5 — `lib/socket.ts` (3 channels) + `hooks/use-cache-socket.ts` (ring buffer + rAF)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90 min – half day)
 - **Depends on:** `P12-1`
@@ -491,12 +491,12 @@ The live-feeds layer. `lib/socket.ts` is a single `socket.io-client` connection 
 
 ### Acceptance Criteria
 
-- [ ] `lib/socket.ts` exports a typed `CacheEvent` union covering the three channels — e.g. `{ kind: 'connection'; event: CacheEventName; data: Record<string, unknown>; at: number } | { kind: 'event'; channel: string; payload: unknown; at: number } | { kind: 'expired'; key: string; at: number }` — with `CacheEventName` imported from `@bymax-one/nest-cache/shared`.
-- [ ] `lib/socket.ts` exports a `createCacheSocket()` (or `getSocket()`) that connects to `NEXT_PUBLIC_WS_URL` with `{ transports: ['websocket'] }` and a small `RingBuffer<T>` class (fixed capacity, `push`/`pushMany`, drop-oldest, `toArray`).
-- [ ] `hooks/use-cache-socket.ts` is `'use client'`, exports `useCacheSocket(enabled: boolean)`, creates one ring buffer (capacity ≈ 5000) via `useState`, and on `enabled` subscribes to all three channels, batching pushes with `requestAnimationFrame`.
-- [ ] The hook returns the buffer (and/or a snapshot) for feeds to read; it `socket.close()`s and cancels the pending rAF on cleanup / when `enabled` flips false.
-- [ ] No unbounded array growth (the ring buffer caps memory); the socket is **receive-only** (no `socket.emit` of app data).
-- [ ] `pnpm --filter web exec tsc --noEmit` passes.
+- [x] `lib/socket.ts` exports a typed `CacheEvent` union covering the three channels — e.g. `{ kind: 'connection'; event: CacheEventName; data: Record<string, unknown>; at: number } | { kind: 'event'; channel: string; payload: unknown; at: number } | { kind: 'expired'; key: string; at: number }` — with `CacheEventName` imported from `@bymax-one/nest-cache/shared`.
+- [x] `lib/socket.ts` exports a `createCacheSocket()` (or `getSocket()`) that connects to `NEXT_PUBLIC_WS_URL` with `{ transports: ['websocket'] }` and a small `RingBuffer<T>` class (fixed capacity, `push`/`pushMany`, drop-oldest, `toArray`).
+- [x] `hooks/use-cache-socket.ts` is `'use client'`, exports `useCacheSocket(enabled: boolean)`, creates one ring buffer (capacity ≈ 5000) via `useState`, and on `enabled` subscribes to all three channels, batching pushes with `requestAnimationFrame`.
+- [x] The hook returns the buffer (and/or a snapshot) for feeds to read; it `socket.close()`s and cancels the pending rAF on cleanup / when `enabled` flips false.
+- [x] No unbounded array growth (the ring buffer caps memory); the socket is **receive-only** (no `socket.emit` of app data).
+- [x] `pnpm --filter web exec tsc --noEmit` passes.
 
 ### Files to create / modify
 
@@ -620,7 +620,7 @@ The live-feeds layer. `lib/socket.ts` is a single `socket.io-client` connection 
 
 ## P12-6 — `lib/cache-status.ts` + `lib/utils.ts` + `components/controls/` (nuqs URL)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** M (90 min – half day)
 - **Depends on:** `P12-2`, `P12-4`
@@ -631,15 +631,15 @@ The accessible status mapping, the `cn()` utility, and the four global controls 
 
 ### Acceptance Criteria
 
-- [ ] `lib/utils.ts` exports `cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs))` using `clsx` + `tailwind-merge`.
-- [ ] `lib/cache-status.ts` imports `type CacheConnectionStatus` (and `CacheEventName`) from `@bymax-one/nest-cache/shared` and exports a `connectionStatusMeta(status)` → `{ color, icon, label }` mapping: `ready` green `#22c55e`, `connecting` blue `#60a5fa`, `reconnecting` amber `#f59e0b`, `closed`/`end` red `#ef4444`, `error` purple `#a855f7` (spec §14.4); plus `hitMissMeta` (`hit` green / `miss` amber) and `dataTypeMeta` (`string` blue / `hash` purple / `set` green). Each entry carries a lucide `icon` and a text `label` (never color alone).
-- [ ] `components/controls/NamespaceChip.tsx` — a **read-only** mono chip `ns: cache-example` (with a tooltip explaining one-namespace-per-instance; spec §12.4 / DASHBOARD §4). It does **not** switch the namespace.
-- [ ] `components/controls/TenantSwitcher.tsx` — a dropdown selecting the active tenant prefix (`acme` / `globex` / …), persisted to the URL via `nuqs` (`useQueryState('tenant', …)`); it scopes the Explorer's default prefix, not the namespace.
-- [ ] `components/controls/StatusChip.tsx` — `'use client'`, renders the connection status via `connectionStatusMeta` (dot/icon + label + latency + mode); reads from the `useCacheSocket` `cache:connection` feed and/or a `/health` query, defaulting to a neutral state until data arrives.
-- [ ] `components/controls/LiveToggle.tsx` — toggles the socket feeds on/off (the `enabled` flag for `useCacheSocket`), **off by default**, persisted to the URL via `nuqs`.
-- [ ] `components/controls/TimeRange.tsx` — relative presets `Last 5m / 15m / 1h`, persisted to the URL via `nuqs`; used by metric charts only.
-- [ ] `lib/filters.ts` (or inline in the controls) defines the `nuqs` parsers; URL state round-trips (changing a control updates the query string).
-- [ ] `pnpm --filter web exec tsc --noEmit` passes; controls render inside the Topbar's right slot (wired into `AppShell`/`Topbar` from P12-3).
+- [x] `lib/utils.ts` exports `cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs))` using `clsx` + `tailwind-merge`.
+- [x] `lib/cache-status.ts` imports `type CacheConnectionStatus` (and `CacheEventName`) from `@bymax-one/nest-cache/shared` and exports a `connectionStatusMeta(status)` → `{ color, icon, label }` mapping: `ready` green `#22c55e`, `connecting` blue `#60a5fa`, `reconnecting` amber `#f59e0b`, `closed`/`end` red `#ef4444`, `error` purple `#a855f7` (spec §14.4); plus `hitMissMeta` (`hit` green / `miss` amber) and `dataTypeMeta` (`string` blue / `hash` purple / `set` green). Each entry carries a lucide `icon` and a text `label` (never color alone).
+- [x] `components/controls/NamespaceChip.tsx` — a **read-only** mono chip `ns: cache-example` (with a tooltip explaining one-namespace-per-instance; spec §12.4 / DASHBOARD §4). It does **not** switch the namespace.
+- [x] `components/controls/TenantSwitcher.tsx` — a dropdown selecting the active tenant prefix (`acme` / `globex` / …), persisted to the URL via `nuqs` (`useQueryState('tenant', …)`); it scopes the Explorer's default prefix, not the namespace.
+- [x] `components/controls/StatusChip.tsx` — `'use client'`, renders the connection status via `connectionStatusMeta` (dot/icon + label + latency + mode); reads from the `useCacheSocket` `cache:connection` feed and/or a `/health` query, defaulting to a neutral state until data arrives.
+- [x] `components/controls/LiveToggle.tsx` — toggles the socket feeds on/off (the `enabled` flag for `useCacheSocket`), **off by default**, persisted to the URL via `nuqs`.
+- [x] `components/controls/TimeRange.tsx` — relative presets `Last 5m / 15m / 1h`, persisted to the URL via `nuqs`; used by metric charts only.
+- [x] `lib/filters.ts` (or inline in the controls) defines the `nuqs` parsers; URL state round-trips (changing a control updates the query string).
+- [x] `pnpm --filter web exec tsc --noEmit` passes; controls render inside the Topbar's right slot (wired into `AppShell`/`Topbar` from P12-3).
 
 ### Files to create / modify
 
@@ -708,7 +708,7 @@ The accessible status mapping, the `cn()` utility, and the four global controls 
 
 ## P12-7 — shadcn component set scaffold + phase verification (`build`, shell, status)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90 min – half day)
 - **Depends on:** `P12-1`, `P12-2`, `P12-3`, `P12-4`, `P12-5`, `P12-6`
@@ -719,14 +719,14 @@ Scaffold the shadcn `new-york` primitive set the dashboard pages (Phases 13–14
 
 ### Acceptance Criteria
 
-- [ ] shadcn components scaffolded under `components/ui/`: `button`, `card`, `badge`, `input`, `label`, `select`, `table`, `tabs`, `tooltip`, `dialog`, `dropdown-menu`, `popover`, `scroll-area`, `skeleton`, `sonner`, `command` (DASHBOARD §19 component set).
-- [ ] `button` is overridden to the pill + brand-gradient `default` variant (`rounded-full bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-sm hover:shadow-(--shadow-primary) hover:scale-[1.02] active:scale-[0.98]`, sizes `h-10 px-6` / `sm h-8 px-4 text-xs` / `lg h-12 px-8` / `icon h-10 w-10`); `outline`/`ghost` use the glass tokens.
-- [ ] `card` is overridden to the glass variant (`border-(--glass-border) bg-(--glass-card-bg) rounded-2xl border shadow-sm backdrop-blur-md`; `CardTitle` `font-mono text-xl font-bold`).
-- [ ] `pnpm --filter web build` succeeds (exit 0).
-- [ ] `pnpm --filter web exec tsc --noEmit` passes; `pnpm lint` is clean for `apps/web`.
-- [ ] **Visual:** running `apps/web` + `apps/api`, the shell renders the orange/glass dark theme + brand mark + grouped cache nav; placed beside a sibling example screenshot the chrome is indistinguishable (spec §14.5).
-- [ ] **Live status:** with the API up (`/health` reachable and/or the `cache:connection` feed), the StatusChip turns **green** (`ready`).
-- [ ] **Bundle proof:** the `@bymax-one/nest-cache/shared` import resolves in the client and the production client bundle contains **no** NestJS or ioredis modules (verified by grepping `.next` output / a bundle check) — matrix #48.
+- [x] shadcn components scaffolded under `components/ui/`: `button`, `card`, `badge`, `input`, `label`, `select`, `table`, `tabs`, `tooltip`, `dialog`, `dropdown-menu`, `popover`, `scroll-area`, `skeleton`, `sonner`, `command` (DASHBOARD §19 component set).
+- [x] `button` is overridden to the pill + brand-gradient `default` variant (`rounded-full bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-sm hover:shadow-(--shadow-primary) hover:scale-[1.02] active:scale-[0.98]`, sizes `h-10 px-6` / `sm h-8 px-4 text-xs` / `lg h-12 px-8` / `icon h-10 w-10`); `outline`/`ghost` use the glass tokens.
+- [x] `card` is overridden to the glass variant (`border-(--glass-border) bg-(--glass-card-bg) rounded-2xl border shadow-sm backdrop-blur-md`; `CardTitle` `font-mono text-xl font-bold`).
+- [x] `pnpm --filter web build` succeeds (exit 0).
+- [x] `pnpm --filter web exec tsc --noEmit` passes; `pnpm lint` is clean for `apps/web`.
+- [x] **Visual:** running `apps/web` + `apps/api`, the shell renders the orange/glass dark theme + brand mark + grouped cache nav; placed beside a sibling example screenshot the chrome is indistinguishable (spec §14.5).
+- [x] **Live status:** with the API up (`/health` reachable and/or the `cache:connection` feed), the StatusChip turns **green** (`ready`).
+- [x] **Bundle proof:** the `@bymax-one/nest-cache/shared` import resolves in the client and the production client bundle contains **no** NestJS or ioredis modules (verified by grepping `.next` output / a bundle check) — matrix #48.
 
 ### Files to create / modify
 
@@ -781,3 +781,11 @@ When this task is 🟢, Phase 12 is 7/7 — switch the Phase 12 row in `DEVELOPM
 ## Completion log
 
 _(Agents append one line per finished task, newest at the bottom.)_
+
+- P12-1 ✅ 2026-06-17 — Scaffolded `apps/web` (Next 16 / React 19 / Tailwind v4 / shadcn new-york); copied `globals.css`, `tailwind.config.ts`, `components.json`, `postcss.config.mjs` verbatim; installed the exact dep set (no next-themes/autoprefixer/postcss-import).
+- P12-2 ✅ 2026-06-17 — Added `app/layout.tsx` (Geist + forced `dark`, no theme lib) and `app/providers.tsx` (QueryClient + `<NuqsAdapter>` + glass Toaster).
+- P12-3 ✅ 2026-06-17 — Built `components/layout/` Topbar (64px) + grouped Sidebar (250px, orange active) + `AppShell` (+ `nav-items.ts`, `lib/utils.ts`) with the `nest-cache-example` wordmark; placeholder Overview renders the shell.
+- P12-4 ✅ 2026-06-17 — Added `lib/api-client.ts`: typed `fetch` wrapper returning `ApiResult<T>`, error union keyed by `CacheErrorCode` from `@bymax-one/nest-cache/shared` (no axios, no server subpath).
+- P12-5 ✅ 2026-06-17 — Added `lib/socket.ts` (typed 3-channel client + `RingBuffer` + pure parsers) and `hooks/use-cache-socket.ts` (bounded ring buffer + rAF-batched flush, receive-only, cleans up on disable).
+- P12-6 ✅ 2026-06-17 — Added `lib/cache-status.ts` (accessible color+icon+text), `lib/filters.ts` (nuqs parsers), `lib/constants.ts`, and the five topbar controls (NamespaceChip, TenantSwitcher, StatusChip, LiveToggle, TimeRange) wired via `GlobalControls`.
+- P12-7 ✅ 2026-06-17 — Scaffolded the shadcn `new-york` set (button pill+brand-gradient, card glass), single dark Toaster; DoD green: `tsc`, `next build`, root `eslint`, `prettier --check` all pass and the client bundle carries no `@nestjs`/`ioredis` (matrix #48).

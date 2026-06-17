@@ -33,7 +33,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 >
 > **All 17 phase files are scaffolded** under [`docs/tasks/`](tasks/) — the per-phase totals below are firm.
 >
-> **Overall progress: 70 / 107 tasks done (65%)**
+> **Overall progress: 77 / 107 tasks done (72%)**
 
 | #   | Phase                                     | Tasks file                            | Size | Done / Total | %    | Status |
 | --- | ----------------------------------------- | ------------------------------------- | ---- | ------------ | ---- | ------ |
@@ -49,7 +49,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 | 9   | TTL Events (keyspace notifications)       | `phase-09-ttl-events.md`              | S    | 4 / 4        | 100% | 🟢     |
 | 10  | Lua Scripts & Cache Stampede              | `phase-10-lua-stampede.md`            | M    | 5 / 5        | 100% | 🟢     |
 | 11  | Connection Topologies & Error Surface     | `phase-11-topologies-errors.md`       | M    | 6 / 6        | 100% | 🟢     |
-| 12  | `apps/web` Skeleton + Design System       | `phase-12-web-skeleton-design.md`     | L    | 0 / 7        | 0%   | 🔴     |
+| 12  | `apps/web` Skeleton + Design System       | `phase-12-web-skeleton-design.md`     | L    | 7 / 7        | 100% | 🟢     |
 | 13  | Dashboard — Observe pages                 | `phase-13-dashboard-observe.md`       | L    | 0 / 8        | 0%   | 🔴     |
 | 14  | Dashboard — Real-time & Labs pages        | `phase-14-dashboard-realtime-labs.md` | L    | 0 / 9        | 0%   | 🔴     |
 | 15  | Testing — E2E smoke + Web smoke           | `phase-15-testing.md`                 | M    | 0 / 6        | 0%   | 🔴     |
@@ -355,12 +355,12 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 **UI base:** build to [`design_system.html`](design_system.html) and [`DASHBOARD.md` §19](DASHBOARD.md#19--frontend-tech-stack--design-system).
 **Deliverables:**
 
-- [ ] `apps/web` Next.js 16 + React 19 + Tailwind v4 + shadcn `new-york`; copy `app/globals.css`, `tailwind.config.ts`, `components.json`, `postcss.config.mjs` **verbatim** from a sibling `apps/web`.
-- [ ] `app/layout.tsx` — Geist Sans/Mono, **forced `dark`** on `<html>`, `<Providers>` (TanStack Query + `<NuqsAdapter>` + Sonner `Toaster`).
-- [ ] `components/layout/` — Topbar (64px) + grouped Sidebar (250px, orange active state, Observe/Real-time/Labs/System) + `AppShell`; brand wordmark `nest-cache-example`.
-- [ ] `lib/api-client.ts` (typed fetch, error union keyed by `CacheErrorCode` from `./shared`), `lib/socket.ts` (socket.io-client, 3 channels), `lib/cache-status.ts` (status→color/icon/label), `lib/utils.ts` (`cn`).
-- [ ] Global controls (`components/controls/`): NamespaceChip, TenantSwitcher, StatusChip, LiveToggle, TimeRange — Explorer filters + time range in URL via `nuqs`.
-- [ ] shadcn component set scaffolded (button/card/badge/input/select/table/tabs/tooltip/dialog/dropdown-menu/popover/scroll-area/skeleton/sonner/command).
+- [x] `apps/web` Next.js 16 + React 19 + Tailwind v4 + shadcn `new-york`; copy `app/globals.css`, `tailwind.config.ts`, `components.json`, `postcss.config.mjs` **verbatim** from a sibling `apps/web`.
+- [x] `app/layout.tsx` — Geist Sans/Mono, **forced `dark`** on `<html>`, `<Providers>` (TanStack Query + `<NuqsAdapter>` + Sonner `Toaster`).
+- [x] `components/layout/` — Topbar (64px) + grouped Sidebar (250px, orange active state, Observe/Real-time/Labs/System) + `AppShell`; brand wordmark `nest-cache-example`.
+- [x] `lib/api-client.ts` (typed fetch, error union keyed by `CacheErrorCode` from `./shared`), `lib/socket.ts` (socket.io-client, 3 channels), `lib/cache-status.ts` (status→color/icon/label), `lib/utils.ts` (`cn`).
+- [x] Global controls (`components/controls/`): NamespaceChip, TenantSwitcher, StatusChip, LiveToggle, TimeRange — Explorer filters + time range in URL via `nuqs`.
+- [x] shadcn component set scaffolded (button/card/badge/input/select/table/tabs/tooltip/dialog/dropdown-menu/popover/scroll-area/skeleton/sonner/command).
 
 **Demonstrates:** matrix #44 (`CacheErrorCode` in api-client), #46 (`CacheConnectionStatus` badge), #48 (`./shared` in the browser bundle). **References:** spec §13–§14, DASHBOARD §19–§20.
 **Definition of done:** the shell renders the orange/glass dark theme + brand mark + cache nav; the status chip turns green when the API is up; `pnpm --filter web build` succeeds; the shared-subpath import resolves with no NestJS/ioredis in the client bundle.
