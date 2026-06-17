@@ -63,9 +63,8 @@ export class ErrorsDemoService {
     // ── Request-reachable: the real library API raises the exception ──
     // Empty prefix → KeyBuilder rejects the key (HTTP 400).
     [CACHE_ERROR_CODES.INVALID_KEY]: () => this.cache.get('', 'demo'),
-    // BigInt is not JSON-encodable → the default JsonSerializer throws (HTTP 500).
-    [CACHE_ERROR_CODES.SERIALIZATION_FAILED]: () =>
-      this.cache.set('errors-demo', 'serialization', { amount: 10n }),
+    // Default JsonSerializer rejects a BigInt; a non-JSON serializer is simulated (HTTP 500).
+    [CACHE_ERROR_CODES.SERIALIZATION_FAILED]: () => this.triggerSerializationFailed(),
     // Write a deliberately corrupt payload (short TTL), then read it back →
     // JSON.parse fails (HTTP 500).
     [CACHE_ERROR_CODES.DESERIALIZATION_FAILED]: async () => {
@@ -132,6 +131,25 @@ export class ErrorsDemoService {
   async trigger(code: CacheErrorCode): Promise<never> {
     await this.triggers[code]()
     throw new CacheException(code, { simulated: true, note: 'trigger did not raise; forced' })
+  }
+
+  /**
+   * Provokes `SERIALIZATION_FAILED` through the real serializer when possible.
+   *
+   * The default `JsonSerializer` rejects a non-JSON-encodable value (a BigInt)
+   * by throwing `CacheException(SERIALIZATION_FAILED)`. A custom serializer
+   * (e.g. MessagePack via `CACHE_SERIALIZER=msgpack`) may encode the value or
+   * throw a non-`CacheException` error, so the real path is only honest under
+   * the JSON default; any other serializer is surfaced as a tagged simulation.
+   *
+   * @returns The (always-rejecting) `set` promise on the JSON path; never on the simulated path.
+   * @throws {CacheException} `SERIALIZATION_FAILED` (HTTP 500).
+   */
+  private triggerSerializationFailed(): unknown {
+    if (this.config.get('CACHE_SERIALIZER', { infer: true }) !== 'json') {
+      throw new CacheException(CACHE_ERROR_CODES.SERIALIZATION_FAILED, { simulated: true })
+    }
+    return this.cache.set('errors-demo', 'serialization', { amount: 10n })
   }
 
   /**

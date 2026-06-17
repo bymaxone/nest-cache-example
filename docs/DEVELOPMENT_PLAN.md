@@ -340,7 +340,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 - [x] `cache.config.ts` builds `sentinel` and `cluster` connection blocks from env (`buildSentinelBlock`/`buildClusterBlock`); `docker/cluster/` + `docker/sentinel/` compose profiles made runnable.
 - [x] `src/errors-demo/` — `POST /errors/:code` triggering each of the 15 `CACHE_ERROR_CODES` (invalid key, deserialization, script-not-registered, flush-in-prod, unsupported-in-cluster, command-timeout, …).
 - [x] Cluster-restriction demo: `scan`/`flushNamespace`/`getClient` throw `UNSUPPORTED_IN_CLUSTER` when `CACHE_MODE=cluster`; the API surfaces it cleanly via the filter.
-- [x] api imports `CacheErrorCode` from `./shared` for typed handling; `apps/web` reuses the same import in the dashboard phase.
+- [x] api imports `CacheErrorCode` from `@bymax-one/nest-cache/shared` for typed handling; `apps/web` reuses the same import in the dashboard phase.
 
 **Demonstrates:** matrix #5, #6 (sentinel/cluster connection types), #41–#43 (`CacheException`, `CACHE_ERROR_CODES`, `CACHE_ERROR_MESSAGES`), #44 (`CacheErrorCode`), #49 (re-exported ioredis types). **References:** spec §15, §19, DASHBOARD §13–§14.
 **Definition of done:** each `/errors/:code` returns the correct HTTP status + structured body; with the cluster profile up, the documented methods fail with `UNSUPPORTED_IN_CLUSTER`; the prod-guard demo returns `403`.

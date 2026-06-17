@@ -137,7 +137,9 @@ services:
   # One-shot bootstrap: forms the cluster once all three primaries are healthy.
   # `--cluster create` is addressed by the nodes' internal IPs (this container is
   # on cluster-net), so gossip succeeds and the cluster reaches `cluster_state:ok`.
-  # `|| true` keeps a re-run (cluster already formed) from failing the profile.
+  # Idempotent: skips creation when the cluster is already formed; a genuine
+  # create failure exits non-zero so `--profile cluster up --wait` surfaces it
+  # rather than masking it.
   redis-cluster-init:
     image: redis:7-alpine
     container_name: nest-cache-example-cluster-init
@@ -156,9 +158,13 @@ services:
       - /bin/sh
       - -c
       - |
+        if redis-cli -h 172.31.0.11 -p 7000 cluster info 2>/dev/null | grep -q 'cluster_state:ok'; then
+          echo 'cluster already formed — skipping create'
+          exit 0
+        fi
         redis-cli --cluster create \
           172.31.0.11:7000 172.31.0.12:7001 172.31.0.13:7002 \
-          --cluster-yes || true
+          --cluster-yes
 
   # Sentinel topology — 1 master + 2 replicas + 3 sentinels (gated by --profile sentinel).
   # Connect the app with mode=sentinel, sentinels at 127.0.0.1:26379/26380/26381, name=mymaster.
