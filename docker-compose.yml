@@ -27,6 +27,17 @@ services:
       redis:
         condition: service_healthy
 
+  # Cluster topology — 3 cluster-enabled primaries on a dedicated bridge network
+  # with fixed IPs (gated by --profile cluster). Each node announces its INTERNAL
+  # 172.31.0.x address so the cluster-bus gossip works between containers (a node
+  # announcing 127.0.0.1 would point its peers at themselves and the cluster would
+  # never form). A HOST client reaches the cluster through the published
+  # 127.0.0.1:700x ports plus an ioredis natMap that rewrites the announced
+  # 172.31.0.x:700x addresses — see cache.config.ts and spec §15.2. Run with:
+  #   docker compose --profile cluster up -d --wait
+  #   CACHE_MODE=cluster \
+  #   REDIS_CLUSTER_NODES=127.0.0.1:7000,127.0.0.1:7001,127.0.0.1:7002 \
+  #   REDIS_CLUSTER_NAT_MAP=172.31.0.11:7000=127.0.0.1:7000,172.31.0.12:7001=127.0.0.1:7001,172.31.0.13:7002=127.0.0.1:7002
   redis-cluster-0:
     image: redis:7-alpine
     container_name: nest-cache-example-cluster-0
@@ -39,7 +50,7 @@ services:
         '--port',
         '7000',
         '--cluster-announce-ip',
-        '127.0.0.1',
+        '172.31.0.11',
         '--cluster-announce-port',
         '7000',
         '--cluster-announce-bus-port',
@@ -47,6 +58,9 @@ services:
       ]
     ports:
       - '127.0.0.1:7000:7000'
+    networks:
+      cluster-net:
+        ipv4_address: 172.31.0.11
     volumes:
       - ./docker/cluster/redis-cluster.conf:/usr/local/etc/redis/redis-cluster.conf:ro
     healthcheck:
@@ -68,7 +82,7 @@ services:
         '--port',
         '7001',
         '--cluster-announce-ip',
-        '127.0.0.1',
+        '172.31.0.12',
         '--cluster-announce-port',
         '7001',
         '--cluster-announce-bus-port',
@@ -76,6 +90,9 @@ services:
       ]
     ports:
       - '127.0.0.1:7001:7001'
+    networks:
+      cluster-net:
+        ipv4_address: 172.31.0.12
     volumes:
       - ./docker/cluster/redis-cluster.conf:/usr/local/etc/redis/redis-cluster.conf:ro
     healthcheck:
@@ -97,7 +114,7 @@ services:
         '--port',
         '7002',
         '--cluster-announce-ip',
-        '127.0.0.1',
+        '172.31.0.13',
         '--cluster-announce-port',
         '7002',
         '--cluster-announce-bus-port',
@@ -105,6 +122,9 @@ services:
       ]
     ports:
       - '127.0.0.1:7002:7002'
+    networks:
+      cluster-net:
+        ipv4_address: 172.31.0.13
     volumes:
       - ./docker/cluster/redis-cluster.conf:/usr/local/etc/redis/redis-cluster.conf:ro
     healthcheck:
@@ -114,95 +134,42 @@ services:
       retries: 5
       start_period: 5s
 
-  redis-cluster-3:
+  # One-shot bootstrap: forms the cluster once all three primaries are healthy.
+  # `--cluster create` is addressed by the nodes' internal IPs (this container is
+  # on cluster-net), so gossip succeeds and the cluster reaches `cluster_state:ok`.
+  # Idempotent: skips creation when the cluster is already formed; a genuine
+  # create failure exits non-zero so `--profile cluster up --wait` surfaces it
+  # rather than masking it.
+  redis-cluster-init:
     image: redis:7-alpine
-    container_name: nest-cache-example-cluster-3
+    container_name: nest-cache-example-cluster-init
     profiles: ['cluster']
-    restart: unless-stopped
-    command:
-      [
-        'redis-server',
-        '/usr/local/etc/redis/redis-cluster.conf',
-        '--port',
-        '7003',
-        '--cluster-announce-ip',
-        '127.0.0.1',
-        '--cluster-announce-port',
-        '7003',
-        '--cluster-announce-bus-port',
-        '17003',
-      ]
-    ports:
-      - '127.0.0.1:7003:7003'
-    volumes:
-      - ./docker/cluster/redis-cluster.conf:/usr/local/etc/redis/redis-cluster.conf:ro
-    healthcheck:
-      test: ['CMD', 'redis-cli', '-p', '7003', 'ping']
-      interval: 5s
-      timeout: 3s
-      retries: 5
-      start_period: 5s
-
-  redis-cluster-4:
-    image: redis:7-alpine
-    container_name: nest-cache-example-cluster-4
-    profiles: ['cluster']
-    restart: unless-stopped
-    command:
-      [
-        'redis-server',
-        '/usr/local/etc/redis/redis-cluster.conf',
-        '--port',
-        '7004',
-        '--cluster-announce-ip',
-        '127.0.0.1',
-        '--cluster-announce-port',
-        '7004',
-        '--cluster-announce-bus-port',
-        '17004',
-      ]
-    ports:
-      - '127.0.0.1:7004:7004'
-    volumes:
-      - ./docker/cluster/redis-cluster.conf:/usr/local/etc/redis/redis-cluster.conf:ro
-    healthcheck:
-      test: ['CMD', 'redis-cli', '-p', '7004', 'ping']
-      interval: 5s
-      timeout: 3s
-      retries: 5
-      start_period: 5s
-
-  redis-cluster-5:
-    image: redis:7-alpine
-    container_name: nest-cache-example-cluster-5
-    profiles: ['cluster']
-    restart: unless-stopped
-    command:
-      [
-        'redis-server',
-        '/usr/local/etc/redis/redis-cluster.conf',
-        '--port',
-        '7005',
-        '--cluster-announce-ip',
-        '127.0.0.1',
-        '--cluster-announce-port',
-        '7005',
-        '--cluster-announce-bus-port',
-        '17005',
-      ]
-    ports:
-      - '127.0.0.1:7005:7005'
-    volumes:
-      - ./docker/cluster/redis-cluster.conf:/usr/local/etc/redis/redis-cluster.conf:ro
-    healthcheck:
-      test: ['CMD', 'redis-cli', '-p', '7005', 'ping']
-      interval: 5s
-      timeout: 3s
-      retries: 5
-      start_period: 5s
+    restart: 'no'
+    networks:
+      - cluster-net
+    depends_on:
+      redis-cluster-0:
+        condition: service_healthy
+      redis-cluster-1:
+        condition: service_healthy
+      redis-cluster-2:
+        condition: service_healthy
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        if redis-cli -h 172.31.0.11 -p 7000 cluster info 2>/dev/null | grep -q 'cluster_state:ok'; then
+          echo 'cluster already formed — skipping create'
+          exit 0
+        fi
+        redis-cli --cluster create \
+          172.31.0.11:7000 172.31.0.12:7001 172.31.0.13:7002 \
+          --cluster-yes
 
   # Sentinel topology — 1 master + 2 replicas + 3 sentinels (gated by --profile sentinel).
   # Connect the app with mode=sentinel, sentinels at 127.0.0.1:26379/26380/26381, name=mymaster.
+  # The sentinels report the master by its service hostname (redis-master:6379); a host
+  # client translates it with an ioredis natMap (REDIS_SENTINEL_NAT_MAP) — see cache.config.ts.
   redis-master:
     image: redis:7-alpine
     container_name: nest-cache-example-sentinel-master
@@ -312,6 +279,17 @@ services:
     depends_on:
       redis-master:
         condition: service_healthy
+
+networks:
+  # Dedicated fixed-subnet bridge for the cluster profile, so each node can
+  # announce a stable internal IP that the natMap (REDIS_CLUSTER_NAT_MAP) targets.
+  # If this subnet collides with an existing Docker network on your host, change
+  # it here and update the matching cluster-announce-ip + REDIS_CLUSTER_NAT_MAP values.
+  cluster-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.0.0/24
 
 volumes:
   redis-data:
