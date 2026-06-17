@@ -33,7 +33,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 >
 > **All 17 phase files are scaffolded** under [`docs/tasks/`](tasks/) — the per-phase totals below are firm.
 >
-> **Overall progress: 55 / 107 tasks done (51%)**
+> **Overall progress: 59 / 107 tasks done (55%)**
 
 | #   | Phase                                     | Tasks file                            | Size | Done / Total | %    | Status |
 | --- | ----------------------------------------- | ------------------------------------- | ---- | ------------ | ---- | ------ |
@@ -46,7 +46,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 | 6   | Namespace Isolation & Tenants             | `phase-06-namespace-tenants.md`       | M    | 5 / 5        | 100% | 🟢     |
 | 7   | Serialization (default + custom)          | `phase-07-serialization.md`           | S    | 4 / 4        | 100% | 🟢     |
 | 8   | Pub/Sub + WebSocket Bridge                | `phase-08-pubsub-websocket.md`        | M    | 6 / 6        | 100% | 🟢     |
-| 9   | TTL Events (keyspace notifications)       | `phase-09-ttl-events.md`              | S    | 0 / 4        | 0%   | 🔴     |
+| 9   | TTL Events (keyspace notifications)       | `phase-09-ttl-events.md`              | S    | 4 / 4        | 100% | 🟢     |
 | 10  | Lua Scripts & Cache Stampede              | `phase-10-lua-stampede.md`            | M    | 0 / 5        | 0%   | 🔴     |
 | 11  | Connection Topologies & Error Surface     | `phase-11-topologies-errors.md`       | M    | 0 / 6        | 0%   | 🔴     |
 | 12  | `apps/web` Skeleton + Design System       | `phase-12-web-skeleton-design.md`     | L    | 0 / 7        | 0%   | 🔴     |
@@ -303,10 +303,10 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 **Prerequisites:** Phase 8 (gateway + feed pattern), Phase 1 (`notify-keyspace-events`).
 **Deliverables:**
 
-- [ ] `src/ttl-events/ttl-events.service.ts` — inject `BYMAX_CACHE_CONNECTION` (`ConnectionManager`) + `BYMAX_CACHE_KEY_BUILDER` (`KeyBuilder`); `createSubscriberClient()`; subscribe to `__keyevent@{db}__:expired`; filter by `getNamespacePrefix()`; emit `cache:expired`.
-- [ ] `onModuleDestroy` quits the dedicated subscriber.
-- [ ] A seed endpoint to create short-TTL keys for the demo (reuses catalog `set(ttl)`).
-- [ ] Inline note explaining why `PubSubService` cannot be used here (namespaced channels vs. fixed keyspace channels).
+- [x] `src/ttl-events/ttl-events.service.ts` — inject `BYMAX_CACHE_CONNECTION` (`ConnectionManager`) + `BYMAX_CACHE_KEY_BUILDER` (`KeyBuilder`); `createSubscriberClient()`; subscribe to `__keyevent@{db}__:expired`; filter by `getNamespacePrefix()`; emit `cache:expired`.
+- [x] `onModuleDestroy` quits the dedicated subscriber.
+- [x] A seed endpoint to create short-TTL keys for the demo (reuses catalog `set(ttl)`).
+- [x] Inline note explaining why `PubSubService` cannot be used here (namespaced channels vs. fixed keyspace channels).
 
 **Demonstrates:** matrix #8 (`BYMAX_CACHE_CONNECTION` → `createSubscriberClient`), #12 (`KEY_BUILDER`/`getNamespacePrefix`), reuses #19 (TTL). **References:** spec §17.3, DASHBOARD §10.
 **Definition of done:** seeding a 5s-TTL key emits exactly one `cache:expired` for the namespaced key ~5s later; foreign-namespace expiries are filtered out.

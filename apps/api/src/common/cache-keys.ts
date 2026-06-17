@@ -18,4 +18,5 @@ export const CACHE_PREFIX = {
   views: 'views',
   stock: 'stock',
   stampede: 'stampede',
+  ttl: 'ttl',
 } as const satisfies Record<string, CacheKeyPrefix>
