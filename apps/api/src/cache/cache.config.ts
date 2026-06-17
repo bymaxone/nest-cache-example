@@ -7,19 +7,10 @@
  * their respective topology options are wired (see TECHNICAL_SPECIFICATION.md §15.2/§15.3).
  */
 import type { ConfigService } from '@nestjs/config'
-import type {
-  BymaxCacheModuleOptions,
-  ICacheEvents,
-  IScriptDefinition,
-} from '@bymax-one/nest-cache'
+import type { BymaxCacheModuleOptions, ICacheEvents } from '@bymax-one/nest-cache'
 import type { Env } from '../config/env.schema.js'
 import { MsgPackSerializer } from './msgpack.serializer.js'
-
-/**
- * Pre-registered Lua scripts passed to the module at boot.
- * Reserved for the single-flight `acquireLock` Lua script — see TECHNICAL_SPECIFICATION.md §7.
- */
-const CACHE_SCRIPTS: readonly IScriptDefinition[] = []
+import { CACHE_SCRIPTS } from './scripts/index.js'
 
 /**
  * Builds the resolved options for `BymaxCacheModule` from the validated env.

@@ -7,7 +7,8 @@
     "dev": "nest start --watch",
     "build": "nest build",
     "start": "node dist/main.js",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "verify:stampede": "nest build && node scripts/verify-stampede.mjs"
   },
   "dependencies": {
     "@bymax-one/nest-cache": "file:../../../nest-cache",

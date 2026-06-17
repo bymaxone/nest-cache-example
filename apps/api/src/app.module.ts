@@ -24,6 +24,7 @@ import { TenantsModule } from './tenants/tenants.module.js'
 import { SerializerDemoModule } from './serializer-demo/serializer-demo.module.js'
 import { PubSubModule } from './pubsub/pubsub.module.js'
 import { TtlEventsModule } from './ttl-events/ttl-events.module.js'
+import { StampedeModule } from './stampede/stampede.module.js'
 
 /** Root application module. */
 @Module({
@@ -40,6 +41,7 @@ import { TtlEventsModule } from './ttl-events/ttl-events.module.js'
     SerializerDemoModule,
     PubSubModule,
     TtlEventsModule,
+    StampedeModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_FILTER, useClass: CacheExceptionFilter }],
