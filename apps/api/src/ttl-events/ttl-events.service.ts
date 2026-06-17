@@ -60,7 +60,7 @@ export class TtlEventsService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(TtlEventsService.name)
 
   /** Dedicated subscriber connection; owned by this service and quit on destroy. */
-  private sub?: Redis
+  private sub?: Redis | undefined
 
   /** Demo-only entity prefix — keeps throwaway TTL keys off the real `product` surface. */
   private readonly prefix = CACHE_PREFIX.ttl
@@ -125,14 +125,25 @@ export class TtlEventsService implements OnModuleInit, OnModuleDestroy {
    * `createSubscriberClient()` transferred ownership to this service (spec
    * §4/§17.3), so closing it here is mandatory — `app.enableShutdownHooks()`
    * invokes this on SIGINT/SIGTERM and the process then exits without a dangling
-   * Redis socket. Optional-chained so a service that never initialized (or ran in
-   * cluster mode) is a no-op, and `quit()` (graceful drain) is used rather than
-   * `disconnect()` (abrupt).
+   * Redis socket. `quit()` (graceful drain) is preferred over `disconnect()`
+   * (abrupt), but it can reject if the connection already dropped; the rejection
+   * is caught and logged so a teardown error never interrupts Nest's shutdown
+   * sequence (mirroring the defensive teardown in `PubSubBridgeService`). The
+   * field is cleared first, so a partial-init or double-invoke is a safe no-op.
    *
-   * @returns Resolves once the connection is closed.
+   * @returns Resolves once the connection is closed (or immediately if unset).
    */
   async onModuleDestroy(): Promise<void> {
-    await this.sub?.quit()
+    const sub = this.sub
+    this.sub = undefined
+    if (!sub) return
+    try {
+      await sub.quit()
+    } catch (err) {
+      this.logger.warn(
+        `TTL subscriber quit() failed during shutdown: ${err instanceof Error ? err.message : String(err)}`,
+      )
+    }
   }
 
   /**
