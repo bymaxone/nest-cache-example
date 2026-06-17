@@ -23,6 +23,7 @@ import { AdminModule } from './admin/admin.module.js'
 import { TenantsModule } from './tenants/tenants.module.js'
 import { SerializerDemoModule } from './serializer-demo/serializer-demo.module.js'
 import { PubSubModule } from './pubsub/pubsub.module.js'
+import { TtlEventsModule } from './ttl-events/ttl-events.module.js'
 
 /** Root application module. */
 @Module({
@@ -38,6 +39,7 @@ import { PubSubModule } from './pubsub/pubsub.module.js'
     TenantsModule,
     SerializerDemoModule,
     PubSubModule,
+    TtlEventsModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_FILTER, useClass: CacheExceptionFilter }],

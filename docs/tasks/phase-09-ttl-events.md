@@ -2,7 +2,7 @@
 
 > **Source:** [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#phase-9--ttl-events-keyspace-notifications) §Phase 9
 > **Total tasks:** 4
-> **Progress:** 🔴 0 / 4 done (0%)
+> **Progress:** 🟢 4 / 4 done (100%)
 >
 > **Status legend:** 🔴 Not Started · 🟡 In Progress · 🔵 In Review · 🟢 Done · ⚪ Blocked
 
@@ -10,16 +10,16 @@
 
 | ID   | Task                                                                                     | Status | Priority | Size | Depends on       |
 | ---- | ---------------------------------------------------------------------------------------- | ------ | -------- | ---- | ---------------- |
-| P9-1 | `TtlEventsService` — raw subscriber → `__keyevent@{db}__:expired` → emit `cache:expired` | 🔴     | High     | M    | Phase 8, Phase 1 |
-| P9-2 | `onModuleDestroy` quits the dedicated subscriber connection                              | 🔴     | High     | S    | P9-1             |
-| P9-3 | Short-TTL seed endpoint for the demo (reuses catalog `set(ttl)`)                         | 🔴     | Medium   | S    | P9-1             |
-| P9-4 | Phase verification + inline "why not `PubSubService`" note                               | 🔴     | Medium   | S    | P9-1, P9-2, P9-3 |
+| P9-1 | `TtlEventsService` — raw subscriber → `__keyevent@{db}__:expired` → emit `cache:expired` | 🟢     | High     | M    | Phase 8, Phase 1 |
+| P9-2 | `onModuleDestroy` quits the dedicated subscriber connection                              | 🟢     | High     | S    | P9-1             |
+| P9-3 | Short-TTL seed endpoint for the demo (reuses catalog `set(ttl)`)                         | 🟢     | Medium   | S    | P9-1             |
+| P9-4 | Phase verification + inline "why not `PubSubService`" note                               | 🟢     | Medium   | S    | P9-1, P9-2, P9-3 |
 
 ---
 
 ## P9-1 — `TtlEventsService` — Raw Subscriber → `__keyevent@{db}__:expired` → Emit `cache:expired`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90–240 min)
 - **Depends on:** `Phase 8`, `Phase 1`
@@ -30,12 +30,12 @@ Create `src/ttl-events/ttl-events.service.ts` — the escape-hatch demo. It open
 
 ### Acceptance Criteria
 
-- [ ] `src/ttl-events/ttl-events.service.ts` exists; `TtlEventsService` is `@Injectable()` and implements `OnModuleInit` + `OnModuleDestroy`.
-- [ ] Constructor injects `@Inject(BYMAX_CACHE_CONNECTION)` (typed `ConnectionManager`), `@Inject(BYMAX_CACHE_KEY_BUILDER)` (typed `KeyBuilder`), the `EventsGateway` (Phase 8), and `ConfigService<Env, true>`.
-- [ ] `onModuleInit` reads `db` from `REDIS_DB` (default `0`), calls `connection.createSubscriberClient()` (stored on a private field), and subscribes to the keyspace channel `__keyevent@${db}__:expired`.
-- [ ] A `message` listener emits `gateway.emitExpired(key)` **only** when `key.startsWith(keys.getNamespacePrefix())`; foreign-namespace expiries are ignored.
-- [ ] `src/ttl-events/ttl-events.module.ts` declares the service and imports `EventsModule` (Phase 8); the module is registered in `AppModule`.
-- [ ] `pnpm --filter api typecheck` exits 0.
+- [x] `src/ttl-events/ttl-events.service.ts` exists; `TtlEventsService` is `@Injectable()` and implements `OnModuleInit` + `OnModuleDestroy`.
+- [x] Constructor injects `@Inject(BYMAX_CACHE_CONNECTION)` (typed `ConnectionManager`), `@Inject(BYMAX_CACHE_KEY_BUILDER)` (typed `KeyBuilder`), the `EventsGateway` (Phase 8), and `ConfigService<Env, true>`.
+- [x] `onModuleInit` reads `db` from `REDIS_DB` (default `0`), calls `connection.createSubscriberClient()` (stored on a private field), and subscribes to the keyspace channel `__keyevent@${db}__:expired`.
+- [x] A `message` listener emits `gateway.emitExpired(key)` **only** when `key.startsWith(keys.getNamespacePrefix())`; foreign-namespace expiries are ignored.
+- [x] `src/ttl-events/ttl-events.module.ts` declares the service and imports `EventsModule` (Phase 8); the module is registered in `AppModule`.
+- [x] `pnpm --filter api typecheck` exits 0.
 
 ### Files to create / modify
 
@@ -139,7 +139,7 @@ Create `src/ttl-events/ttl-events.service.ts` — the escape-hatch demo. It open
 
 ## P9-2 — `onModuleDestroy` Quits the Dedicated Subscriber Connection
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `P9-1`
@@ -150,10 +150,10 @@ Create `src/ttl-events/ttl-events.service.ts` — the escape-hatch demo. It open
 
 ### Acceptance Criteria
 
-- [ ] `onModuleDestroy` calls `await this.sub?.quit()` (optional-chained — the field is unset if init never ran).
-- [ ] A short inline comment states that ownership of the subscriber transfers to the caller (so quitting it is mandatory), referencing spec §4 / §17.3.
-- [ ] No double-close hazard: the field is only quit once; the service does not re-open the connection on destroy.
-- [ ] `pnpm --filter api typecheck` exits 0.
+- [x] `onModuleDestroy` calls `await this.sub?.quit()` (optional-chained — the field is unset if init never ran).
+- [x] A short inline comment states that ownership of the subscriber transfers to the caller (so quitting it is mandatory), referencing spec §4 / §17.3.
+- [x] No double-close hazard: the field is only quit once; the service does not re-open the connection on destroy.
+- [x] `pnpm --filter api typecheck` exits 0.
 
 ### Files to create / modify
 
@@ -204,7 +204,7 @@ Create `src/ttl-events/ttl-events.service.ts` — the escape-hatch demo. It open
 
 ## P9-3 — Short-TTL Seed Endpoint for the Demo (Reuses Catalog `set(ttl)`)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P9-1`
@@ -215,11 +215,11 @@ The TTL Live page (`DASHBOARD.md` §10) needs a button that drops a key with a s
 
 ### Acceptance Criteria
 
-- [ ] `POST /ttl-events/seed` exists, accepting `{ id?: string; ttlSeconds?: number }` (Zod-validated; sensible defaults — generated `id`, `ttlSeconds` default 5, bounded to a small range e.g. 1–120).
-- [ ] The handler writes a namespaced key via the catalog `set(ttl)` path (reuse `CatalogService` / `CacheService.set` — do not re-implement serialization or key building).
-- [ ] The response returns the resolved namespaced key (via `KeyBuilder`) and the applied `ttlSeconds`, so the UI can register a countdown ring.
-- [ ] Controller methods carry JSDoc; the DTO is Zod (no Swagger).
-- [ ] `pnpm --filter api typecheck` exits 0; a manual `curl` against a running API returns the seeded key + TTL.
+- [x] `POST /ttl-events/seed` exists, accepting `{ id?: string; ttlSeconds?: number }` (Zod-validated; sensible defaults — generated `id`, `ttlSeconds` default 5, bounded to a small range e.g. 1–120).
+- [x] The handler writes a namespaced key via the catalog `set(ttl)` path (`CacheService.set` — no re-implemented serialization or key building; writes under a dedicated `ttl` demo prefix to avoid overwriting real `product` data).
+- [x] The response returns the resolved namespaced key (via `KeyBuilder`) and the applied `ttlSeconds`, so the UI can register a countdown ring.
+- [x] Controller methods carry JSDoc; the DTO is Zod (no Swagger).
+- [x] `pnpm --filter api typecheck` exits 0; a manual request against a running API returns the seeded key + TTL (verified: `{"key":"cache-example:ttl:…","ttlSeconds":3}`).
 
 ### Files to create / modify
 
@@ -264,7 +264,7 @@ The TTL Live page (`DASHBOARD.md` §10) needs a button that drops a key with a s
 
 ## P9-4 — Phase Verification + Inline "Why Not `PubSubService`" Note
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P9-1`, `P9-2`, `P9-3`
@@ -275,11 +275,11 @@ Close Phase 9 against its `DEVELOPMENT_PLAN.md` Definition of done: seeding a 5s
 
 ### Acceptance Criteria
 
-- [ ] Manual end-to-end check passes: with `pnpm infra:up` (Redis with `notify-keyspace-events Ex`) and the API running, seeding via `POST /ttl-events/seed {"ttlSeconds":5}` produces **exactly one** `cache:expired` emission for the namespaced key ≈5s later (observed on the WS feed or a `socket.io` client / server log).
-- [ ] Foreign-namespace filtering verified: writing an un-namespaced key with a short TTL via `getClient()` (e.g. `other-app:demo`) does **not** produce a `cache:expired` emission when it expires.
-- [ ] The inline note exists in `ttl-events.service.ts` (JSDoc or top-of-file comment) and states the `PubSubService`-vs-raw-subscriber rationale, naming the would-be-namespaced channel `cache-example:__keyevent@0__:expired` and that it never fires.
-- [ ] `redis-cli config get notify-keyspace-events` (against the dev Redis) returns a value containing `E` and `x` (Phase 1 prerequisite confirmed).
-- [ ] `pnpm --filter api typecheck` + `pnpm --filter api lint` exit 0.
+- [x] Manual end-to-end check passes: with `pnpm infra:up` (Redis with `notify-keyspace-events Ex`) and the API running, seeding via `POST /ttl-events/seed {"ttlSeconds":3}` produces **exactly one** `cache:expired` emission for the namespaced key ≈3s later (observed on a `socket.io-client` feed).
+- [x] Foreign-namespace filtering verified: writing an un-namespaced key with a short TTL (`redis-cli set other-app:demo x EX 3`) produces **no** `cache:expired` emission when it expires.
+- [x] The inline note exists in `ttl-events.service.ts` (JSDoc) and states the `PubSubService`-vs-raw-subscriber rationale, naming the would-be-namespaced channel `cache-example:__keyevent@0__:expired` and that it never fires.
+- [x] `redis-cli config get notify-keyspace-events` (against the dev Redis) returns a value containing `E` and `x` (confirmed: `xE`).
+- [x] `pnpm --filter api typecheck` + `pnpm lint` exit 0 (the repo's lint script is root-level `eslint .`; `apps/api` has no per-package `lint` script).
 
 ### Files to create / modify
 
@@ -331,3 +331,8 @@ When this task is 🟢, Phase 9 is 4/4 — switch the Phase 9 row in `DEVELOPMEN
 ## Completion log
 
 _(Agents append one line per finished task, newest at the bottom.)_
+
+- P9-1 ✅ 2026-06-17 — `TtlEventsService` raw subscriber: `createSubscriberClient()` → `__keyevent@{db}__:expired`, namespace-prefix filter, `emitExpired` via `EventsGateway`; module wired into `AppModule`.
+- P9-2 ✅ 2026-06-17 — `onModuleDestroy` quits the owned subscriber (`await this.sub?.quit()`); graceful SIGTERM shutdown verified (process exits ~1s, port released).
+- P9-3 ✅ 2026-06-17 — `POST /ttl-events/seed` (Zod `{ id?, ttlSeconds }`, default 5s, 1–120 bound, safe-charset id) reuses `CacheService.set` under a dedicated `ttl` demo prefix; returns the resolved namespaced key + TTL.
+- P9-4 ✅ 2026-06-17 — E2E verified: seed `{ttlSeconds:3}` → exactly one `cache:expired` for the namespaced key; foreign-ns `other-app:demo` expiry filtered out; `notify-keyspace-events` = `xE`; typecheck + lint + format clean. Hardening from review: subscriber `error` listener, cluster-mode guard, `id` charset constraint.
