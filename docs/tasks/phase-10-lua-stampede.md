@@ -2,7 +2,7 @@
 
 > **Source:** [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#phase-10--lua-scripts--cache-stampede) §Phase 10
 > **Total tasks:** 5
-> **Progress:** 🔴 0 / 5 done (0%)
+> **Progress:** 🟢 5 / 5 done (100%)
 >
 > **Status legend:** 🔴 Not Started · 🟡 In Progress · 🔵 In Review · 🟢 Done · ⚪ Blocked
 
@@ -10,17 +10,17 @@
 
 | ID    | Task                                                                  | Status | Priority | Size | Depends on   |
 | ----- | --------------------------------------------------------------------- | ------ | -------- | ---- | ------------ |
-| P10-1 | Declare `CACHE_SCRIPTS` (`acquireLock`) + wire into `cache.config.ts` | 🔴     | High     | S    | Phase 3      |
-| P10-2 | `src/stampede/` module + `POST /stampede` firing N concurrent reqs    | 🔴     | High     | M    | P10-1        |
-| P10-3 | Single-flight behaviour (winner fetches, losers wait then hit)        | 🔴     | High     | M    | P10-2        |
-| P10-4 | Timeline log + expose resolved SHA via `ScriptManagerService.load`    | 🔴     | Medium   | S    | P10-3        |
-| P10-5 | Phase verification (10 concurrent → 1 fetch + 9 hits; stable SHA1)    | 🔴     | Medium   | S    | P10-1..P10-4 |
+| P10-1 | Declare `CACHE_SCRIPTS` (`acquireLock`) + wire into `cache.config.ts` | 🟢     | High     | S    | Phase 3      |
+| P10-2 | `src/stampede/` module + `POST /stampede` firing N concurrent reqs    | 🟢     | High     | M    | P10-1        |
+| P10-3 | Single-flight behaviour (winner fetches, losers wait then hit)        | 🟢     | High     | M    | P10-2        |
+| P10-4 | Timeline log + expose resolved SHA via `ScriptManagerService.load`    | 🟢     | Medium   | S    | P10-3        |
+| P10-5 | Phase verification (10 concurrent → 1 fetch + 9 hits; stable SHA1)    | 🟢     | Medium   | S    | P10-1..P10-4 |
 
 ---
 
 ## P10-1 — Declare `CACHE_SCRIPTS` (`acquireLock`) + wire into `cache.config.ts`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `Phase 3`
@@ -31,12 +31,12 @@ Declare the single-flight Lua lock as a typed `IScriptDefinition` and register i
 
 ### Acceptance Criteria
 
-- [ ] `src/cache/scripts/index.ts` exports `export const CACHE_SCRIPTS: readonly IScriptDefinition[]`.
-- [ ] `CACHE_SCRIPTS` contains an `acquireLock` entry whose `lua` is exactly `if redis.call('SET', KEYS[1], ARGV[1], 'NX', 'PX', ARGV[2]) then return 1 else return 0 end`.
-- [ ] `IScriptDefinition` is imported from `@bymax-one/nest-cache` (the `/shared` surface); the Lua is a string literal in source, never composed from any runtime input.
-- [ ] `cache.config.ts` (from Phase 3) sets `scripts: CACHE_SCRIPTS` on the `BymaxCacheModule` options.
-- [ ] A short JSDoc on `CACHE_SCRIPTS` (and on `acquireLock`) states the `SET NX PX` semantics (`1` = won, `0` = lost) and the "declared in code, never from request input" invariant.
-- [ ] `pnpm --filter @nest-cache-example/api typecheck` exits 0.
+- [x] `src/cache/scripts/index.ts` exports `export const CACHE_SCRIPTS: readonly IScriptDefinition[]`.
+- [x] `CACHE_SCRIPTS` contains an `acquireLock` entry whose `lua` is exactly `if redis.call('SET', KEYS[1], ARGV[1], 'NX', 'PX', ARGV[2]) then return 1 else return 0 end`.
+- [x] `IScriptDefinition` is imported from `@bymax-one/nest-cache` (the `/shared` surface); the Lua is a string literal in source, never composed from any runtime input.
+- [x] `cache.config.ts` (from Phase 3) sets `scripts: CACHE_SCRIPTS` on the `BymaxCacheModule` options.
+- [x] A short JSDoc on `CACHE_SCRIPTS` (and on `acquireLock`) states the `SET NX PX` semantics (`1` = won, `0` = lost) and the "declared in code, never from request input" invariant.
+- [x] `pnpm --filter @nest-cache-example/api typecheck` exits 0.
 
 ### Files to create / modify
 
@@ -104,7 +104,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P10-2 — `src/stampede/` module + `POST /stampede` firing N concurrent reqs
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (2–4 h)
 - **Depends on:** `P10-1`
@@ -115,13 +115,13 @@ Build the stampede feature module — a controller + service that fire **N concu
 
 ### Acceptance Criteria
 
-- [ ] `src/stampede/stampede.module.ts`, `stampede.controller.ts`, `stampede.service.ts` exist and the module is imported by `app.module.ts`.
-- [ ] `POST /stampede` accepts `productId` (string/number), `concurrency` (int, default 10), `lockMs` (int ms, default 2000) as **Zod-validated** query params — **no Swagger / no class-validator decorators**.
-- [ ] The service fires exactly `concurrency` concurrent attempts (e.g. `Promise.all` over an array of size `concurrency`), each calling `cacheService.eval('acquireLock', ['stampede:' + productId], [token, lockMs])`.
-- [ ] Each contender generates a **unique lock token** (e.g. `randomUUID()`); `eval` KEYS use the bare `stampede:{productId}` form (the library namespaces it — do NOT prefix `cache-example:` by hand).
-- [ ] `args` are passed as `[token, lockMs]` (string + number) untouched — no manual namespacing of ARGV.
-- [ ] JSDoc on the public controller method + service method; the controller has an inline note that keys are auto-namespaced by `eval` and the Lua body is declared in code (spec §18, §24).
-- [ ] `pnpm --filter @nest-cache-example/api typecheck` + `pnpm --filter @nest-cache-example/api lint` exit 0.
+- [x] `src/stampede/stampede.module.ts`, `stampede.controller.ts`, `stampede.service.ts` exist and the module is imported by `app.module.ts`.
+- [x] `POST /stampede` accepts `productId` (string/number), `concurrency` (int, default 10), `lockMs` (int ms, default 2000) as **Zod-validated** query params — **no Swagger / no class-validator decorators**.
+- [x] The service fires exactly `concurrency` concurrent attempts (e.g. `Promise.all` over an array of size `concurrency`), each calling `cacheService.eval('acquireLock', ['stampede:' + productId], [token, lockMs])`.
+- [x] Each contender generates a **unique lock token** (e.g. `randomUUID()`); `eval` KEYS use the bare `stampede:{productId}` form (the library namespaces it — do NOT prefix `cache-example:` by hand).
+- [x] `args` are passed as `[token, lockMs]` (string + number) untouched — no manual namespacing of ARGV.
+- [x] JSDoc on the public controller method + service method; the controller has an inline note that keys are auto-namespaced by `eval` and the Lua body is declared in code (spec §18, §24).
+- [x] `pnpm --filter @nest-cache-example/api typecheck` + `pnpm --filter @nest-cache-example/api lint` exit 0.
 
 ### Files to create / modify
 
@@ -202,7 +202,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P10-3 — Single-flight behaviour (winner fetches, losers wait then hit)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (2–4 h)
 - **Depends on:** `P10-2`
@@ -213,13 +213,13 @@ Implement the actual single-flight collapse on top of the P10-2 fan-out (spec §
 
 ### Acceptance Criteria
 
-- [ ] The winner (`eval` → `1`) fetches a simulated slow origin (configurable/fixed latency), `set`s the product cache key, then releases the lock.
-- [ ] Losers (`eval` → `0`) wait with a bounded retry/backoff loop, then `get` the populated key (a cache hit) rather than fetching the origin.
-- [ ] Across one `POST /stampede` with `concurrency = N`, exactly **1** origin fetch occurs and **N−1** reads are cache hits (counted by the service).
-- [ ] Lock release is **token-safe** — a contender releases the lock only if it still holds its own token (compare-then-delete; do NOT blind-`del` the lock key).
-- [ ] The product cache key is written through `CacheService` (namespaced), distinct from the `stampede:{productId}` lock key.
-- [ ] Loser wait is bounded (a max wait derived from `lockMs`) so the handler can never hang indefinitely if the winner errors.
-- [ ] `pnpm --filter @nest-cache-example/api typecheck` + `... lint` exit 0.
+- [x] The winner (`eval` → `1`) fetches a simulated slow origin (configurable/fixed latency), `set`s the product cache key, then releases the lock.
+- [x] Losers (`eval` → `0`) wait with a bounded retry/backoff loop, then `get` the populated key (a cache hit) rather than fetching the origin.
+- [x] Across one `POST /stampede` with `concurrency = N`, exactly **1** origin fetch occurs and **N−1** reads are cache hits (counted by the service).
+- [x] Lock release is **token-safe** — a contender releases the lock only if it still holds its own token (compare-then-delete; do NOT blind-`del` the lock key).
+- [x] The product cache key is written through `CacheService` (namespaced), distinct from the `stampede:{productId}` lock key.
+- [x] Loser wait is bounded (a max wait derived from `lockMs`) so the handler can never hang indefinitely if the winner errors.
+- [x] `pnpm --filter @nest-cache-example/api typecheck` + `... lint` exit 0.
 
 ### Files to create / modify
 
@@ -270,7 +270,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P10-4 — Timeline log + expose resolved SHA via `ScriptManagerService.load`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P10-3`
@@ -281,12 +281,12 @@ Shape the `POST /stampede` response so the UI (`StampedeTimeline`, DASHBOARD §1
 
 ### Acceptance Criteria
 
-- [ ] `POST /stampede` returns a structured body containing: a per-contender `timeline` (entries with at least `token`/index, `role` = `won` | `waited`, `outcome` = `origin` | `hit`, and timing), and a `summary` (`originFetches`, `cacheHits`, `hitRate`, `concurrency`).
-- [ ] The response includes `script: { name: 'acquireLock', sha: <sha1> }`, where `sha` comes from `ScriptManagerService.load('acquireLock')`.
-- [ ] `ScriptManagerService` is obtained via the `BYMAX_CACHE_SCRIPT_REGISTRY` token (or its exported provider type) from `@bymax-one/nest-cache` and injected into the stampede service.
-- [ ] `load('acquireLock')` is used read-only — the service does NOT call `register` (the script is registered declaratively in P10-1) and does NOT rebuild Lua at runtime.
-- [ ] The returned body shape is documented with a JSDoc type/interface so `apps/web` can type its fetch.
-- [ ] `pnpm --filter @nest-cache-example/api typecheck` + `... lint` exit 0.
+- [x] `POST /stampede` returns a structured body containing: a per-contender `timeline` (entries with at least `token`/index, `role` = `won` | `waited`, `outcome` = `origin` | `hit`, and timing), and a `summary` (`originFetches`, `cacheHits`, `hitRate`, `concurrency`).
+- [x] The response includes `script: { name: 'acquireLock', sha: <sha1> }`, where `sha` comes from `ScriptManagerService.load('acquireLock')`.
+- [x] `ScriptManagerService` is obtained via the `BYMAX_CACHE_SCRIPT_REGISTRY` token (or its exported provider type) from `@bymax-one/nest-cache` and injected into the stampede service.
+- [x] `load('acquireLock')` is used read-only — the service does NOT call `register` (the script is registered declaratively in P10-1) and does NOT rebuild Lua at runtime.
+- [x] The returned body shape is documented with a JSDoc type/interface so `apps/web` can type its fetch.
+- [x] `pnpm --filter @nest-cache-example/api typecheck` + `... lint` exit 0.
 
 ### Files to create / modify
 
@@ -350,7 +350,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P10-5 — Phase verification (10 concurrent → 1 fetch + 9 hits; stable SHA1)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P10-1`, `P10-2`, `P10-3`, `P10-4`
@@ -361,11 +361,11 @@ Phase 10 "Definition of done" gate per `DEVELOPMENT_PLAN.md`: prove that firing 
 
 ### Acceptance Criteria
 
-- [ ] A test (or scripted verification) fires `POST /stampede?productId=&concurrency=10` against an uncached product and asserts `summary.originFetches === 1` and `summary.cacheHits === 9`.
-- [ ] The `timeline` shows exactly one entry with `role: 'won'` / `outcome: 'origin'` and nine with `role: 'waited'` / `outcome: 'hit'`.
-- [ ] `ScriptManagerService.load('acquireLock')` returns a 40-char hex SHA1, and two consecutive calls return the **same** value (stable).
-- [ ] Verification ensures the product key starts uncached before the burst (flush/clear, or a fresh `productId`).
-- [ ] `pnpm --filter @nest-cache-example/api test` (or the e2e target) passes; `pnpm --filter @nest-cache-example/api typecheck` + `... lint` exit 0.
+- [x] A test (or scripted verification) fires `POST /stampede?productId=&concurrency=10` against an uncached product and asserts `summary.originFetches === 1` and `summary.cacheHits === 9`.
+- [x] The `timeline` shows exactly one entry with `role: 'won'` / `outcome: 'origin'` and nine with `role: 'waited'` / `outcome: 'hit'`.
+- [x] `ScriptManagerService.load('acquireLock')` returns a 40-char hex SHA1, and two consecutive calls return the **same** value (stable).
+- [x] Verification ensures the product key starts uncached before the burst (flush/clear, or a fresh `productId`).
+- [x] `pnpm --filter @nest-cache-example/api test` (or the e2e target) passes; `pnpm --filter @nest-cache-example/api typecheck` + `... lint` exit 0.
 
 ### Files to create / modify
 
@@ -412,3 +412,9 @@ When this task is 🟢, Phase 10 is 5/5 — switch the Phase 10 row in `DEVELOPM
 ## Completion log
 
 _(Agents append one line per finished task, newest at the bottom.)_
+
+- P10-1 ✅ 2026-06-17 — `CACHE_SCRIPTS` registry (`src/cache/scripts/index.ts`) declares the `acquireLock` `SET NX PX` Lua literal; `cache.config.ts` wires `scripts: CACHE_SCRIPTS`.
+- P10-2 ✅ 2026-06-17 — `src/stampede/` module + `POST /stampede` (Zod-validated query) fires N concurrent contenders, each `eval('acquireLock', ['stampede:{id}'], [token, lockMs])` with a unique `randomUUID` token.
+- P10-3 ✅ 2026-06-17 — single-flight collapse: winner fetches the slow origin, populates `product:{id}`, releases token-safely via a `releaseLock` compare-and-delete script; losers poll with a `lockMs`-bounded backoff then hit. Exactly 1 origin fetch + (N−1) hits.
+- P10-4 ✅ 2026-06-17 — `stampede.types.ts` response contract; service injects `ScriptManagerService` via `BYMAX_CACHE_SCRIPT_REGISTRY` and returns `timeline` + `summary` + `script.sha` from read-only `load('acquireLock')`.
+- P10-5 ✅ 2026-06-17 — `apps/api/scripts/verify-stampede.mjs` (`pnpm --filter api verify:stampede`) boots the app against live Redis and asserts 10 concurrent → 1 fetch + 9 hits, one `won`/`origin` + nine `waited`/`hit`, and a stable 40-char SHA1.

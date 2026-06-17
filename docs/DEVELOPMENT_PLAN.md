@@ -33,7 +33,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 >
 > **All 17 phase files are scaffolded** under [`docs/tasks/`](tasks/) — the per-phase totals below are firm.
 >
-> **Overall progress: 59 / 107 tasks done (55%)**
+> **Overall progress: 64 / 107 tasks done (60%)**
 
 | #   | Phase                                     | Tasks file                            | Size | Done / Total | %    | Status |
 | --- | ----------------------------------------- | ------------------------------------- | ---- | ------------ | ---- | ------ |
@@ -47,7 +47,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 | 7   | Serialization (default + custom)          | `phase-07-serialization.md`           | S    | 4 / 4        | 100% | 🟢     |
 | 8   | Pub/Sub + WebSocket Bridge                | `phase-08-pubsub-websocket.md`        | M    | 6 / 6        | 100% | 🟢     |
 | 9   | TTL Events (keyspace notifications)       | `phase-09-ttl-events.md`              | S    | 4 / 4        | 100% | 🟢     |
-| 10  | Lua Scripts & Cache Stampede              | `phase-10-lua-stampede.md`            | M    | 0 / 5        | 0%   | 🔴     |
+| 10  | Lua Scripts & Cache Stampede              | `phase-10-lua-stampede.md`            | M    | 5 / 5        | 100% | 🟢     |
 | 11  | Connection Topologies & Error Surface     | `phase-11-topologies-errors.md`       | M    | 0 / 6        | 0%   | 🔴     |
 | 12  | `apps/web` Skeleton + Design System       | `phase-12-web-skeleton-design.md`     | L    | 0 / 7        | 0%   | 🔴     |
 | 13  | Dashboard — Observe pages                 | `phase-13-dashboard-observe.md`       | L    | 0 / 8        | 0%   | 🔴     |
