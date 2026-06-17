@@ -36,7 +36,7 @@ Declare the single-flight Lua lock as a typed `IScriptDefinition` and register i
 - [x] `IScriptDefinition` is imported from `@bymax-one/nest-cache` (the `/shared` surface); the Lua is a string literal in source, never composed from any runtime input.
 - [x] `cache.config.ts` (from Phase 3) sets `scripts: CACHE_SCRIPTS` on the `BymaxCacheModule` options.
 - [x] A short JSDoc on `CACHE_SCRIPTS` (and on `acquireLock`) states the `SET NX PX` semantics (`1` = won, `0` = lost) and the "declared in code, never from request input" invariant.
-- [x] `pnpm --filter @nest-cache-example/api typecheck` exits 0.
+- [x] `pnpm --filter api typecheck` exits 0.
 
 ### Files to create / modify
 
@@ -73,7 +73,7 @@ Declare the single-flight Lua lock as a typed `IScriptDefinition` and register i
 >    ```
 >
 > 2. Open `apps/api/src/cache/cache.config.ts` (Phase 3). Import `CACHE_SCRIPTS` and set `scripts: CACHE_SCRIPTS` on the options object the module factory returns. Do NOT change any other Phase 3 option.
-> 3. Run `pnpm --filter @nest-cache-example/api typecheck`.
+> 3. Run `pnpm --filter api typecheck`.
 >    Constraints:
 >
 > - Follow `docs/DEVELOPMENT_PLAN.md` §2 Global Conventions (TypeScript strict, ESM, English-only comments).
@@ -82,7 +82,7 @@ Declare the single-flight Lua lock as a typed `IScriptDefinition` and register i
 > - `IScriptDefinition` is `{ name: string; lua: string }` (spec §4) — do not redeclare it locally; import it from `@bymax-one/nest-cache`.
 > - Do NOT call `register`/`load`/`eval` here — registration is declarative via `options.scripts`; the manager eager-loads on bootstrap.
 >   Verification:
-> - `pnpm --filter @nest-cache-example/api typecheck` — expected: exit 0.
+> - `pnpm --filter api typecheck` — expected: exit 0.
 > - `grep -c "SET', KEYS\[1\], ARGV\[1\], 'NX', 'PX', ARGV\[2\]" apps/api/src/cache/scripts/index.ts` — expected: `1`.
 > - `grep -n "scripts: CACHE_SCRIPTS" apps/api/src/cache/cache.config.ts` — expected: a match.
 
@@ -121,7 +121,7 @@ Build the stampede feature module — a controller + service that fire **N concu
 - [x] Each contender generates a **unique lock token** (e.g. `randomUUID()`); `eval` KEYS use the bare `stampede:{productId}` form (the library namespaces it — do NOT prefix `cache-example:` by hand).
 - [x] `args` are passed as `[token, lockMs]` (string + number) untouched — no manual namespacing of ARGV.
 - [x] JSDoc on the public controller method + service method; the controller has an inline note that keys are auto-namespaced by `eval` and the Lua body is declared in code (spec §18, §24).
-- [x] `pnpm --filter @nest-cache-example/api typecheck` + `pnpm --filter @nest-cache-example/api lint` exit 0.
+- [x] `pnpm --filter api typecheck` + `pnpm --filter api lint` exit 0.
 
 ### Files to create / modify
 
@@ -170,7 +170,7 @@ Build the stampede feature module — a controller + service that fire **N concu
 >
 > 3. Create `apps/api/src/stampede/stampede.controller.ts` with `@Controller('stampede')` and a `@Post()` handler that parses the query through `stampedeQuerySchema` (a `ZodValidationPipe` or `schema.parse(req.query)` — match the repo's existing Zod-pipe convention from earlier phases) and delegates to the service. Add an inline comment: keys are namespaced by `eval` (`cache-example:stampede:{id}`); the Lua body is declared in code, never from request input (spec §18, §24).
 > 4. Create `apps/api/src/stampede/stampede.module.ts` (declares the controller + service) and import it in `apps/api/src/app.module.ts`.
-> 5. Run `pnpm --filter @nest-cache-example/api typecheck` and `... lint`.
+> 5. Run `pnpm --filter api typecheck` and `... lint`.
 >    Constraints:
 >
 > - Follow `docs/DEVELOPMENT_PLAN.md` §2 Global Conventions (strict TS, ESM, English-only comments, JSDoc on exported/public members).
@@ -179,8 +179,8 @@ Build the stampede feature module — a controller + service that fire **N concu
 > - Use the bare script **name** `'acquireLock'` (registered in P10-1) — do NOT pass Lua text to `eval`.
 > - Do NOT touch `cache.config.ts` or the script registry here (that was P10-1).
 >   Verification:
-> - `pnpm --filter @nest-cache-example/api typecheck` — expected: exit 0.
-> - `pnpm --filter @nest-cache-example/api lint` — expected: exit 0.
+> - `pnpm --filter api typecheck` — expected: exit 0.
+> - `pnpm --filter api lint` — expected: exit 0.
 > - `grep -n "eval('acquireLock'" apps/api/src/stampede/stampede.service.ts` — expected: a match.
 > - `grep -n "StampedeModule" apps/api/src/app.module.ts` — expected: a match.
 
@@ -219,7 +219,7 @@ Implement the actual single-flight collapse on top of the P10-2 fan-out (spec §
 - [x] Lock release is **token-safe** — a contender releases the lock only if it still holds its own token (compare-then-delete; do NOT blind-`del` the lock key).
 - [x] The product cache key is written through `CacheService` (namespaced), distinct from the `stampede:{productId}` lock key.
 - [x] Loser wait is bounded (a max wait derived from `lockMs`) so the handler can never hang indefinitely if the winner errors.
-- [x] `pnpm --filter @nest-cache-example/api typecheck` + `... lint` exit 0.
+- [x] `pnpm --filter api typecheck` + `... lint` exit 0.
 
 ### Files to create / modify
 
@@ -239,7 +239,7 @@ Implement the actual single-flight collapse on top of the P10-2 fan-out (spec §
 >    - **Loser (`=== 0`)**: wait in a bounded loop (small backoff, capped by `lockMs`), polling `this.cache.get('product', productId)` until it is populated; record it as a **hit**.
 > 3. Make lock release **token-safe**: only delete `stampede:{productId}` if it still holds this contender's token. Prefer a `compare-and-delete` (read-the-token-then-del-if-match, or a second registered Lua script if the repo wants atomicity — but the lock body itself stays declared in code, never request-built). A blind `del` is NOT acceptable.
 > 4. Have `run()` aggregate counts: `originFetches`, `cacheHits`, and per-contender outcome, so P10-4 can shape the timeline and P10-5 can assert `originFetches === 1` and `cacheHits === concurrency - 1`.
-> 5. Run `pnpm --filter @nest-cache-example/api typecheck` and `... lint`.
+> 5. Run `pnpm --filter api typecheck` and `... lint`.
 >    Constraints:
 >
 > - Follow `docs/DEVELOPMENT_PLAN.md` §2 Global Conventions.
@@ -248,8 +248,8 @@ Implement the actual single-flight collapse on top of the P10-2 fan-out (spec §
 > - Loser waits MUST be bounded (cap derived from `lockMs`) — never an unbounded spin; the request must always terminate.
 > - The lock Lua body stays a code-declared `IScriptDefinition` (P10-1 / §24) — release logic may add another registered script but never accepts Lua from input.
 >   Verification:
-> - `pnpm --filter @nest-cache-example/api typecheck` — expected: exit 0.
-> - `pnpm --filter @nest-cache-example/api lint` — expected: exit 0.
+> - `pnpm --filter api typecheck` — expected: exit 0.
+> - `pnpm --filter api lint` — expected: exit 0.
 > - Manual: with infra up (`pnpm infra:up`) and the API running, `curl -X POST "http://localhost:3001/stampede?productId=77&concurrency=10&lockMs=2000"` — expected: response indicates 1 origin fetch + 9 hits.
 
 ### Completion Protocol
@@ -286,7 +286,7 @@ Shape the `POST /stampede` response so the UI (`StampedeTimeline`, DASHBOARD §1
 - [x] `ScriptManagerService` is obtained via the `BYMAX_CACHE_SCRIPT_REGISTRY` token (or its exported provider type) from `@bymax-one/nest-cache` and injected into the stampede service.
 - [x] `load('acquireLock')` is used read-only — the service does NOT call `register` (the script is registered declaratively in P10-1) and does NOT rebuild Lua at runtime.
 - [x] The returned body shape is documented with a JSDoc type/interface so `apps/web` can type its fetch.
-- [x] `pnpm --filter @nest-cache-example/api typecheck` + `... lint` exit 0.
+- [x] `pnpm --filter api typecheck` + `... lint` exit 0.
 
 ### Files to create / modify
 
@@ -320,15 +320,15 @@ Shape the `POST /stampede` response so the UI (`StampedeTimeline`, DASHBOARD §1
 > 2. In `stampede.service.ts`, inject `ScriptManagerService`. Per spec §4 it is provided under the token `BYMAX_CACHE_SCRIPT_REGISTRY`; inject it with `@Inject(BYMAX_CACHE_SCRIPT_REGISTRY)` (import the token + type from `@bymax-one/nest-cache`) — or via the exported class if the library exports one (match the library's documented DI shape).
 > 3. After the contenders resolve, call `const sha = await this.scripts.load('acquireLock')` (read-only — gets the SHA1 of the already-registered script). Assemble and return a `StampedeResult` with the per-contender `timeline`, the `summary` (compute `hitRate = cacheHits / concurrency`), and `script: { name: 'acquireLock', sha }`.
 > 4. Have the controller return this object as JSON.
-> 5. Run `pnpm --filter @nest-cache-example/api typecheck` and `... lint`.
+> 5. Run `pnpm --filter api typecheck` and `... lint`.
 >    Constraints:
 >
 > - Follow `docs/DEVELOPMENT_PLAN.md` §2 Global Conventions. **NO Swagger.** English-only. JSDoc on exported types + the public method.
 > - `load` is **read-only** — do NOT call `register` (P10-1 already registered `acquireLock` declaratively) and do NOT recompute/inline the Lua.
 > - Keep `timeline` bounded by `concurrency` (one entry per contender) — do not emit per-key/unbounded series (DASHBOARD bounded-dimension rule).
 >   Verification:
-> - `pnpm --filter @nest-cache-example/api typecheck` — expected: exit 0.
-> - `pnpm --filter @nest-cache-example/api lint` — expected: exit 0.
+> - `pnpm --filter api typecheck` — expected: exit 0.
+> - `pnpm --filter api lint` — expected: exit 0.
 > - `grep -n "load('acquireLock')" apps/api/src/stampede/stampede.service.ts` — expected: a match.
 > - Manual: `curl -X POST ".../stampede?productId=77&concurrency=10"` — expected: JSON with `timeline`, `summary`, and `script.sha` (a 40-char hex SHA1).
 
@@ -365,7 +365,7 @@ Phase 10 "Definition of done" gate per `DEVELOPMENT_PLAN.md`: prove that firing 
 - [x] The `timeline` shows exactly one entry with `role: 'won'` / `outcome: 'origin'` and nine with `role: 'waited'` / `outcome: 'hit'`.
 - [x] `ScriptManagerService.load('acquireLock')` returns a 40-char hex SHA1, and two consecutive calls return the **same** value (stable).
 - [x] Verification ensures the product key starts uncached before the burst (flush/clear, or a fresh `productId`).
-- [x] `pnpm --filter @nest-cache-example/api test` (or the e2e target) passes; `pnpm --filter @nest-cache-example/api typecheck` + `... lint` exit 0.
+- [x] `pnpm --filter api test` (or the e2e target) passes; `pnpm --filter api typecheck` + `... lint` exit 0.
 
 ### Files to create / modify
 
@@ -389,9 +389,9 @@ Phase 10 "Definition of done" gate per `DEVELOPMENT_PLAN.md`: prove that firing 
 > - Do NOT mock Redis away if prior phases use a real/ephemeral instance — the single-flight behaviour is the thing under test; match the repo's integration-test pattern.
 > - Do NOT skip hooks or lower any threshold.
 >   Verification:
-> - `pnpm --filter @nest-cache-example/api test` (or the e2e target) — expected: exit 0, the stampede assertions green.
-> - `pnpm --filter @nest-cache-example/api typecheck` — expected: exit 0.
-> - `pnpm --filter @nest-cache-example/api lint` — expected: exit 0.
+> - `pnpm --filter api test` (or the e2e target) — expected: exit 0, the stampede assertions green.
+> - `pnpm --filter api typecheck` — expected: exit 0.
+> - `pnpm --filter api lint` — expected: exit 0.
 
 ### Completion Protocol
 

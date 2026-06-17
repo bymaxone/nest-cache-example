@@ -6,10 +6,13 @@
  *
  * - the **winner** (`eval` → 1) fetches the slow origin, populates the product
  *   cache, then releases the lock token-safely;
- * - the **losers** (`eval` → 0) poll the cache with a bounded backoff until the
+ * - the **losers** (`eval` → 0) poll the cache at a fixed interval until the
  *   winner's value lands — a hit — rather than each hammering the origin.
  *
- * The net effect for a burst of N is exactly **1 origin fetch + (N−1) cache hits**.
+ * A loser whose poll outlives the current holder re-acquires the lock itself, so
+ * even a failed/slow holder is replaced by exactly one new fetcher — the collapse
+ * never degrades into every loser fetching at once. The net effect for a burst of
+ * N is **1 origin fetch + (N−1) cache hits**.
  *
  * Keys are auto-namespaced by `eval` (`stampede:{id}` → `cache-example:stampede:{id}`)
  * and `ARGV` is passed verbatim; the Lua bodies are declared in code, never built
@@ -27,7 +30,12 @@ import { CACHE_PREFIX } from '../common/cache-keys.js'
 import type { Env } from '../config/env.schema.js'
 import type { StampedeQuery } from './dto/stampede-query.dto.js'
 import { delay, fetchProductFromOrigin, type StampedeProduct } from './origin.js'
-import type { StampedeOutcome, StampedeResult, StampedeTimelineEntry } from './stampede.types.js'
+import type {
+  StampedeOutcome,
+  StampedeResult,
+  StampedeRole,
+  StampedeTimelineEntry,
+} from './stampede.types.js'
 
 /** The single-flight lock script registered in the cache module's `scripts`. */
 const ACQUIRE_LOCK = 'acquireLock'
@@ -35,8 +43,14 @@ const ACQUIRE_LOCK = 'acquireLock'
 const RELEASE_LOCK = 'releaseLock'
 /** Redis integer reply that means "lock won". */
 const LOCK_WON = 1
-/** Poll interval (ms) a losing contender waits between cache reads. */
-const LOSER_POLL_MS = 20
+/** Fixed interval (ms) a waiting contender sleeps between lock/cache checks. */
+const POLL_INTERVAL_MS = 20
+
+/** A contender's resolved role + how it obtained the value. */
+interface ContenderResult {
+  role: StampedeRole
+  outcome: StampedeOutcome
+}
 
 /**
  * Orchestrates a single-flight stampede burst and shapes the UI-ready result.
@@ -97,11 +111,11 @@ export class StampedeService {
   }
 
   /**
-   * Runs one contender: attempt the lock, then branch into the winner or loser path.
+   * Runs one contender end-to-end and records its timeline entry.
    *
    * @param index - Zero-based position in the burst.
    * @param productId - The contended product id.
-   * @param lockMs - Lock TTL (ms) and the cap on a loser's wait.
+   * @param lockMs - Lock TTL (ms) and the cap on how long this contender waits.
    * @returns This contender's timeline entry.
    */
   private async contend(
@@ -111,15 +125,7 @@ export class StampedeService {
   ): Promise<StampedeTimelineEntry> {
     const token = randomUUID()
     const startedAt = Date.now()
-
-    // KEYS auto-namespaced by eval → cache-example:stampede:{productId}; ARGV passed untouched.
-    const reply = await this.cache.eval(ACQUIRE_LOCK, [this.lockKey(productId)], [token, lockMs])
-    const isWinner = reply === LOCK_WON
-
-    const { role, outcome } = isWinner
-      ? { role: 'won' as const, outcome: await this.runWinner(productId, token) }
-      : { role: 'waited' as const, outcome: await this.runLoser(productId, lockMs) }
-
+    const { role, outcome } = await this.acquireOrWait(productId, token, lockMs)
     const finishedAt = Date.now()
     return {
       index,
@@ -133,24 +139,76 @@ export class StampedeService {
   }
 
   /**
-   * Winner path: fetch the slow origin, populate the product cache, release the lock.
+   * Single-flight resolution for one contender.
    *
-   * The release runs in `finally` so a winner that throws mid-fetch still frees the
-   * lock token-safely instead of leaving losers to wait out the full TTL.
+   * Repeatedly tries to win the lock: the winner fetches the origin once and
+   * populates the cache; a contender that loses reads the value the holder is
+   * populating. Because a contender re-attempts the lock each cycle, a holder that
+   * dies or whose lock TTL lapses is taken over by exactly one new fetcher — the
+   * degraded path stays single-flight instead of every loser fetching at once.
+   *
+   * Termination is bounded by `lockMs`: once that window elapses without the value
+   * landing, the contender does one final read and, only if the cache is still
+   * empty, a direct origin fetch so it never returns empty-handed.
    *
    * @param productId - The contended product id.
-   * @param token - This winner's lock token.
-   * @returns Always `'origin'` — the winner is the one contender that hits the origin.
+   * @param token - This contender's lock token (reused across re-attempts).
+   * @param lockMs - Lock TTL (ms) and the upper bound on the wait.
+   * @returns The resolved role (`won` if it fetched the origin, else `waited`) and outcome.
    */
-  private async runWinner(productId: string, token: string): Promise<StampedeOutcome> {
+  private async acquireOrWait(
+    productId: string,
+    token: string,
+    lockMs: number,
+  ): Promise<ContenderResult> {
+    const deadline = Date.now() + lockMs
+    for (;;) {
+      // KEYS auto-namespaced by eval → cache-example:stampede:{productId}; ARGV untouched.
+      const reply = await this.cache.eval(ACQUIRE_LOCK, [this.lockKey(productId)], [token, lockMs])
+      if (reply === LOCK_WON) {
+        // Won the lock — but a prior holder may have populated then released, so
+        // re-check before paying for a redundant origin fetch.
+        const existing = await this.cache.get<StampedeProduct>(this.productPrefix, productId)
+        if (existing !== null) {
+          await this.releaseLock(productId, token)
+          return { role: 'waited', outcome: 'hit' }
+        }
+        await this.populateAndRelease(productId, token)
+        return { role: 'won', outcome: 'origin' }
+      }
+
+      // Another contender holds the lock — read the value it is populating.
+      const cached = await this.cache.get<StampedeProduct>(this.productPrefix, productId)
+      if (cached !== null) return { role: 'waited', outcome: 'hit' }
+      if (Date.now() >= deadline) break
+      await delay(POLL_INTERVAL_MS)
+    }
+
+    // Bounded out: the lock stayed held the whole window without the value landing.
+    // Final read; if still empty, fetch directly so the request never hangs or 404s.
+    const last = await this.cache.get<StampedeProduct>(this.productPrefix, productId)
+    if (last !== null) return { role: 'waited', outcome: 'hit' }
+    await fetchProductFromOrigin(productId)
+    return { role: 'waited', outcome: 'origin' }
+  }
+
+  /**
+   * Fetches the slow origin, populates the product cache, and releases the lock.
+   *
+   * The release runs in `finally` so a fetch/set error still frees the lock instead
+   * of leaving waiters to time out. The release is itself best-effort: a failure
+   * there must not mask the fetch/set outcome (a throw in `finally` would replace
+   * it), and the lock expires on its own via the PX TTL regardless.
+   *
+   * @param productId - The contended product id.
+   * @param token - This holder's lock token.
+   * @returns Resolves once the cache is populated and the release attempt completes.
+   */
+  private async populateAndRelease(productId: string, token: string): Promise<void> {
     try {
       const product = await fetchProductFromOrigin(productId)
       await this.cache.set<StampedeProduct>(this.productPrefix, productId, product, this.ttlSeconds)
-      return 'origin'
     } finally {
-      // Release is best-effort: a failure here must not mask the fetch/set outcome
-      // above (a throw in `finally` would replace it), and the lock expires on its
-      // own via the PX TTL anyway.
       try {
         await this.releaseLock(productId, token)
       } catch (err) {
@@ -161,33 +219,6 @@ export class StampedeService {
         )
       }
     }
-  }
-
-  /**
-   * Loser path: wait for the winner to populate the cache, then read the hit.
-   *
-   * The wait is bounded by `lockMs` (the longest the lock can be held) so the
-   * request always terminates. If the cache is still empty when the bound elapses
-   * — e.g. the winner errored, or `lockMs` was set below the origin latency — the
-   * loser fetches the origin itself and populates the cache so any remaining losers
-   * (and the next burst) collapse onto its result rather than each re-fetching.
-   *
-   * @param productId - The contended product id.
-   * @param lockMs - Upper bound (ms) on the wait, derived from the lock TTL.
-   * @returns `'hit'` when the winner-populated value was read, else `'origin'`.
-   */
-  private async runLoser(productId: string, lockMs: number): Promise<StampedeOutcome> {
-    const deadline = Date.now() + lockMs
-    while (Date.now() < deadline) {
-      const cached = await this.cache.get<StampedeProduct>(this.productPrefix, productId)
-      if (cached !== null) return 'hit'
-      await delay(LOSER_POLL_MS)
-    }
-    // Degraded fallback: the holder never populated the cache within the lock window.
-    // Fetch and populate so this loser is not empty-handed and stragglers can hit.
-    const product = await fetchProductFromOrigin(productId)
-    await this.cache.set<StampedeProduct>(this.productPrefix, productId, product, this.ttlSeconds)
-    return 'origin'
   }
 
   /**
