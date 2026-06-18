@@ -17,11 +17,23 @@
 import { io, type Socket } from 'socket.io-client'
 import { type CacheEventName } from '@bymax-one/nest-cache/shared'
 
-/** A normalized live event from one of the three gateway channels. */
+/**
+ * A normalized live event from one of the three gateway channels.
+ *
+ * `seq` is a monotonic ingestion counter assigned by the consumer
+ * ({@link useCacheSocket}); it gives every buffered event a stable, unique
+ * identity for React keys (the wall-clock `at` can repeat within a burst).
+ */
 export type CacheEvent =
-  | { kind: 'connection'; event: CacheEventName; data: Record<string, unknown>; at: number }
-  | { kind: 'event'; channel: string; payload: unknown; at: number }
-  | { kind: 'expired'; key: string; at: number }
+  | {
+      kind: 'connection'
+      seq: number
+      event: CacheEventName
+      data: Record<string, unknown>
+      at: number
+    }
+  | { kind: 'event'; seq: number; channel: string; payload: unknown; at: number }
+  | { kind: 'expired'; seq: number; key: string; at: number }
 
 /** Fixed-capacity ring buffer; drops the oldest entries once `capacity` is exceeded. */
 export class RingBuffer<T> {
@@ -92,12 +104,14 @@ function timestampOf(value: unknown): number {
  * Parse a raw `cache:connection` payload (`{ event, data, at }`) into a {@link CacheEvent}.
  *
  * @param raw - The untyped gateway payload.
+ * @param seq - Monotonic ingestion counter used as the event's stable identity.
  * @returns A `connection`-tagged event.
  */
-export function parseConnectionEvent(raw: unknown): CacheEvent {
+export function parseConnectionEvent(raw: unknown, seq: number): CacheEvent {
   const r = raw as { event?: unknown; data?: unknown; at?: unknown }
   return {
     kind: 'connection',
+    seq,
     event: (typeof r.event === 'string' ? r.event : 'error') as CacheEventName,
     data: isRecord(r.data) ? r.data : {},
     at: timestampOf(r.at),
@@ -108,12 +122,14 @@ export function parseConnectionEvent(raw: unknown): CacheEvent {
  * Parse a raw `cache:event` payload (`{ channel, payload, at }`) into a {@link CacheEvent}.
  *
  * @param raw - The untyped gateway payload.
+ * @param seq - Monotonic ingestion counter used as the event's stable identity.
  * @returns An `event`-tagged event.
  */
-export function parseChannelEvent(raw: unknown): CacheEvent {
+export function parseChannelEvent(raw: unknown, seq: number): CacheEvent {
   const r = raw as { channel?: unknown; payload?: unknown; at?: unknown }
   return {
     kind: 'event',
+    seq,
     channel: typeof r.channel === 'string' ? r.channel : '',
     payload: r.payload,
     at: timestampOf(r.at),
@@ -124,12 +140,14 @@ export function parseChannelEvent(raw: unknown): CacheEvent {
  * Parse a raw `cache:expired` payload (`{ key, at }`) into a {@link CacheEvent}.
  *
  * @param raw - The untyped gateway payload.
+ * @param seq - Monotonic ingestion counter used as the event's stable identity.
  * @returns An `expired`-tagged event.
  */
-export function parseExpiredEvent(raw: unknown): CacheEvent {
+export function parseExpiredEvent(raw: unknown, seq: number): CacheEvent {
   const r = raw as { key?: unknown; at?: unknown }
   return {
     kind: 'expired',
+    seq,
     key: typeof r.key === 'string' ? r.key : '',
     at: timestampOf(r.at),
   }

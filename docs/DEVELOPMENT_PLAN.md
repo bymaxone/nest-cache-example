@@ -33,7 +33,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 >
 > **All 17 phase files are scaffolded** under [`docs/tasks/`](tasks/) — the per-phase totals below are firm.
 >
-> **Overall progress: 85 / 107 tasks done (79%)**
+> **Overall progress: 94 / 107 tasks done (88%)**
 
 | #   | Phase                                     | Tasks file                            | Size | Done / Total | %    | Status |
 | --- | ----------------------------------------- | ------------------------------------- | ---- | ------------ | ---- | ------ |
@@ -51,7 +51,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 | 11  | Connection Topologies & Error Surface     | `phase-11-topologies-errors.md`       | M    | 6 / 6        | 100% | 🟢     |
 | 12  | `apps/web` Skeleton + Design System       | `phase-12-web-skeleton-design.md`     | L    | 7 / 7        | 100% | 🟢     |
 | 13  | Dashboard — Observe pages                 | `phase-13-dashboard-observe.md`       | L    | 8 / 8        | 100% | 🟢     |
-| 14  | Dashboard — Real-time & Labs pages        | `phase-14-dashboard-realtime-labs.md` | L    | 0 / 9        | 0%   | 🔴     |
+| 14  | Dashboard — Real-time & Labs pages        | `phase-14-dashboard-realtime-labs.md` | L    | 9 / 9        | 100% | 🟢     |
 | 15  | Testing — E2E smoke + Web smoke           | `phase-15-testing.md`                 | M    | 0 / 6        | 0%   | 🔴     |
 | 16  | Docs, README & Export Audit               | `phase-16-docs-readme-audit.md`       | M    | 0 / 7        | 0%   | 🔴     |
 
@@ -392,13 +392,13 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 **Prerequisites:** Phases 7, 8, 9, 10, 11, Phase 12.
 **Deliverables:**
 
-- [ ] `app/pubsub/page.tsx` — publish form, subscription manager (subscribe/psubscribe + ref-count), `EventFeed` (ring-buffered, follow-mode) on `cache:event`.
-- [ ] `app/ttl/page.tsx` — `CountdownWall` of `TtlRing`s + an expiry `EventFeed` on `cache:expired`; fade + toast on expiry.
-- [ ] `app/stampede/page.tsx` — controls + `StampedeTimeline` (custom SVG swimlane) + result strip (origin fetches vs hits) + script SHA.
-- [ ] `app/serializer/page.tsx` — side-by-side JSON vs msgpack (raw bytes vs decoded) + `SerializableValue` caveat banner.
-- [ ] `app/errors/page.tsx` — trigger list of all 15 codes + response panel (status/body/canonical message), typed via `./shared`; prod-guard toggle.
-- [ ] `app/connection/page.tsx` — `CacheConnectionStatus` badge, lifecycle `EventFeed` on `cache:connection`, mode selector, `INFO` section viewer.
-- [ ] `components/realtime/` (EventFeed, TtlRing, CountdownWall), `components/labs/` (StampedeTimeline, SerializerCompare, ErrorTrigger), `hooks/use-cache-socket.ts`, `hooks/use-follow-mode.ts`.
+- [x] `app/pubsub/page.tsx` — publish form, subscription manager (subscribe/psubscribe + ref-count), `EventFeed` (ring-buffered, follow-mode) on `cache:event`.
+- [x] `app/ttl/page.tsx` — `CountdownWall` of `TtlRing`s + an expiry `EventFeed` on `cache:expired`; fade + toast on expiry.
+- [x] `app/stampede/page.tsx` — controls + `StampedeTimeline` (custom SVG swimlane) + result strip (origin fetches vs hits) + script SHA.
+- [x] `app/serializer/page.tsx` — side-by-side JSON vs msgpack (raw bytes vs decoded) + `SerializableValue` caveat banner.
+- [x] `app/errors/page.tsx` — trigger list of all 15 codes + response panel (status/body/canonical message), typed via `./shared`; prod-guard toggle.
+- [x] `app/connection/page.tsx` — `CacheConnectionStatus` badge, lifecycle `EventFeed` on `cache:connection`, mode selector, `INFO` section viewer.
+- [x] `components/realtime/` (EventFeed, TtlRing, CountdownWall), `components/labs/` (StampedeTimeline, SerializerCompare, ErrorTrigger), `hooks/use-cache-socket.ts`, `hooks/use-follow-mode.ts`.
 
 **Demonstrates:** UI for matrix #30–#35 (pub/sub, stampede), #37–#39 (serializer), #41–#47 (errors, events, status), #8/#12 (TTL). **References:** DASHBOARD §9–§14, §18.
 **Definition of done:** a published message appears across tabs; a seeded short-TTL key visibly expires (ring drains → card fades → toast); the stampede timeline shows 1 fetch + N−1 hits; each error code renders its status + body; the connection feed shows lifecycle events.
