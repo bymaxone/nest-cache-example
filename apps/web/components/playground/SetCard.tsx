@@ -25,7 +25,8 @@ export function SetCard() {
   const [tag, setTag] = useState('sale')
 
   const key = `${APP_NAMESPACE}:tags:${id}`
-  const explorerHref = '/explorer?prefix=tags'
+  // Deep-link pre-filtered to the resulting key via the `pattern` (id glob) param.
+  const explorerHref = `/explorer?prefix=tags&pattern=${encodeURIComponent(id)}`
 
   return (
     <PlaygroundCard

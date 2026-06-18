@@ -28,6 +28,9 @@ export function NumericsCard() {
 
   const viewsKey = `${APP_NAMESPACE}:views:${id}`
   const stockKey = `${APP_NAMESPACE}:stock:${id}`
+  // Deep-links pre-filtered to the resulting key via the `pattern` (id glob) param.
+  const viewsHref = `/explorer?prefix=views&pattern=${encodeURIComponent(id)}`
+  const stockHref = `/explorer?prefix=stock&pattern=${encodeURIComponent(id)}`
 
   return (
     <PlaygroundCard
@@ -35,7 +38,7 @@ export function NumericsCard() {
       ops="incr · incr +N · decr"
       note="Atomic Redis counters — no read-modify-write race."
       outcome={outcome}
-      explorerHref="/explorer?prefix=views"
+      explorerHref={viewsHref}
     >
       <div className="space-y-1">
         <Label htmlFor="numerics-id" className="text-xs">
@@ -54,7 +57,7 @@ export function NumericsCard() {
               label: 'views',
               run: () => countersApi.views(id),
               resultingKey: viewsKey,
-              explorerHref: '/explorer?prefix=views',
+              explorerHref: viewsHref,
             })
           }
         >
@@ -69,7 +72,7 @@ export function NumericsCard() {
               label: 'incr',
               run: () => countersApi.incrViews(id),
               resultingKey: viewsKey,
-              explorerHref: '/explorer?prefix=views',
+              explorerHref: viewsHref,
             })
           }
         >
@@ -84,7 +87,7 @@ export function NumericsCard() {
               label: `incr +${INCR_STEP}`,
               run: () => countersApi.incrViews(id, INCR_STEP),
               resultingKey: viewsKey,
-              explorerHref: '/explorer?prefix=views',
+              explorerHref: viewsHref,
             })
           }
         >
@@ -100,7 +103,7 @@ export function NumericsCard() {
               label: 'decr stock',
               run: () => countersApi.decrStock(id),
               resultingKey: stockKey,
-              explorerHref: '/explorer?prefix=stock',
+              explorerHref: stockHref,
             })
           }
         >

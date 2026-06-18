@@ -12,6 +12,7 @@
 
 'use client'
 
+import { type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { Copy, Infinity as InfinityIcon, Plus, RefreshCw, Trash2 } from 'lucide-react'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
@@ -46,7 +47,7 @@ async function copy(text: string, label: string): Promise<void> {
 }
 
 /** A labelled metadata row. */
-function MetaRow({ label, children }: { label: string; children: React.ReactNode }) {
+function MetaRow({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex items-start justify-between gap-4 border-b border-(--glass-border) py-2 text-sm last:border-0">
       <span className="text-muted-foreground">{label}</span>

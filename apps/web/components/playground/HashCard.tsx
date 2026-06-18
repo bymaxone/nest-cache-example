@@ -26,7 +26,8 @@ export function HashCard() {
   const [priceCents, setPriceCents] = useState('999')
 
   const key = `${APP_NAMESPACE}:cart:${id}`
-  const explorerHref = '/explorer?prefix=cart'
+  // Deep-link pre-filtered to the resulting key via the `pattern` (id glob) param.
+  const explorerHref = `/explorer?prefix=cart&pattern=${encodeURIComponent(id)}`
   const value = { quantity: Number(quantity), priceCents: Number(priceCents) }
 
   return (

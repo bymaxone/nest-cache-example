@@ -22,6 +22,7 @@ import { useKeys, flattenKeyPages } from '@/hooks/use-keys'
 import {
   hasTtlParser,
   keyTypeParser,
+  patternParser,
   prefixParser,
   scanStrategyParser,
   tenantParser,
@@ -32,13 +33,20 @@ import { APP_NAMESPACE } from '@/lib/constants'
 /**
  * Compose the human-readable `KeyBuilder` match pattern from the active filters.
  *
+ * Built from segments so an empty prefix (e.g. tenant-only browsing) never yields a
+ * double colon; the id glob is the `pattern` filter or `*` when unset.
+ *
  * @param tenant - The active tenant (empty = none).
  * @param prefix - The active prefix (empty = all).
- * @returns A display string such as `cache-example:tenant:acme:product:*`.
+ * @param pattern - The id glob (empty = `*`).
+ * @returns A display string such as `cache-example:tenant:acme:product:99`.
  */
-function resolvedPattern(tenant: string, prefix: string): string {
-  const matchPrefix = tenant ? `tenant:${tenant}:${prefix}` : prefix
-  return `${APP_NAMESPACE}:${matchPrefix ? `${matchPrefix}:` : ''}*`
+function resolvedPattern(tenant: string, prefix: string, pattern: string): string {
+  const segments = [APP_NAMESPACE]
+  if (tenant) segments.push('tenant', tenant)
+  if (prefix) segments.push(prefix)
+  segments.push(pattern || '*')
+  return segments.join(':')
 }
 
 /** The Key Explorer client view. */
@@ -48,6 +56,9 @@ export function ExplorerView() {
   const [keyType, setKeyType] = useQueryState('type', keyTypeParser)
   const [hasTtl, setHasTtl] = useQueryState('hasTtl', hasTtlParser)
   const [strategy, setStrategy] = useQueryState('strategy', scanStrategyParser)
+  // Read-only here: deep-links (e.g. the Playground "View in Explorer →") set it to
+  // the resulting key's id glob so the listing lands on that exact key.
+  const [pattern] = useQueryState('pattern', patternParser)
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
 
   const params = useMemo<KeyListParams>(
@@ -56,9 +67,10 @@ export function ExplorerView() {
       ...(prefix ? { prefix } : {}),
       ...(tenant ? { tenant } : {}),
       ...(keyType ? { type: keyType } : {}),
+      ...(pattern ? { pattern } : {}),
       ...(hasTtl ? { hasTtl: true } : {}),
     }),
-    [strategy, prefix, tenant, keyType, hasTtl],
+    [strategy, prefix, tenant, keyType, pattern, hasTtl],
   )
 
   const query = useKeys(params)
@@ -84,7 +96,9 @@ export function ExplorerView() {
           <h1 className="font-mono text-2xl font-bold">Key Explorer</h1>
           <p className="text-sm text-muted-foreground">
             Resolved match:{' '}
-            <span className="font-mono text-brand-500">{resolvedPattern(tenant, prefix)}</span>{' '}
+            <span className="font-mono text-brand-500">
+              {resolvedPattern(tenant, prefix, pattern)}
+            </span>{' '}
             <span className="text-xs">(via KeyBuilder)</span>
           </p>
         </div>

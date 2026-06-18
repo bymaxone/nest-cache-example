@@ -30,7 +30,8 @@ export function StringsCard() {
   const [name, setName] = useState('Demo widget')
 
   const key = `${APP_NAMESPACE}:product:${id}`
-  const explorerHref = '/explorer?prefix=product'
+  // Deep-link pre-filtered to the resulting key via the `pattern` (id glob) param.
+  const explorerHref = `/explorer?prefix=product&pattern=${encodeURIComponent(id)}`
 
   return (
     <PlaygroundCard
