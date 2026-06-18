@@ -78,7 +78,7 @@ Create the workspace-root `package.json` and `pnpm-workspace.yaml` that register
 >    packages:
 >      - 'apps/*'
 >    ```
-> 3. Do NOT add runtime dependencies yet; `devDependencies` may be empty at this step (tooling is installed by P0-3..P0-6). The `audit:exports` / `infra:*` targets are created in later phases (Phase 16 / Phase 1) — `--if-present` and the standalone script path keep this safe.
+> 3. Do NOT add runtime dependencies yet; `devDependencies` may be empty at this step (tooling is installed by P0-3..P0-6). The `audit:exports` / `infra:*` targets are created in later phases (Phase 19 / Phase 1) — `--if-present` and the standalone script path keep this safe.
 > 4. Run `pnpm install` to materialize `pnpm-lock.yaml`.
 >    Constraints:
 >
@@ -503,7 +503,7 @@ Create the repo-wide ignore/editor/automation/governance files: `.gitignore`, `.
 - [x] `.gitmessage` documents the Conventional-Commit format + cache scopes (`api`, `web`, `cache`, `docker`, `deps`, `docs`, `config`).
 - [x] `renovate.json` extends `config:recommended` (+ `:semanticCommits`), schedules on weekends, and pins/groups `@bymax-one/nest-cache` + docker + github-actions.
 - [x] `LICENSE` is MIT with `Copyright (c) <year> Bymax One`.
-- [x] `README.md` stub links to `docs/TECHNICAL_SPECIFICATION.md` + `docs/DEVELOPMENT_PLAN.md` + `docs/DASHBOARD.md` and states the repo is in scaffolding (full README is Phase 16).
+- [x] `README.md` stub links to `docs/TECHNICAL_SPECIFICATION.md` + `docs/DEVELOPMENT_PLAN.md` + `docs/DASHBOARD.md` and states the repo is in scaffolding (full README is Phase 19).
 - [x] `CHANGELOG.md` is Keep-a-Changelog with an empty `## [Unreleased]`.
 - [x] `CLAUDE.md` + `AGENTS.md` stubs exist (one-paragraph project summary + "see docs/" pointer + non-negotiables: English-only, Conventional Commits, no Swagger, no `@ts-ignore`).
 
@@ -555,13 +555,13 @@ Create the repo-wide ignore/editor/automation/governance files: `.gitignore`, `.
 >    }
 >    ```
 > 5. `/LICENSE`: standard MIT text, `Copyright (c) <current-year> Bymax One`.
-> 6. `/README.md`: H1 `# nest-cache-example`, one-paragraph intro (reference app for `@bymax-one/nest-cache` — a typed Redis cache for NestJS), a "Documentation" section linking `docs/TECHNICAL_SPECIFICATION.md` + `docs/DEVELOPMENT_PLAN.md` + `docs/DASHBOARD.md`, and a "Status" line (scaffolding, Phase 0). Phase 16 replaces this with the full README.
+> 6. `/README.md`: H1 `# nest-cache-example`, one-paragraph intro (reference app for `@bymax-one/nest-cache` — a typed Redis cache for NestJS), a "Documentation" section linking `docs/TECHNICAL_SPECIFICATION.md` + `docs/DEVELOPMENT_PLAN.md` + `docs/DASHBOARD.md`, and a "Status" line (scaffolding, Phase 0). Phase 19 replaces this with the full README.
 > 7. `/CHANGELOG.md`: Keep-a-Changelog header + `## [Unreleased]` with `- Initial scaffolding.` under `### Added`.
 > 8. `/CLAUDE.md` + `/AGENTS.md`: concise stubs — what the repo is, the headline stack (NestJS 11 / Next 16 / Redis 7 / `@bymax-one/nest-cache`), a "read docs/ for detail" pointer, and the non-negotiables (English-only, Conventional Commits, no Swagger — JSDoc + Zod, no `@ts-ignore`/`eslint-disable`, design system copied verbatim).
 >    Constraints:
 >
 > - Follow `docs/DEVELOPMENT_PLAN.md` §2 Global Conventions.
-> - Keep README/CHANGELOG/agent-docs concise — fleshed out in Phase 16.
+> - Keep README/CHANGELOG/agent-docs concise — fleshed out in Phase 19.
 >   Verification:
 > - `git check-ignore -v pnpm-lock.yaml` — expected: no output, exit 1 (not ignored).
 > - `node -e "JSON.parse(require('fs').readFileSync('renovate.json','utf8'))"` — expected: parses without error.

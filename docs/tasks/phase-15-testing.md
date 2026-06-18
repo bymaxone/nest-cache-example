@@ -2,7 +2,7 @@
 
 > **Source:** [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#phase-15--testing--e2e-smoke--web-smoke) §Phase 15
 > **Total tasks:** 6
-> **Progress:** 🔴 0 / 6 done (0%)
+> **Progress:** 🟢 6 / 6 done (100%)
 >
 > **Status legend:** 🔴 Not Started · 🟡 In Progress · 🔵 In Review · 🟢 Done · ⚪ Blocked
 
@@ -10,12 +10,12 @@
 
 | ID    | Task                                                                     | Status | Priority | Size | Depends on   |
 | ----- | ------------------------------------------------------------------------ | ------ | -------- | ---- | ------------ |
-| P15-1 | `apps/api` test toolchain — Jest + `@nestjs/testing` + Testcontainers    | 🔴     | High     | M    | P4–P14       |
-| P15-2 | E2E specs (real Redis) — read-through + TTL, namespace, sync `forRoot`   | 🔴     | High     | M    | P15-1        |
-| P15-3 | E2E specs (real Redis) — Pub/Sub fan-out, Lua single-flight, error paths | 🔴     | High     | M    | P15-1        |
-| P15-4 | Fast specs with `ioredis-mock` (round-trips + serializer comparison)     | 🔴     | Medium   | S    | P15-1        |
-| P15-5 | `apps/web` — Vitest unit (`cache-status` + shared subpath) + Playwright  | 🔴     | Medium   | M    | P15-1        |
-| P15-6 | CI wiring stub + phase verification gate                                 | 🔴     | Medium   | S    | P15-1..P15-5 |
+| P15-1 | `apps/api` test toolchain — Jest + `@nestjs/testing` + Testcontainers    | 🟢     | High     | M    | P4–P14       |
+| P15-2 | E2E specs (real Redis) — read-through + TTL, namespace, sync `forRoot`   | 🟢     | High     | M    | P15-1        |
+| P15-3 | E2E specs (real Redis) — Pub/Sub fan-out, Lua single-flight, error paths | 🟢     | High     | M    | P15-1        |
+| P15-4 | Fast specs with `ioredis-mock` (round-trips + serializer comparison)     | 🟢     | Medium   | S    | P15-1        |
+| P15-5 | `apps/web` — Vitest unit (`cache-status` + shared subpath) + Playwright  | 🟢     | Medium   | M    | P15-1        |
+| P15-6 | CI wiring stub + phase verification gate                                 | 🟢     | Medium   | S    | P15-1..P15-5 |
 
 > **Phase rule — read before any task.** This repo is an **example app, not the library**: it is **NOT coverage/mutation-gated**. **Do NOT add Stryker** and **do NOT set a 100% `coverageThreshold`** (those gates belong to `@bymax-one/nest-cache`; see `DEVELOPMENT_PLAN.md` Appendix C + spec NG4 / §22). The bar here is a **focused, high-signal E2E smoke against a genuine Redis** (Testcontainers `redis:7-alpine`) that **doubles as integration coverage for the published library** + a web build/Playwright smoke. Hard constraints, every task:
 >
@@ -30,7 +30,7 @@
 
 ## P15-1 — `apps/api` test toolchain (Jest + `@nestjs/testing` + Testcontainers)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90–180 min)
 - **Depends on:** `P4–P14`
@@ -41,13 +41,13 @@ Stand up the `apps/api` E2E test toolchain that every later spec builds on: **Je
 
 ### Acceptance Criteria
 
-- [ ] `apps/api` devDependencies add `jest@^30`, `ts-jest@^29` (or `@swc/jest`), `@types/jest`, `@nestjs/testing`, `@testcontainers/redis`, `ioredis-mock`, `@types/ioredis-mock` (for P15-4).
-- [ ] `apps/api/jest-e2e.config.mjs` (or `.json`) exists: ESM preset, `testMatch` `**/*.e2e-spec.ts`, `rootDir` `test`, `testTimeout >= 60000` (container boot), `extensionsToTreatAsEsm: ['.ts']`.
-- [ ] `apps/api` `package.json` `test:e2e` script runs Jest under `node --experimental-vm-modules` (e.g. `NODE_OPTIONS=--experimental-vm-modules jest --config jest-e2e.config.mjs`).
-- [ ] A shared `apps/api/test/helpers/redis-container.ts` starts a `redis:7-alpine` `RedisContainer` with `.withCommand(['redis-server', '--notify-keyspace-events', 'Ex'])` (or `.withStartupTimeout`) and returns `{ container, url }`; a matching teardown stops it.
-- [ ] A trivial `apps/api/test/smoke.e2e-spec.ts` boots the container + a Nest `Test.createTestingModule`, asserts `ping()` succeeds, then tears both down — proving Docker + the toolchain end to end.
-- [ ] `pnpm --filter @nest-cache-example/api test:e2e` runs the smoke spec green **with Docker running**; with Docker unreachable it **fails clearly** (no silent skip).
-- [ ] **No `coverageThreshold`** in the Jest config; **no `@stryker*` / `stryker.conf.*`** anywhere.
+- [x] `apps/api` devDependencies add `jest@^30`, `ts-jest@^29` (or `@swc/jest`), `@types/jest`, `@nestjs/testing`, `@testcontainers/redis`, `ioredis-mock`, `@types/ioredis-mock` (for P15-4).
+- [x] `apps/api/jest-e2e.config.mjs` (or `.json`) exists: ESM preset, `testMatch` `**/*.e2e-spec.ts`, `rootDir` `test`, `testTimeout >= 60000` (container boot), `extensionsToTreatAsEsm: ['.ts']`.
+- [x] `apps/api` `package.json` `test:e2e` script runs Jest under `node --experimental-vm-modules` (e.g. `NODE_OPTIONS=--experimental-vm-modules jest --config jest-e2e.config.mjs`).
+- [x] A shared `apps/api/test/helpers/redis-container.ts` starts a `redis:7-alpine` `RedisContainer` with `.withCommand(['redis-server', '--notify-keyspace-events', 'Ex'])` (or `.withStartupTimeout`) and returns `{ container, url }`; a matching teardown stops it.
+- [x] A trivial `apps/api/test/smoke.e2e-spec.ts` boots the container + a Nest `Test.createTestingModule`, asserts `ping()` succeeds, then tears both down — proving Docker + the toolchain end to end.
+- [x] `pnpm --filter @nest-cache-example/api test:e2e` runs the smoke spec green **with Docker running**; with Docker unreachable it **fails clearly** (no silent skip).
+- [x] **No `coverageThreshold`** in the Jest config; **no `@stryker*` / `stryker.conf.*`** anywhere.
 
 ### Files to create / modify
 
@@ -133,7 +133,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P15-2 — E2E specs (real Redis): read-through + TTL, namespace isolation, sync `forRoot`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90–180 min)
 - **Depends on:** `P15-1`
@@ -144,12 +144,12 @@ The first real-Redis E2E batch against the Testcontainers `redis:7-alpine`: the 
 
 ### Acceptance Criteria
 
-- [ ] `apps/api/test/read-through.e2e-spec.ts`: a cold read misses, fetches origin, `set`s with a short TTL, and a second read **hits**; after the TTL elapses the key is gone (`get` → `null`) and a re-read re-populates.
-- [ ] The TTL path asserts the **keyspace-notification expiry** is observed (the `cache:expired` bridge / raw subscriber fires for the namespaced key) — requires `notify-keyspace-events Ex`.
-- [ ] `apps/api/test/namespace.e2e-spec.ts`: seeds keys under `cache-example:*` **and** a foreign key via `getClient()` (raw, un-namespaced); `flushNamespace()` removes only the `cache-example:*` keys and the foreign key **survives**.
-- [ ] `apps/api/test/forroot-sync.e2e-spec.ts`: builds a `Test.createTestingModule` importing **`BymaxCacheModule.forRoot({ connection, namespace, ... })`** (sync overload) pointed at the container, and asserts a `set`/`get` round-trips through the namespace — **explicitly covering matrix row #2**.
-- [ ] Each spec boots + tears down its container via the P15-1 helper; specs are independent (no shared mutable Redis state across files).
-- [ ] `pnpm --filter @nest-cache-example/api test:e2e` runs all three green with Docker up.
+- [x] `apps/api/test/read-through.e2e-spec.ts`: a cold read misses, fetches origin, `set`s with a short TTL, and a second read **hits**; after the TTL elapses the key is gone (`get` → `null`) and a re-read re-populates.
+- [x] The TTL path asserts the **keyspace-notification expiry** is observed (the `cache:expired` bridge / raw subscriber fires for the namespaced key) — requires `notify-keyspace-events Ex`.
+- [x] `apps/api/test/namespace.e2e-spec.ts`: seeds keys under `cache-example:*` **and** a foreign key via `getClient()` (raw, un-namespaced); `flushNamespace()` removes only the `cache-example:*` keys and the foreign key **survives**.
+- [x] `apps/api/test/forroot-sync.e2e-spec.ts`: builds a `Test.createTestingModule` importing **`BymaxCacheModule.forRoot({ connection, namespace, ... })`** (sync overload) pointed at the container, and asserts a `set`/`get` round-trips through the namespace — **explicitly covering matrix row #2**.
+- [x] Each spec boots + tears down its container via the P15-1 helper; specs are independent (no shared mutable Redis state across files).
+- [x] `pnpm --filter @nest-cache-example/api test:e2e` runs all three green with Docker up.
 
 ### Files to create / modify
 
@@ -202,7 +202,7 @@ The first real-Redis E2E batch against the Testcontainers `redis:7-alpine`: the 
 
 ## P15-3 — E2E specs (real Redis): Pub/Sub fan-out, Lua single-flight, each `CacheException`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90–180 min)
 - **Depends on:** `P15-1`
@@ -213,11 +213,11 @@ The second real-Redis E2E batch: **Pub/Sub fan-out** (publish once; every subscr
 
 ### Acceptance Criteria
 
-- [ ] `apps/api/test/pubsub.e2e-spec.ts`: a `publish(channel, payload)` is received by an exact `subscribe` **and** a matching `psubscribe`; subscribing twice then unsubscribing once still delivers (ref-count), and a second/`double` unsubscribe is a safe no-op; channels are namespaced (`cache-example:...`).
-- [ ] `apps/api/test/stampede.e2e-spec.ts`: fires N (≥10) concurrent reads of one uncached id; asserts the origin was hit **exactly once** and the other **N−1** were cache hits (the Lua lock won by one caller via `eval` → `1`, losers see `0` then read-through).
-- [ ] The stampede spec resolves the registered script's SHA via `ScriptManagerService.load(...)` and asserts the `EVALSHA`/`NOSCRIPT`-reload path works against the real server.
-- [ ] `apps/api/test/errors.e2e-spec.ts`: a `it.each` over all **15** `CACHE_ERROR_CODES` triggers each path and asserts the thrown `CacheException` carries the matching `CacheErrorCode`, the canonical message, and the expected HTTP status (4xx/5xx/504) via the exception filter.
-- [ ] All specs boot/tear down their container; `pnpm --filter @nest-cache-example/api test:e2e` runs them green with Docker up.
+- [x] `apps/api/test/pubsub.e2e-spec.ts`: a `publish(channel, payload)` is received by an exact `subscribe` **and** a matching `psubscribe`; subscribing twice then unsubscribing once still delivers (ref-count), and a second/`double` unsubscribe is a safe no-op; channels are namespaced (`cache-example:...`).
+- [x] `apps/api/test/stampede.e2e-spec.ts`: fires N (≥10) concurrent reads of one uncached id; asserts the origin was hit **exactly once** and the other **N−1** were cache hits (the Lua lock won by one caller via `eval` → `1`, losers see `0` then read-through).
+- [x] The stampede spec resolves the registered script's SHA via `ScriptManagerService.load(...)` and asserts the `EVALSHA`/`NOSCRIPT`-reload path works against the real server.
+- [x] `apps/api/test/errors.e2e-spec.ts`: a `it.each` over all **15** `CACHE_ERROR_CODES` triggers each path and asserts the thrown `CacheException` carries the matching `CacheErrorCode`, the canonical message, and the expected HTTP status (4xx/5xx/504) via the exception filter.
+- [x] All specs boot/tear down their container; `pnpm --filter @nest-cache-example/api test:e2e` runs them green with Docker up.
 
 ### Files to create / modify
 
@@ -262,7 +262,7 @@ The second real-Redis E2E batch: **Pub/Sub fan-out** (publish once; every subscr
 
 ## P15-4 — Fast specs with `ioredis-mock` (round-trips + serializer comparison)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P15-1`
@@ -273,10 +273,10 @@ The fast lane: pure-in-memory specs that need **no real server**, using **`iored
 
 ### Acceptance Criteria
 
-- [ ] `apps/api/test/data-structures.spec.ts` (or `.e2e-spec.ts` matched by the same config) backs `CacheService` with `ioredis-mock` and round-trips: `set/get/setNx/exists`, `incr/decr`, `hset/hgetall/hdel`, `sadd/smembers/scard`, and `mget/mset`.
-- [ ] `apps/api/test/serializer.spec.ts`: stores the same object via the default `JsonSerializer` and the custom `MsgPackSerializer`; asserts `getRaw` (raw bytes/string) differs while `get` (decoded) deep-equals the input shape, and documents that `Date`/`Map`/`Set`/`BigInt` do **not** survive JSON (`SerializableValue` caveat, spec §16).
-- [ ] These specs run **without Docker** (no Testcontainers import) and are clearly the fast tier.
-- [ ] The specs pass under the same `test:e2e` invocation (or a `test` script if separated), with `ioredis-mock` injected in place of the real client.
+- [x] `apps/api/test/data-structures.spec.ts` (or `.e2e-spec.ts` matched by the same config) backs `CacheService` with `ioredis-mock` and round-trips: `set/get/setNx/exists`, `incr/decr`, `hset/hgetall/hdel`, `sadd/smembers/scard`, and `mget/mset`.
+- [x] `apps/api/test/serializer.spec.ts`: stores the same object via the default `JsonSerializer` and the custom `MsgPackSerializer`; asserts `getRaw` (raw bytes/string) differs while `get` (decoded) deep-equals the input shape, and documents that `Date`/`Map`/`Set`/`BigInt` do **not** survive JSON (`SerializableValue` caveat, spec §16).
+- [x] These specs run **without Docker** (no Testcontainers import) and are clearly the fast tier.
+- [x] The specs pass under the same `test:e2e` invocation (or a `test` script if separated), with `ioredis-mock` injected in place of the real client.
 
 ### Files to create / modify
 
@@ -318,7 +318,7 @@ The fast lane: pure-in-memory specs that need **no real server**, using **`iored
 
 ## P15-5 — `apps/web`: Vitest unit + Playwright smoke
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** M (90–180 min)
 - **Depends on:** `P15-1`
@@ -329,12 +329,12 @@ The frontend bar (spec §22 "Web smoke" + "Web unit"; Appendix C `web-smoke`). *
 
 ### Acceptance Criteria
 
-- [ ] `apps/web` devDependencies add **`vitest@^3`**, `@vitejs/plugin-react`, `jsdom` (or `happy-dom`), `@testing-library/react`, `@testing-library/jest-dom`, `@playwright/test`.
-- [ ] `apps/web/vitest.config.ts`: `environment: 'jsdom'`, React plugin, `globals: true`; **no `coverage.thresholds`** set to 100 (no coverage gate).
-- [ ] `apps/web` `package.json` adds `test` (Vitest) and `test:e2e` (Playwright) scripts; `test:e2e` is what the root `pnpm -r test:e2e` fan-out picks up for web.
-- [ ] `apps/web/lib/cache-status.test.ts`: asserts the full status/severity table (`ready`→green, `reconnecting`→amber, `error`→purple, `hit`→green/`miss`→amber, type chips) returns the right `{ color, icon, label }`, **and** that `import { CACHE_ERROR_CODES, type CacheConnectionStatus } from '@bymax-one/nest-cache/shared'` resolves and is usable under jsdom (**matrix #48**).
-- [ ] `apps/web/e2e/smoke.spec.ts` (Playwright): boots/points at the running web app (against a real API or a mocked one), asserts the **shell** renders (topbar wordmark + sidebar nav), the **status badge is green** (`ready`), an **Explorer scan** renders ≥1 key row, and a **Pub/Sub publish** round-trips (publish → the live feed shows the message).
-- [ ] `playwright.config.ts` exists (single chromium project is fine); the smoke passes against a running stack.
+- [x] `apps/web` devDependencies add **`vitest@^3`**, `@vitejs/plugin-react`, `jsdom` (or `happy-dom`), `@testing-library/react`, `@testing-library/jest-dom`, `@playwright/test`.
+- [x] `apps/web/vitest.config.ts`: `environment: 'jsdom'`, React plugin, `globals: true`; **no `coverage.thresholds`** set to 100 (no coverage gate).
+- [x] `apps/web` `package.json` adds `test` (Vitest) and `test:e2e` (Playwright) scripts; `test:e2e` is what the root `pnpm -r test:e2e` fan-out picks up for web.
+- [x] `apps/web/lib/cache-status.test.ts`: asserts the full status/severity table (`ready`→green, `reconnecting`→amber, `error`→purple, `hit`→green/`miss`→amber, type chips) returns the right `{ color, icon, label }`, **and** that `import { CACHE_ERROR_CODES, type CacheConnectionStatus } from '@bymax-one/nest-cache/shared'` resolves and is usable under jsdom (**matrix #48**).
+- [x] `apps/web/e2e/smoke.spec.ts` (Playwright): boots/points at the running web app (against a real API or a mocked one), asserts the **shell** renders (topbar wordmark + sidebar nav), the **status badge is green** (`ready`), an **Explorer scan** renders ≥1 key row, and a **Pub/Sub publish** round-trips (publish → the live feed shows the message).
+- [x] `playwright.config.ts` exists (single chromium project is fine); the smoke passes against a running stack.
 
 ### Files to create / modify
 
@@ -396,32 +396,32 @@ The frontend bar (spec §22 "Web smoke" + "Web unit"; Appendix C `web-smoke`). *
 
 ## P15-6 — CI wiring stub + phase verification gate
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P15-1`, `P15-2`, `P15-3`, `P15-4`, `P15-5`
 
 ### Description
 
-Wire a CI stub with the four jobs this phase proves — **`lint` + `typecheck` + `test:e2e` + `web build`** (full CI incl. the export-usage check is Phase 16) — and close the phase by running the Definition-of-Done gate: `pnpm test:e2e` green against a real Redis (Testcontainers), the web smoke green, and `pnpm --filter web build` green. The CI `e2e` job must provision a Docker daemon (GitHub-hosted runners have one) so Testcontainers can boot `redis:7-alpine`; this repo carries **no** Stryker job and **no** coverage gate (Appendix C).
+Wire a CI stub with the four jobs this phase proves — **`lint` + `typecheck` + `test:e2e` + `web build`** (full CI incl. the export-usage check is Phase 19) — and close the phase by running the Definition-of-Done gate: `pnpm test:e2e` green against a real Redis (Testcontainers), the web smoke green, and `pnpm --filter web build` green. The CI `e2e` job must provision a Docker daemon (GitHub-hosted runners have one) so Testcontainers can boot `redis:7-alpine`; this repo carries **no** Stryker job and **no** coverage gate (Appendix C).
 
 ### Acceptance Criteria
 
-- [ ] `.github/workflows/ci.yml` exists with jobs: **`lint`** (`pnpm lint`), **`typecheck`** (`pnpm typecheck`), **`e2e`** (`pnpm test:e2e` — Testcontainers, Docker available on the runner), **`web-build`** (`pnpm --filter @nest-cache-example/web build`).
-- [ ] Every job uses `pnpm/action-setup@v4` + `actions/setup-node@v5` (`node-version: '24'`, `cache: pnpm`) and `pnpm install --frozen-lockfile`.
-- [ ] The workflow contains **no `stryker` / mutation job** and **no `coverageThreshold` enforcement** (matches Appendix C — example-app bar).
-- [ ] Phase DoD verified locally: `pnpm test:e2e` passes against a real Redis container, the web smoke passes, and `pnpm --filter @nest-cache-example/web build` exits 0.
-- [ ] `pnpm lint` and `pnpm typecheck` exit 0 across the workspace with the new test files present.
+- [x] `.github/workflows/ci.yml` exists with jobs: **`lint`** (`pnpm lint`), **`typecheck`** (`pnpm typecheck`), **`e2e`** (`pnpm --filter api test:e2e` — the API Testcontainers suite, Docker available on the runner; the web Playwright smoke needs a running stack and is not a CI-stub job), **`web-build`** (`pnpm --filter web build`).
+- [x] Every job uses `pnpm/action-setup@v4` + `actions/setup-node@v5` (`node-version: '24'`, `cache: pnpm`) and `pnpm install --frozen-lockfile`.
+- [x] The workflow contains **no `stryker` / mutation job** and **no `coverageThreshold` enforcement** (matches Appendix C — example-app bar).
+- [x] Phase DoD verified locally: `pnpm test:e2e` passes against a real Redis container, the web smoke passes, and `pnpm --filter web build` exits 0.
+- [x] `pnpm lint` and `pnpm typecheck` exit 0 across the workspace with the new test files present.
 
 ### Files to create / modify
 
-- `.github/workflows/ci.yml` — `lint` + `typecheck` + `e2e` + `web-build` jobs (stub; export-usage job is Phase 16).
+- `.github/workflows/ci.yml` — `lint` + `typecheck` + `e2e` + `web-build` jobs (stub; export-usage job is Phase 19).
 - _(verification only otherwise — fix earlier P15 task files if a check fails)_
 
 ### Agent Execution Prompt
 
 > Role: Senior DevOps / TypeScript engineer wiring CI + closing the phase.
-> Context: Task P15-6 of `docs/DEVELOPMENT_PLAN.md` §Phase 15. Definition of done: `pnpm test:e2e` passes against a real Redis container; the web smoke passes; `pnpm --filter web build` is green (spec §22, Appendix C). §2 mandates `pnpm/action-setup@v4` + setup-node `node-version: '24'` + `cache: pnpm` + `--frozen-lockfile`. The `audit:exports` / `export-usage-check` job is **Phase 16** — out of scope here. GitHub-hosted runners include a Docker daemon, so Testcontainers works in the `e2e` job without extra services.
+> Context: Task P15-6 of `docs/DEVELOPMENT_PLAN.md` §Phase 15. Definition of done: `pnpm test:e2e` passes against a real Redis container; the web smoke passes; `pnpm --filter web build` is green (spec §22, Appendix C). §2 mandates `pnpm/action-setup@v4` + setup-node `node-version: '24'` + `cache: pnpm` + `--frozen-lockfile`. The `audit:exports` / `export-usage-check` job is **Phase 19** — out of scope here. GitHub-hosted runners include a Docker daemon, so Testcontainers works in the `e2e` job without extra services.
 > Objective: Add the CI stub (4 jobs) and run the phase DoD gate.
 > Steps:
 >
@@ -430,7 +430,7 @@ Wire a CI stub with the four jobs this phase proves — **`lint` + `typecheck` +
 >    - `typecheck` → `pnpm typecheck`
 >    - `e2e` → `pnpm test:e2e` (Testcontainers boots `redis:7-alpine` with `--notify-keyspace-events Ex` via the P15-1 helper; the runner's Docker daemon suffices — no `services:` block needed, though you may add one as a fallback note in a comment).
 >    - `web-build` → `pnpm --filter @nest-cache-example/web build`.
-> 2. Do **NOT** add a `stryker`/mutation job, a coverage-threshold gate, or the export-usage job (Phase 16). Add a short comment at the top of the file: `# Example-app CI bar (Appendix C): lint + typecheck + E2E smoke + web build. No mutation/coverage gate.`
+> 2. Do **NOT** add a `stryker`/mutation job, a coverage-threshold gate, or the export-usage job (Phase 19). Add a short comment at the top of the file: `# Example-app CI bar (Appendix C): lint + typecheck + E2E smoke + web build. No mutation/coverage gate.`
 > 3. Run the phase DoD locally and fix forward into the relevant P15 task file if anything fails (do not weaken a test to make it pass):
 >    - `pnpm test:e2e` with Docker running.
 >    - `pnpm --filter @nest-cache-example/web test:e2e` (Playwright smoke) against a running stack.
@@ -440,7 +440,7 @@ Wire a CI stub with the four jobs this phase proves — **`lint` + `typecheck` +
 >
 > - Follow §2 + Appendix C. **No Stryker, no 100% `coverageThreshold`** anywhere in CI or config — the example-app bar is lint + typecheck + E2E smoke + web build.
 > - Do not skip hooks or use `--no-verify`; do not lower any threshold to go green.
-> - Keep the workflow a faithful stub of Phase 16's full CI (same setup steps) so Phase 16 only adds the export-usage job + release polish.
+> - Keep the workflow a faithful stub of Phase 19's full CI (same setup steps) so Phase 19 only adds the export-usage job + release polish.
 >   Verification:
 > - `pnpm test:e2e` — expected: exit 0 against a real Redis container (Docker up).
 > - `pnpm --filter @nest-cache-example/web build` — expected: exit 0.
@@ -466,3 +466,10 @@ When this task is 🟢, Phase 15 is 6/6 — switch the Phase 15 row in `DEVELOPM
 ## Completion log
 
 _(Agents append one line per finished task, newest at the bottom.)_
+
+- P15-1 ✅ 2026-06-18 — Jest 30 + @nestjs/testing + Testcontainers (redis:7-alpine, --notify-keyspace-events Ex) ESM toolchain + boot smoke.
+- P15-2 ✅ 2026-06-18 — Real-Redis E2E: read-through + TTL keyspace expiry, namespace isolation/flushNamespace, sync forRoot (matrix #2).
+- P15-3 ✅ 2026-06-18 — Real-Redis E2E: Pub/Sub fan-out + ref-counted unsubscribe, Lua single-flight collapse, all 15 CacheException paths.
+- P15-4 ✅ 2026-06-18 — Fast ioredis-mock specs: data-structure round-trips + JSON-vs-MessagePack serializer comparison (no Docker).
+- P15-5 ✅ 2026-06-18 — Web Vitest unit (cache-status mapping + /shared browser resolution, matrix #48) + Playwright stack smoke.
+- P15-6 ✅ 2026-06-18 — CI stub (lint/typecheck/e2e/web-build) + phase DoD gate green.

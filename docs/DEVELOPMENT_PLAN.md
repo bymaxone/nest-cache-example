@@ -6,9 +6,9 @@
 > **Document version:** 1.0 — authored before implementation.
 > **Status:** specification only.
 
-This plan mirrors the proven 3-layer structure of the sibling `nest-logger-example` / `nest-auth-example` (`DEVELOPMENT_PLAN.md` → `tasks/README.md` → `tasks/phase-NN-*.md`). It **refines** the coarse 10-phase (phases 0–9) outline in [`TECHNICAL_SPECIFICATION.md` §25](TECHNICAL_SPECIFICATION.md#25--phased-delivery-plan) into 17 finer, independently-shippable phases, each mapped to the spec's [§7 Feature Coverage Matrix](TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix) rows so `/bymax-workflow:phase-tasks` can scaffold task files directly from a phase's deliverables.
+This plan mirrors the proven 3-layer structure of the sibling `nest-logger-example` / `nest-auth-example` (`DEVELOPMENT_PLAN.md` → `tasks/README.md` → `tasks/phase-NN-*.md`). It **refines** the coarse 10-phase (phases 0–9) outline in [`TECHNICAL_SPECIFICATION.md` §25](TECHNICAL_SPECIFICATION.md#25--phased-delivery-plan) into 20 finer, independently-shippable phases, each mapped to the spec's [§7 Feature Coverage Matrix](TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix) rows so `/bymax-workflow:phase-tasks` can scaffold task files directly from a phase's deliverables.
 
-> **One deliberate divergence from the siblings:** this is an **example app, not the library**, so it does **not** adopt the 100%-coverage + 100%-mutation gates. Those are the gates of `@bymax-one/nest-cache` itself. The example ships a focused **E2E smoke suite** (Testcontainers) + lint/typecheck/build + an **export-usage audit** — see [Appendix C](#appendix-c--quality-gates). This matches the spec's Non-Goal NG4.
+> **Testing bar (revised) — full library-grade rigor.** This example is the **reference implementation** other Bymax projects copy from, and the goal is to test the consumed `@bymax-one/nest-cache` surface as exhaustively as possible **before** the library is published. So — unlike the original scope (and superseding the spec's Non-Goal NG4) — this repo now adopts the **same bar as the siblings** `nest-logger-example` / `nest-auth-example`: **100% unit coverage on all four metrics** (Phase 16), **E2E of every flow** (Phase 17), and **Stryker mutation testing as close to 100% as possible** (Phase 18) — then docs + export audit last (Phase 19). The Phase 15 smoke suite remains the fast integration tier on top of this. See [Appendix C](#appendix-c--quality-gates).
 
 ---
 
@@ -33,7 +33,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 >
 > **All 17 phase files are scaffolded** under [`docs/tasks/`](tasks/) — the per-phase totals below are firm.
 >
-> **Overall progress: 94 / 107 tasks done (88%)**
+> **Overall progress: 100 / 129 tasks done (78%)**
 
 | #   | Phase                                     | Tasks file                            | Size | Done / Total | %    | Status |
 | --- | ----------------------------------------- | ------------------------------------- | ---- | ------------ | ---- | ------ |
@@ -52,8 +52,11 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 | 12  | `apps/web` Skeleton + Design System       | `phase-12-web-skeleton-design.md`     | L    | 7 / 7        | 100% | 🟢     |
 | 13  | Dashboard — Observe pages                 | `phase-13-dashboard-observe.md`       | L    | 8 / 8        | 100% | 🟢     |
 | 14  | Dashboard — Real-time & Labs pages        | `phase-14-dashboard-realtime-labs.md` | L    | 9 / 9        | 100% | 🟢     |
-| 15  | Testing — E2E smoke + Web smoke           | `phase-15-testing.md`                 | M    | 0 / 6        | 0%   | 🔴     |
-| 16  | Docs, README & Export Audit               | `phase-16-docs-readme-audit.md`       | M    | 0 / 7        | 0%   | 🔴     |
+| 15  | Testing — E2E smoke + Web smoke           | `phase-15-testing.md`                 | M    | 6 / 6        | 100% | 🟢     |
+| 16  | Unit Tests — 100% coverage (api + web)    | `phase-16-unit-coverage.md`           | XL   | 0 / 8        | 0%   | 🔴     |
+| 17  | E2E — every flow (HTTP + WebSocket)       | `phase-17-e2e-flows.md`               | L    | 0 / 8        | 0%   | 🔴     |
+| 18  | Mutation Testing — Stryker (near-100%)    | `phase-18-mutation-stryker.md`        | L    | 0 / 6        | 0%   | 🔴     |
+| 19  | Docs, README & Export Audit               | `phase-19-docs-readme-audit.md`       | M    | 0 / 7        | 0%   | 🔴     |
 
 ### How to update this dashboard
 
@@ -69,14 +72,14 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 
 ## 0. Guiding Principles
 
-1. **Library-faithful.** Every public export of `@bymax-one/nest-cache` (`.` + `/shared`) is demonstrated in `apps/`; an export-usage audit enforces it (Phase 16). If the README documents it, this repo proves it. Traceability runs through the spec's [§7 Feature Coverage Matrix](TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix) (each phase lists the rows it covers).
+1. **Library-faithful.** Every public export of `@bymax-one/nest-cache` (`.` + `/shared`) is demonstrated in `apps/`; an export-usage audit enforces it (Phase 19). If the README documents it, this repo proves it. Traceability runs through the spec's [§7 Feature Coverage Matrix](TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix) (each phase lists the rows it covers).
 2. **Honest semantics.** No demo misrepresents the library. The plan explicitly builds the boundaries: one `namespace` per instance (tenants are prefixes — Phase 6), cluster-mode restrictions (Phase 11), namespaced Pub/Sub channels vs. raw keyspace channels (Phase 9), and clearly-labeled **app-level** metrics (Phase 4/13).
 3. **Copy-paste friendly.** `cache/cache.config.ts`, the `events.onEvent` bridge, the `CacheExceptionFilter`, the custom serializer, and the keyspace subscriber are written generically so a real consumer lifts them directly.
 4. **Make the invisible visible.** TTL countdown rings, a live expiry feed, Pub/Sub fan-out, and a single-flight stampede timeline exist because a README cannot show them (spec G2).
 5. **Design parity.** `apps/web` reuses the shared Bymax design system **verbatim** (tokens, fonts, shell, glass-morphism) — see [`DASHBOARD.md` §19](DASHBOARD.md#19--frontend-tech-stack--design-system) and [`design_system.html`](design_system.html). Drop a screenshot beside a sibling and the chrome is indistinguishable.
 6. **Minimal infra.** Redis only by default — **no database**. Optional Docker profiles add RedisInsight, a cluster, and a sentinel set (Phases 1, 11).
 7. **No shortcuts.** No `@ts-ignore`, no `eslint-disable` to pass a gate, no `--no-verify`, no lowering a threshold. **No Swagger** — controllers are JSDoc-documented, DTOs are Zod (a deliberate convention, spec §23.4).
-8. **Example-app quality bar, not library bar.** Lint + typecheck + a real **E2E smoke suite** (Testcontainers `redis:7-alpine`) + a web build/Playwright smoke + the export audit — **not** 100% coverage/mutation (those belong to the library; spec NG4, [Appendix C](#appendix-c--quality-gates)).
+8. **Full library-grade test bar (reference implementation).** Because other projects copy this app, it is tested as hard as the library itself: **100% unit coverage on all four metrics** (Phase 16), **E2E of every HTTP + WebSocket flow** (Phase 17), and **Stryker mutation** as near 100% as practical (Phase 18) — on top of the Phase 15 Testcontainers smoke. This **supersedes** the original "example-app bar" and the spec's NG4. See [Appendix C](#appendix-c--quality-gates).
 9. **One in-progress task per phase** at a time; never start a task until every dependency phase is 🟢 Done.
 10. **English-only** identifiers, comments, and docs. **Conventional Commits**, enforced locally via husky + commitlint.
 
@@ -111,25 +114,25 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 
 ## 2. Global Conventions
 
-| Concern             | Convention                                                                                                                                             |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Package manager     | `pnpm@10.8.0` (exact pin in `packageManager` + every CI `pnpm/action-setup@v4`), workspaces `apps/*`                                                   |
-| Runtime             | Node `>=24` (`.nvmrc` = `24`, `engines.node >=24`, setup-node `node-version: '24'`, `cache: pnpm`)                                                     |
-| Install             | `pnpm install --frozen-lockfile` everywhere; `.npmrc` → `frozen-lockfile=true`                                                                         |
-| Language            | TypeScript 5.9 strict + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes`; ESM everywhere                                                      |
-| Lint / format       | ESLint 9 flat config (`recommendedTypeChecked`, scoped to `*.ts`/`*.tsx`) + Prettier 3 (`printWidth 100`, `singleQuote`, `semi: false`)                |
-| Pre-commit          | husky `prepare: husky`; `.husky/pre-commit` → `pnpm exec lint-staged`; `.husky/commit-msg` → `commitlint`                                              |
-| Commits             | Conventional Commits (`commitlint.config.mjs` = `config-conventional`); `.gitmessage` with cache scopes                                                |
-| Boolean naming      | prefix `is` / `has` / `should` / `can` (e.g. `isHealthy`, `hasTtl`, `shouldFlush`)                                                                     |
-| **Cache key model** | `{namespace}{separator}{prefix}{separator}{id}`; this app's `namespace` = **`cache-example`**, separator `:`                                           |
-| **API docs**        | **No Swagger.** Controllers documented with JSDoc (`@param`/`@returns`/`@throws` + route line); DTOs = Zod                                             |
-| Datastore           | **Redis only** (no Postgres/Prisma); origin data is in-memory with artificial latency                                                                  |
-| Real-time           | `@nestjs/platform-socket.io` gateway; one socket, 3 channels (`cache:connection`/`event`/`expired`)                                                    |
-| Charts (web)        | Recharts v3 via shadcn primitives; `TtlRing` + `StampedeTimeline` are custom SVG                                                                       |
-| Library dependency  | `@bymax-one/nest-cache` via local `file:../../../nest-cache` until published, then `^0.1.0`                                                            |
-| Subpaths            | `.` (server) in `apps/api`; **`./shared`** (zero-dep) in **both** `apps/api` and `apps/web` (browser bundle)                                           |
-| Dep automation      | `renovate.json` (weekend schedule; pin `@bymax-one/nest-cache`, group docker/actions)                                                                  |
-| **Test bar**        | E2E smoke (Testcontainers `redis:7-alpine` + `ioredis-mock`) + web build/Playwright smoke + export audit — **not** 100% coverage/mutation (Appendix C) |
+| Concern             | Convention                                                                                                                                                                                                                                              |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Package manager     | `pnpm@10.8.0` (exact pin in `packageManager` + every CI `pnpm/action-setup@v4`), workspaces `apps/*`                                                                                                                                                    |
+| Runtime             | Node `>=24` (`.nvmrc` = `24`, `engines.node >=24`, setup-node `node-version: '24'`, `cache: pnpm`)                                                                                                                                                      |
+| Install             | `pnpm install --frozen-lockfile` everywhere; `.npmrc` → `frozen-lockfile=true`                                                                                                                                                                          |
+| Language            | TypeScript 5.9 strict + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes`; ESM everywhere                                                                                                                                                       |
+| Lint / format       | ESLint 9 flat config (`recommendedTypeChecked`, scoped to `*.ts`/`*.tsx`) + Prettier 3 (`printWidth 100`, `singleQuote`, `semi: false`)                                                                                                                 |
+| Pre-commit          | husky `prepare: husky`; `.husky/pre-commit` → `pnpm exec lint-staged`; `.husky/commit-msg` → `commitlint`                                                                                                                                               |
+| Commits             | Conventional Commits (`commitlint.config.mjs` = `config-conventional`); `.gitmessage` with cache scopes                                                                                                                                                 |
+| Boolean naming      | prefix `is` / `has` / `should` / `can` (e.g. `isHealthy`, `hasTtl`, `shouldFlush`)                                                                                                                                                                      |
+| **Cache key model** | `{namespace}{separator}{prefix}{separator}{id}`; this app's `namespace` = **`cache-example`**, separator `:`                                                                                                                                            |
+| **API docs**        | **No Swagger.** Controllers documented with JSDoc (`@param`/`@returns`/`@throws` + route line); DTOs = Zod                                                                                                                                              |
+| Datastore           | **Redis only** (no Postgres/Prisma); origin data is in-memory with artificial latency                                                                                                                                                                   |
+| Real-time           | `@nestjs/platform-socket.io` gateway; one socket, 3 channels (`cache:connection`/`event`/`expired`)                                                                                                                                                     |
+| Charts (web)        | Recharts v3 via shadcn primitives; `TtlRing` + `StampedeTimeline` are custom SVG                                                                                                                                                                        |
+| Library dependency  | `@bymax-one/nest-cache` via local `file:../../../nest-cache` until published, then `^0.1.0`                                                                                                                                                             |
+| Subpaths            | `.` (server) in `apps/api`; **`./shared`** (zero-dep) in **both** `apps/api` and `apps/web` (browser bundle)                                                                                                                                            |
+| Dep automation      | `renovate.json` (weekend schedule; pin `@bymax-one/nest-cache`, group docker/actions)                                                                                                                                                                   |
+| **Test bar**        | Full library-grade: 100% unit coverage (api Jest + web Vitest), E2E of every HTTP + WebSocket flow (Testcontainers), Stryker mutation (api 100 / web ≥90), Testcontainers + `ioredis-mock` smoke, web build/Playwright smoke, export audit (Appendix C) |
 
 ---
 
@@ -412,10 +415,10 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 **Prerequisites:** Phases 4–14 (each shipped with its own happy-path proof).
 **Deliverables:**
 
-- [ ] `apps/api/test/*.e2e-spec.ts` — Testcontainers `redis:7-alpine`: read-through + TTL, namespace isolation + `flushNamespace`, Pub/Sub fan-out, the Lua single-flight, and each `CacheException` path; `BymaxCacheModule.forRoot` sync path covered (matrix #2).
-- [ ] Fast specs with `ioredis-mock` where a real server isn't needed (data-structure round-trips, serializer comparison).
-- [ ] `apps/web` Vitest unit — `lib/cache-status.ts` mapping + the **shared-subpath import resolves in a browser context** (matrix #48); Playwright smoke (shell loads, status badge green, explorer scan renders, publish round-trips).
-- [ ] CI wiring stub: `lint` + `typecheck` + `test:e2e` + `web build` jobs (full CI is Phase 16/out-of-scope polish).
+- [x] `apps/api/test/*.e2e-spec.ts` — Testcontainers `redis:7-alpine`: read-through + TTL, namespace isolation + `flushNamespace`, Pub/Sub fan-out, the Lua single-flight, and each `CacheException` path; `BymaxCacheModule.forRoot` sync path covered (matrix #2).
+- [x] Fast specs with `ioredis-mock` where a real server isn't needed (data-structure round-trips, serializer comparison).
+- [x] `apps/web` Vitest unit — `lib/cache-status.ts` mapping + the **shared-subpath import resolves in a browser context** (matrix #48); Playwright smoke (shell loads, status badge green, explorer scan renders, publish round-trips).
+- [x] CI wiring stub: `lint` + `typecheck` + `test:e2e` + `web build` jobs (full CI — coverage + mutation + export-usage — lands across Phases 16–19).
 
 **Demonstrates:** matrix #2 (sync `forRoot`); cross-cutting verification of all rows. **References:** spec §22, DASHBOARD §18.
 **Definition of done:** `pnpm test:e2e` passes against a real Redis container; the web smoke passes; `pnpm --filter web build` is green.
@@ -423,10 +426,64 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 
 ---
 
-## Phase 16 — Docs, README & Export Audit
+## Phase 16 — Unit Tests: 100% Coverage (api + web)
+
+**Goal:** a full unit-test suite that reaches **100% on all four metrics** (statements / branches / functions / lines) for both `apps/api` (Jest) and `apps/web` (Vitest) — the same bar the siblings hold. The example is a reference others copy, so its own logic and its use of every `@bymax-one/nest-cache` surface are exhaustively unit-proven, no shortcuts.
+**Prerequisites:** Phases 3–15 (the app and the Phase-15 toolchain exist).
+**Deliverables:**
+
+- [ ] **api unit toolchain** — `apps/api/jest.config.cjs` (`rootDir: src`, `testRegex: \.spec\.ts$`, ESM via `--experimental-vm-modules`, `ts-jest useESM`, `moduleNameMapper` `.js→.ts`, `ignoreCoverageForAllDecorators: true`) + `apps/api/tsconfig.spec.json` (extends `tsconfig.json` with **`emitDecoratorMetadata: false`** to kill the `__metadata` phantom-branch trap), `collectCoverageFrom: src/**` minus `*.module.ts`/`main.ts`/`*.dto.ts`/`*.d.ts`/`*.types.ts`/`**/index.ts`, `coverageThreshold.global` 100/100/100/100, and `test` + `test:cov` scripts.
+- [ ] **api unit tests** — every service, controller, pipe (`ZodValidationPipe`), filter (`CacheExceptionFilter`), parser (`info.parser`), config builder (`cache.config`), env schema (`validateEnv`), gateway (`EventsGateway`), `CacheEventsBridge`, `MsgPackSerializer`, `MetricsService`, `ProductOriginStore`, and every Zod DTO schema — DI-heavy classes constructed directly with mocked library providers (`CacheService`/`ConnectionManager`/`KeyBuilder`/`PubSubService`/`ScriptManagerService` via their `@Inject` tokens); every `it()` carries a scenario comment.
+- [ ] **web unit toolchain** — widen `apps/web/vitest.config.ts` `include` to `{app,components,lib,hooks}/**/*.{test,spec}.{ts,tsx}`, add `@vitest/coverage-v8` + `coverage.thresholds` 100/100/100/100, a `resolve.alias` for `@/*` (or `vite-tsconfig-paths`), a `setupFiles` wiring `@testing-library/jest-dom`, `coverage.exclude` for `components/ui/**` (vendored shadcn) + `app/**` route shells, and a `test:cov` script.
+- [ ] **web unit tests** — `lib/**` (format, cache-status, utils, filters, socket `RingBuffer`+parsers, api-client, cache-api, all `*-api`), `hooks/**` (incl. the dense `use-metric-series` + socket/follow hooks with mocked `socket.io-client`/`fetch`/timers/`matchMedia`), and `components/**` (pure presentational + the data/socket views) to 100%; the boundaries (`fetch`, `socket.io-client`, TanStack Query, `nuqs`, `next/navigation`) are mocked.
+- [ ] **no shortcuts** — no `/* istanbul ignore */`, no `@ts-ignore`/`eslint-disable`, no threshold lowering, no exclusion added to hide a real gap; provably-dead defensive branches are **removed from source** instead.
+
+**Demonstrates:** cross-cutting — unit coverage of every line that uses the library. **References:** sibling `nest-logger-example` `apps/{api,web}` test setup; [Appendix C](#appendix-c--quality-gates).
+**Definition of done:** `pnpm --filter api test:cov` and `pnpm --filter web test:cov` both report **100/100/100/100** with zero `.skip`/`.todo` and zero ignore comments.
+**Size:** XL
+
+---
+
+## Phase 17 — E2E: Every Flow (HTTP + WebSocket)
+
+**Goal:** E2E coverage of **every** HTTP route (38 across 12 controllers + health) and **every** WebSocket channel (`cache:connection`, `cache:event`, `cache:expired`), driving the real app over `supertest` + a `socket.io-client` against a Testcontainers `redis:7-alpine`. This proves the published library through the full HTTP/WS surface (global `ZodValidationPipe` + `CacheExceptionFilter` included), not just the service layer — so the example doubles as the library's end-to-end integration suite.
+**Prerequisites:** Phase 16 (unit suite green) — though E2E uses its own config/tier.
+**Deliverables:**
+
+- [ ] **E2E toolchain** — extend the Phase-15 `test/helpers` to expose the booted HTTP server for `supertest` (install `supertest` + `@types/supertest`) and a `socket.io-client` helper that connects, captures `cache:*` events, and tears down; reuse `createTestApp` (real Redis) with the production global pipe + exception filter wired exactly as `main.ts`.
+- [ ] **per-feature HTTP E2E specs** covering every route: catalog (6), admin (9), collections (8), counters (3), metrics + health (2), tenants (4), serializer-demo (3), pubsub (4), ttl-events (1), stampede (1), errors-demo (1) — asserting status codes, response bodies, 404/400 paths, and the `CacheException` envelope through the filter.
+- [ ] **WebSocket E2E** — a socket client asserts `cache:connection` fires on lifecycle, `cache:event` fans out a published message (exact + pattern), and `cache:expired` fires for a seeded short-TTL key (needs `--notify-keyspace-events Ex`).
+- [ ] **DTO/validation paths** — each Zod schema's reject path exercised via a real bad request (the global pipe returns `{ error: { code, issues } }`).
+- [ ] specs are independent (own container lifecycle or a shared per-file container), green under `pnpm test:e2e`.
+
+**Demonstrates:** every Feature-Coverage-Matrix row end-to-end through HTTP/WS. **References:** sibling `nest-auth-example` `test/` supertest pattern (`createTestApp`, per-flow spec files); spec §22.
+**Definition of done:** `pnpm --filter api test:e2e` is green with every route and every WS channel asserted at least once; no flow left untested.
+**Size:** L
+
+---
+
+## Phase 18 — Mutation Testing (Stryker, near-100%)
+
+**Goal:** add Stryker mutation testing per app and harden the suites until the score is as close to 100% as practical — **api `break: 100`** (zero surviving mutants), **web `break: 90`** (lib held to 100, components floored at 90 — full UI mutation is over-engineering). Mutation is the last test layer; it runs only once Phases 16–17 are green.
+**Prerequisites:** Phases 16 + 17 (100% coverage + full E2E).
+**Deliverables:**
+
+- [ ] **api Stryker** — `apps/api/jest.stryker.config.cjs` (unit-spec only, coverage off, `tsconfig.spec.json` transform) + `apps/api/stryker.config.json` (jest-runner + `typescript-checker`, `coverageAnalysis: perTest`, `mutate` = `src/**/*.ts` minus modules/dto/d.ts/main/index/types, `thresholds {high:100,low:100,break:100}`, `ignoreStatic` **not** set, incremental).
+- [ ] **web Stryker** — `apps/web/stryker.config.json` (vitest-runner, `coverageAnalysis: perTest`, `ignoreStatic: true`, `mutate` = `lib/**/*.ts` + `components/**/*.tsx` minus tests/`components/ui/**`/`*.d.ts`, `thresholds {high:100,low:95,break:90}`, incremental).
+- [ ] **scripts + ignores** — `mutation` / `mutation:incremental` / `mutation:dry-run` per app + root fan-out; `.stryker-tmp/` and `reports/` git-ignored, lint-ignored, prettier-ignored.
+- [ ] **mutation docs** — `docs/stryker/BASELINE.md` (first scores + survivor inventory), `docs/stryker/HISTORY.md` (append-only run log), `docs/stryker/IMPLEMENTATION_PLAN.md` (hardening order + the equivalent-mutants table).
+- [ ] **hardening** — kill survivors with real assertions on observable behavior; the only sanctioned exception is a **proven-equivalent** mutant, each carrying a `// Stryker disable next-line <Mutator> -- <reason>` in source **and** a row in the equivalent-mutants table.
+
+**Demonstrates:** assertion quality, not just line execution. **References:** sibling `nest-logger-example` `apps/{api,web}/stryker.config.json` + `docs/stryker/`.
+**Definition of done:** `pnpm --filter api mutation` passes at `break: 100` (0 survivors) and `pnpm --filter web mutation` passes at `break: 90`; every disabled mutant is documented as equivalent.
+**Size:** L
+
+---
+
+## Phase 19 — Docs, README & Export Audit
 
 **Goal:** polished public-facing docs + a CI-enforceable proof that every library export is demonstrated.
-**Prerequisites:** features stable (Phases 3–14).
+**Prerequisites:** Phases 16–18 (the full test suite is green) — docs and the export audit land **last**, after everything is proven.
 **Deliverables:**
 
 - [ ] `scripts/audit-library-exports.mjs` + `.audit-ignore.json` — parse `node_modules/@bymax-one/nest-cache/dist/{server,shared}/index.d.ts`, word-boundary-search the `apps/` corpus, fail on any undocumented export; wired as `audit:exports` + a CI job.
@@ -448,24 +505,28 @@ See [`TECHNICAL_SPECIFICATION.md` §9](TECHNICAL_SPECIFICATION.md#9--configurati
 
 ## Appendix B — Library Export → Example File Map
 
-Maintained by `scripts/audit-library-exports.mjs` (Phase 16) and surfaced as the spec's [§7 Feature Coverage Matrix](TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix). The audit parses `node_modules/@bymax-one/nest-cache/dist/{server,shared}/index.d.ts`, extracts every exported symbol, and word-boundary-searches the `apps/` corpus; a missing symbol fails CI unless listed in `.audit-ignore.json` with a reason. The 50 matrix rows are the contract; each phase above lists the rows it lands.
+Maintained by `scripts/audit-library-exports.mjs` (Phase 19) and surfaced as the spec's [§7 Feature Coverage Matrix](TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix). The audit parses `node_modules/@bymax-one/nest-cache/dist/{server,shared}/index.d.ts`, extracts every exported symbol, and word-boundary-searches the `apps/` corpus; a missing symbol fails CI unless listed in `.audit-ignore.json` with a reason. The 50 matrix rows are the contract; each phase above lists the rows it lands.
 
 ## Appendix C — Quality Gates
 
-The example-app bar — **lighter than the library's on purpose** (the 100% coverage + 100% mutation gates belong to `@bymax-one/nest-cache`; see [`Bymax-Lib-Standards`] and the library's own `docs/`). Replicating those here would add noise without protecting a published API.
+Full **library-grade** bar — this reference app is held to the same rigor as the siblings `nest-logger-example` / `nest-auth-example`, because it is copied as a template and must prove the consumed `@bymax-one/nest-cache` surface exhaustively before the library is published. **This supersedes the earlier "lighter than the library" stance and the spec's NG4.**
 
-| Gate           | Tool / config                                                | Threshold                         | Enforced in             |
-| -------------- | ------------------------------------------------------------ | --------------------------------- | ----------------------- |
-| Lint           | ESLint 9 flat (`eslint .`)                                   | zero errors                       | CI `lint` (Phase 15/16) |
-| Typecheck      | `tsc --noEmit` per package                                   | zero errors                       | CI `typecheck`          |
-| API E2E        | Jest + `@nestjs/testing` + Testcontainers (`redis:7-alpine`) | headline flows pass               | CI `e2e` (Phase 15)     |
-| API fast specs | `ioredis-mock`                                               | data-structure round-trips pass   | CI `e2e`                |
-| Web build      | `next build`                                                 | succeeds                          | CI `web-build`          |
-| Web smoke      | Playwright + Vitest (`lib/**`)                               | happy-path passes                 | CI `web-smoke`          |
-| Export usage   | `scripts/audit-library-exports.mjs` + `.audit-ignore.json`   | every export demonstrated         | CI `export-usage-check` |
-| Pre-commit     | husky + lint-staged                                          | prettier + eslint --fix on staged | local                   |
-| Commit message | commitlint (`config-conventional`)                           | Conventional Commits              | local `commit-msg`      |
+| Gate            | Tool / config                                                                | Threshold                            | Enforced in                  |
+| --------------- | ---------------------------------------------------------------------------- | ------------------------------------ | ---------------------------- |
+| Lint            | ESLint 9 flat (`eslint .`)                                                   | zero errors                          | CI `lint` (Phase 15)         |
+| Typecheck       | `tsc --noEmit` per package                                                   | zero errors                          | CI `typecheck`               |
+| API unit + cov  | Jest (`jest.config.cjs`, `tsconfig.spec.json` metadata-off)                  | **100 / 100 / 100 / 100**            | CI `test:cov` (Phase 16)     |
+| Web unit + cov  | Vitest + `@vitest/coverage-v8` (`{app,components,lib,hooks}`)                | **100 / 100 / 100 / 100**            | CI `test:cov` (Phase 16)     |
+| API E2E (flows) | Jest + `@nestjs/testing` + `supertest` + `socket.io-client` + Testcontainers | every HTTP route + WS channel passes | CI `e2e` (Phase 17)          |
+| API smoke/fast  | Testcontainers (`redis:7-alpine`) + `ioredis-mock`                           | headline flows + round-trips pass    | CI `e2e` (Phase 15)          |
+| API mutation    | Stryker (jest-runner + ts-checker)                                           | **`break: 100`** (0 survivors)       | CI `mutation:api` (Phase 18) |
+| Web mutation    | Stryker (vitest-runner, `ignoreStatic`)                                      | **`break: 90`** (lib 100)            | CI `mutation:web` (Phase 18) |
+| Web build       | `next build`                                                                 | succeeds                             | CI `web-build`               |
+| Web smoke       | Playwright (running stack)                                                   | happy-path passes                    | CI `web-smoke` (Phase 15)    |
+| Export usage    | `scripts/audit-library-exports.mjs` + `.audit-ignore.json`                   | every export demonstrated            | CI `export-usage` (Phase 19) |
+| Pre-commit      | husky + lint-staged                                                          | prettier + eslint --fix on staged    | local                        |
+| Commit message  | commitlint (`config-conventional`)                                           | Conventional Commits                 | local `commit-msg`           |
 
-> **Why no coverage/mutation wall (audit note).** Per spec NG4 and the Bymax lib standard, an **example app** demonstrates and integration-tests a library; it does not re-prove the library's internal correctness. The **E2E smoke suite against a real Redis** is the right bar — it validates the _published_ package end to end (and doubles as integration coverage for the library). If a future maintainer wants a coverage signal, add a non-blocking `test:cov` report, but **do not** gate the example on 100% — that bar is reserved for `@bymax-one/nest-cache`.
+> **Coverage/mutation rationale (revised).** The earlier audit note argued an example app need not re-prove the library's internal correctness. That stance is **reversed** by decision: this example is the canonical reference other Bymax projects copy, and the library is **not yet published** — so testing it to 100% coverage + near-100% mutation here is the cheapest place to harden the library's real-world usage before publish. The `emitDecoratorMetadata` phantom-branch trap is handled by compiling the unit project with `emitDecoratorMetadata: false` (`tsconfig.spec.json`) + `ignoreCoverageForAllDecorators: true`; the e2e project keeps metadata **on** (it boots the real DI container). Web mutation floors `components/**` at 90 (full UI mutation is over-engineering) while `lib/**` stays at 100.
 >
 > **Toolchain caveats.** ① Run `pnpm/action-setup@v4` **before** `actions/setup-node@v5` when using `cache: pnpm`. ② Testcontainers needs a Docker daemon in CI (use the service or a runner with Docker). ③ Keyspace-notification E2E (Phase 9) requires the test Redis to start with `--notify-keyspace-events Ex`. ④ Pin a Vitest major rather than `latest`.

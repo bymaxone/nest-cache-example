@@ -1,6 +1,6 @@
-# Phase 16 — Docs, README & Export Audit — Tasks
+# Phase 19 — Docs, README & Export Audit — Tasks
 
-> **Source:** [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#phase-16--docs-readme--export-audit) §Phase 16
+> **Source:** [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#phase-19--docs-readme--export-audit) §Phase 19
 > **Total tasks:** 7
 > **Progress:** 🔴 0 / 7 done (0%)
 >
@@ -10,17 +10,17 @@
 
 | ID    | Task                                                                   | Status | Priority | Size | Depends on   |
 | ----- | ---------------------------------------------------------------------- | ------ | -------- | ---- | ------------ |
-| P16-1 | `scripts/audit-library-exports.mjs` + `.audit-ignore.json` (+ CI job)  | 🔴     | High     | M    | Phases 3–14  |
-| P16-2 | Root `README.md` (centered header, badges, matrix, ASCII arch)         | 🔴     | High     | L    | Phases 3–14  |
-| P16-3 | Documented curl journeys (miss→hit, stampede, isolation)               | 🔴     | Medium   | S    | P16-2        |
-| P16-4 | Keep spec/dashboard/plan current; flip `OVERVIEW.md` to superseded     | 🔴     | Medium   | S    | Phases 3–14  |
-| P16-5 | Document the OPTIONAL `@bymax-one/nest-logger` events bridge (row #50) | 🔴     | Low      | S    | P16-1, P16-2 |
-| P16-6 | `CHANGELOG.md` `0.1.0` entry + design-system acceptance check          | 🔴     | Medium   | S    | P16-2        |
-| P16-7 | Final audit verification (`audit:exports` exit 0, matrix all ✅)       | 🔴     | High     | S    | P16-1..P16-6 |
+| P19-1 | `scripts/audit-library-exports.mjs` + `.audit-ignore.json` (+ CI job)  | 🔴     | High     | M    | Phases 3–14  |
+| P19-2 | Root `README.md` (centered header, badges, matrix, ASCII arch)         | 🔴     | High     | L    | Phases 3–14  |
+| P19-3 | Documented curl journeys (miss→hit, stampede, isolation)               | 🔴     | Medium   | S    | P19-2        |
+| P19-4 | Keep spec/dashboard/plan current; flip `OVERVIEW.md` to superseded     | 🔴     | Medium   | S    | Phases 3–14  |
+| P19-5 | Document the OPTIONAL `@bymax-one/nest-logger` events bridge (row #50) | 🔴     | Low      | S    | P19-1, P19-2 |
+| P19-6 | `CHANGELOG.md` `0.1.0` entry + design-system acceptance check          | 🔴     | Medium   | S    | P19-2        |
+| P19-7 | Final audit verification (`audit:exports` exit 0, matrix all ✅)       | 🔴     | High     | S    | P19-1..P19-6 |
 
 ---
 
-## P16-1 — `scripts/audit-library-exports.mjs` + `.audit-ignore.json` (+ CI job)
+## P19-1 — `scripts/audit-library-exports.mjs` + `.audit-ignore.json` (+ CI job)
 
 - **Status:** 🔴 Not Started
 - **Priority:** High
@@ -51,7 +51,7 @@ Build the export-usage audit — the **contract** that every public export of `@
 ### Agent Execution Prompt
 
 > Role: Senior TypeScript / Node engineer building a CI-grade static-analysis script with zero dependencies.
-> Context: Repo `nest-cache-example` is the reference app for `@bymax-one/nest-cache` (see `docs/DEVELOPMENT_PLAN.md` §Phase 16 + §2 Global Conventions, `docs/TECHNICAL_SPECIFICATION.md` §7 Feature Coverage Matrix, and `DEVELOPMENT_PLAN.md` Appendix B). This is task P16-1. The library is consumed from `node_modules/@bymax-one/nest-cache` (a local `file:` link until published); the audit reads its **shipped `.d.ts`** so it always tracks the real published surface. The audit is the contract that **every one of the 50 Feature-Coverage-Matrix rows is demonstrated** somewhere in `apps/`.
+> Context: Repo `nest-cache-example` is the reference app for `@bymax-one/nest-cache` (see `docs/DEVELOPMENT_PLAN.md` §Phase 19 + §2 Global Conventions, `docs/TECHNICAL_SPECIFICATION.md` §7 Feature Coverage Matrix, and `DEVELOPMENT_PLAN.md` Appendix B). This is task P19-1. The library is consumed from `node_modules/@bymax-one/nest-cache` (a local `file:` link until published); the audit reads its **shipped `.d.ts`** so it always tracks the real published surface. The audit is the contract that **every one of the 50 Feature-Coverage-Matrix rows is demonstrated** somewhere in `apps/`.
 > Objective: Produce `scripts/audit-library-exports.mjs` + `.audit-ignore.json` and wire the `export-usage-check` CI job.
 > Steps:
 >
@@ -85,7 +85,7 @@ Build the export-usage audit — the **contract** that every public export of `@
 4. ✅ Increment the **Progress** counter in the file header.
 5. ✅ Update the matching row in [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#progress-summary) (Done / Total, %, Status).
 6. ✅ Recompute "Overall progress" in `DEVELOPMENT_PLAN.md` (sum across all phases).
-7. ✅ Append `- P16-1 ✅ YYYY-MM-DD — <one-line summary>` to **Completion log**.
+7. ✅ Append `- P19-1 ✅ YYYY-MM-DD — <one-line summary>` to **Completion log**.
 
 If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
@@ -93,7 +93,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ---
 
-## P16-2 — Root `README.md` (centered header, badges, matrix, ASCII arch)
+## P19-2 — Root `README.md` (centered header, badges, matrix, ASCII arch)
 
 - **Status:** 🔴 Not Started
 - **Priority:** High
@@ -122,7 +122,7 @@ Replace the Phase 0 README stub with the polished, public-facing root `README.md
 ### Agent Execution Prompt
 
 > Role: Senior TypeScript engineer / technical writer matching an established house style.
-> Context: Task P16-2 of `docs/DEVELOPMENT_PLAN.md` §Phase 16. This README replaces the Phase 0 stub (P0-7) and must be **indistinguishable in style** from the sibling examples `nest-auth-example` / `nest-logger-example`. The reference app demonstrates `@bymax-one/nest-cache` (consumed from `node_modules/@bymax-one/nest-cache`, dual subpath `.` + `./shared`). The 50-row coverage matrix lives in `docs/TECHNICAL_SPECIFICATION.md` §7.
+> Context: Task P19-2 of `docs/DEVELOPMENT_PLAN.md` §Phase 19. This README replaces the Phase 0 stub (P0-7) and must be **indistinguishable in style** from the sibling examples `nest-auth-example` / `nest-logger-example`. The reference app demonstrates `@bymax-one/nest-cache` (consumed from `node_modules/@bymax-one/nest-cache`, dual subpath `.` + `./shared`). The 50-row coverage matrix lives in `docs/TECHNICAL_SPECIFICATION.md` §7.
 > Objective: Write the polished root `README.md`.
 > Steps:
 >
@@ -131,7 +131,7 @@ Replace the Phase 0 README stub with the polished, public-facing root `README.md
 > 3. "What's inside" — a checklist of the capability groups this repo proves (read-through cache + data structures, namespace isolation + tenants, default/custom serialization, Pub/Sub fan-out, TTL/keyspace events, Lua single-flight stampede collapse, connection topologies + the full error surface, and the live observability dashboard).
 > 4. "Quick Start" — fenced shell block: `pnpm install` → `pnpm infra:up` (brings up `redis:7-alpine` via `docker compose`) → `pnpm dev` (parallel api + web). State the ports (API `:3001`, web dev server) and link to `.env.example`.
 > 5. "Endpoints" — a Markdown table grouped by area (Catalog / Counters / Collections / Admin / Tenants / Pub-Sub / TTL Events / Stampede / Serializer / Errors / Health) listing method + path + one-line purpose. Keep it a summary; link to `docs/TECHNICAL_SPECIFICATION.md` §11 for the full catalogue.
-> 6. "Feature Coverage" — a condensed table or summary stating all **50** library exports are demonstrated, that `pnpm audit:exports` enforces it (P16-1), and link to the full [§7 Feature Coverage Matrix](docs/TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix). Mention the matrix is the contract (Appendix B).
+> 6. "Feature Coverage" — a condensed table or summary stating all **50** library exports are demonstrated, that `pnpm audit:exports` enforces it (P19-1), and link to the full [§7 Feature Coverage Matrix](docs/TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix). Mention the matrix is the contract (Appendix B).
 > 7. "Architecture" — an ASCII diagram inside a fenced block: `Browser → apps/web (Next 16) → apps/api (NestJS 11) → Redis 7`, with the socket.io gateway and its three channels (`cache:connection` / `cache:event` / `cache:expired`) shown. Keep it faithful to `docs/TECHNICAL_SPECIFICATION.md`.
 > 8. "Documentation" — link the three living docs (`docs/TECHNICAL_SPECIFICATION.md`, `docs/DASHBOARD.md`, `docs/DEVELOPMENT_PLAN.md`). Run `pnpm format` after writing so Prettier normalizes the file.
 >    Constraints:
@@ -155,18 +155,18 @@ Replace the Phase 0 README stub with the polished, public-facing root `README.md
 4. ✅ Increment the **Progress** counter in the file header.
 5. ✅ Update the matching row in [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#progress-summary).
 6. ✅ Recompute "Overall progress" in `DEVELOPMENT_PLAN.md` (sum across all phases).
-7. ✅ Append `- P16-2 ✅ YYYY-MM-DD — <one-line summary>` to **Completion log**.
+7. ✅ Append `- P19-2 ✅ YYYY-MM-DD — <one-line summary>` to **Completion log**.
 
 ⚠️ Never mark done with failing verification.
 
 ---
 
-## P16-3 — Documented curl journeys (miss→hit, stampede, isolation)
+## P19-3 — Documented curl journeys (miss→hit, stampede, isolation)
 
 - **Status:** 🔴 Not Started
 - **Priority:** Medium
 - **Size:** S (30–90 min)
-- **Depends on:** `P16-2`
+- **Depends on:** `P19-2`
 
 ### Description
 
@@ -187,7 +187,7 @@ Add copy-pasteable **curl journeys** that let a reader reproduce the three headl
 ### Agent Execution Prompt
 
 > Role: Senior backend engineer / technical writer.
-> Context: Task P16-3 of `docs/DEVELOPMENT_PLAN.md` §Phase 16. The three journeys map to behaviors built in Phase 4 (read-through), Phase 10 (stampede), Phase 6 (namespace isolation). Routes and ports come from `docs/TECHNICAL_SPECIFICATION.md` §11 and the phase files; API runs on `:3001`.
+> Context: Task P19-3 of `docs/DEVELOPMENT_PLAN.md` §Phase 19. The three journeys map to behaviors built in Phase 4 (read-through), Phase 10 (stampede), Phase 6 (namespace isolation). Routes and ports come from `docs/TECHNICAL_SPECIFICATION.md` §11 and the phase files; API runs on `:3001`.
 > Objective: Write three reproducible curl journeys.
 > Steps:
 >
@@ -212,13 +212,13 @@ Add copy-pasteable **curl journeys** that let a reader reproduce the three headl
 4. ✅ Increment the **Progress** counter in the file header.
 5. ✅ Update the matching row in [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#progress-summary).
 6. ✅ Recompute "Overall progress" in `DEVELOPMENT_PLAN.md` (sum across all phases).
-7. ✅ Append `- P16-3 ✅ YYYY-MM-DD — <one-line summary>` to **Completion log**.
+7. ✅ Append `- P19-3 ✅ YYYY-MM-DD — <one-line summary>` to **Completion log**.
 
 ⚠️ Never mark done with failing verification.
 
 ---
 
-## P16-4 — Keep spec/dashboard/plan current; flip `OVERVIEW.md` to superseded
+## P19-4 — Keep spec/dashboard/plan current; flip `OVERVIEW.md` to superseded
 
 - **Status:** 🔴 Not Started
 - **Priority:** Medium
@@ -245,7 +245,7 @@ Reconcile the living docs with what was actually built across Phases 3–14, the
 ### Agent Execution Prompt
 
 > Role: Senior technical writer / engineer doing a documentation reconciliation pass.
-> Context: Task P16-4 of `docs/DEVELOPMENT_PLAN.md` §Phase 16. The spec (`TECHNICAL_SPECIFICATION.md`) is the source of truth; `DASHBOARD.md` is the dashboard spec; `DEVELOPMENT_PLAN.md` is the roadmap. `OVERVIEW.md` is the legacy doc that must now point at the spec. References: spec §7, §27, §28.
+> Context: Task P19-4 of `docs/DEVELOPMENT_PLAN.md` §Phase 19. The spec (`TECHNICAL_SPECIFICATION.md`) is the source of truth; `DASHBOARD.md` is the dashboard spec; `DEVELOPMENT_PLAN.md` is the roadmap. `OVERVIEW.md` is the legacy doc that must now point at the spec. References: spec §7, §27, §28.
 > Objective: Make the three living docs match what was built and retire `OVERVIEW.md`.
 > Steps:
 >
@@ -272,18 +272,18 @@ Reconcile the living docs with what was actually built across Phases 3–14, the
 4. ✅ Increment the **Progress** counter in the file header.
 5. ✅ Update the matching row in [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#progress-summary).
 6. ✅ Recompute "Overall progress" in `DEVELOPMENT_PLAN.md` (sum across all phases).
-7. ✅ Append `- P16-4 ✅ YYYY-MM-DD — <one-line summary>` to **Completion log**.
+7. ✅ Append `- P19-4 ✅ YYYY-MM-DD — <one-line summary>` to **Completion log**.
 
 ⚠️ Never mark done with failing verification.
 
 ---
 
-## P16-5 — Document the OPTIONAL `@bymax-one/nest-logger` events bridge (row #50)
+## P19-5 — Document the OPTIONAL `@bymax-one/nest-logger` events bridge (row #50)
 
 - **Status:** 🔴 Not Started
 - **Priority:** Low
 - **Size:** S (30–90 min)
-- **Depends on:** `P16-1`, `P16-2`
+- **Depends on:** `P19-1`, `P19-2`
 
 ### Description
 
@@ -295,7 +295,7 @@ Document the **optional** `@bymax-one/nest-logger` events bridge as the recommen
 - [ ] Shows the wiring shape (how `CacheEventsBridge` would delegate to `@bymax-one/nest-logger` instead of the default Nest `Logger`), framed as copy-paste-friendly for a real consumer.
 - [ ] Explicitly labels it **OPTIONAL** — the example runs without `@bymax-one/nest-logger`; this is the recommended upgrade for production.
 - [ ] Cross-references [§7 Feature Coverage Matrix](../TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix) **row #50** and links the sibling `nest-logger-example`.
-- [ ] Row #50 is accounted for by the export audit (P16-1) — demonstrated or ignored-with-reason; English-only.
+- [ ] Row #50 is accounted for by the export audit (P19-1) — demonstrated or ignored-with-reason; English-only.
 
 ### Files to create / modify
 
@@ -305,14 +305,14 @@ Document the **optional** `@bymax-one/nest-logger` events bridge as the recommen
 ### Agent Execution Prompt
 
 > Role: Senior NestJS engineer / technical writer.
-> Context: Task P16-5 of `docs/DEVELOPMENT_PLAN.md` §Phase 16. This demonstrates **matrix row #50** (the optional logger bridge) — see `docs/TECHNICAL_SPECIFICATION.md` §7. The example's `CacheEventsBridge` (Phase 3, `apps/api/src/cache/cache.events.ts`) routes `ICacheEvents.onEvent` to the Nest `Logger`; the **production pattern** routes it through `@bymax-one/nest-logger` instead. The sibling `nest-logger-example` is the reference for that library.
+> Context: Task P19-5 of `docs/DEVELOPMENT_PLAN.md` §Phase 19. This demonstrates **matrix row #50** (the optional logger bridge) — see `docs/TECHNICAL_SPECIFICATION.md` §7. The example's `CacheEventsBridge` (Phase 3, `apps/api/src/cache/cache.events.ts`) routes `ICacheEvents.onEvent` to the Nest `Logger`; the **production pattern** routes it through `@bymax-one/nest-logger` instead. The sibling `nest-logger-example` is the reference for that library.
 > Objective: Document the optional `@bymax-one/nest-logger` events bridge as the production logging pattern and ensure row #50 is covered by the audit.
 > Steps:
 >
 > 1. Add a section "Optional: structured logging via `@bymax-one/nest-logger`" to `README.md` (or `docs/logger-bridge.md` linked from the README). Explain that `@bymax-one/nest-cache` emits lifecycle/operational events via `ICacheEvents.onEvent`, and that in production you bridge those into structured logs.
 > 2. Show the wiring shape: how `CacheEventsBridge` would inject the logger from `@bymax-one/nest-logger` and forward each event (level mapped from event severity, with the event payload as structured fields). Keep it copy-paste-friendly and clearly mark it OPTIONAL — the example itself uses the plain Nest `Logger` so it has no hard dependency on the logger lib.
 > 3. Cross-reference matrix **row #50** in `docs/TECHNICAL_SPECIFICATION.md` §7 and link the sibling `nest-logger-example` repo for the full logger setup.
-> 4. Re-run `pnpm audit:exports` (P16-1). If row #50's library symbol is demonstrated by the doc/code, great; if it genuinely cannot be inlined in this example, add a single justified entry to `.audit-ignore.json` (reason: "documented as optional production pattern; see README logger-bridge section"). Run `pnpm format`.
+> 4. Re-run `pnpm audit:exports` (P19-1). If row #50's library symbol is demonstrated by the doc/code, great; if it genuinely cannot be inlined in this example, add a single justified entry to `.audit-ignore.json` (reason: "documented as optional production pattern; see README logger-bridge section"). Run `pnpm format`.
 >    Constraints:
 >
 > - Follow `docs/DEVELOPMENT_PLAN.md` §2 Global Conventions; English-only.
@@ -331,18 +331,18 @@ Document the **optional** `@bymax-one/nest-logger` events bridge as the recommen
 4. ✅ Increment the **Progress** counter in the file header.
 5. ✅ Update the matching row in [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#progress-summary).
 6. ✅ Recompute "Overall progress" in `DEVELOPMENT_PLAN.md` (sum across all phases).
-7. ✅ Append `- P16-5 ✅ YYYY-MM-DD — <one-line summary>` to **Completion log**.
+7. ✅ Append `- P19-5 ✅ YYYY-MM-DD — <one-line summary>` to **Completion log**.
 
 ⚠️ Never mark done with failing verification.
 
 ---
 
-## P16-6 — `CHANGELOG.md` `0.1.0` entry + design-system acceptance check
+## P19-6 — `CHANGELOG.md` `0.1.0` entry + design-system acceptance check
 
 - **Status:** 🔴 Not Started
 - **Priority:** Medium
 - **Size:** S (30–90 min)
-- **Depends on:** `P16-2`
+- **Depends on:** `P19-2`
 
 ### Description
 
@@ -363,7 +363,7 @@ Cut the first real `CHANGELOG.md` entry — promote `## [Unreleased]` to `## [0.
 ### Agent Execution Prompt
 
 > Role: Senior frontend engineer / release manager.
-> Context: Task P16-6 of `docs/DEVELOPMENT_PLAN.md` §Phase 16. The design-parity principle requires `apps/web` to reuse the shared Bymax design system **verbatim** — "drop a screenshot beside a sibling and the chrome is indistinguishable" (see `DASHBOARD.md` §19 + `design_system.html`). The `CHANGELOG.md` was seeded in P0-7 (Keep-a-Changelog, empty `## [Unreleased]`).
+> Context: Task P19-6 of `docs/DEVELOPMENT_PLAN.md` §Phase 19. The design-parity principle requires `apps/web` to reuse the shared Bymax design system **verbatim** — "drop a screenshot beside a sibling and the chrome is indistinguishable" (see `DASHBOARD.md` §19 + `design_system.html`). The `CHANGELOG.md` was seeded in P0-7 (Keep-a-Changelog, empty `## [Unreleased]`).
 > Objective: Write the `0.1.0` changelog entry and run the design-system acceptance check.
 > Steps:
 >
@@ -389,47 +389,47 @@ Cut the first real `CHANGELOG.md` entry — promote `## [Unreleased]` to `## [0.
 4. ✅ Increment the **Progress** counter in the file header.
 5. ✅ Update the matching row in [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#progress-summary).
 6. ✅ Recompute "Overall progress" in `DEVELOPMENT_PLAN.md` (sum across all phases).
-7. ✅ Append `- P16-6 ✅ YYYY-MM-DD — <one-line summary>` to **Completion log**.
+7. ✅ Append `- P19-6 ✅ YYYY-MM-DD — <one-line summary>` to **Completion log**.
 
 ⚠️ Never mark done with failing verification.
 
 ---
 
-## P16-7 — Final audit verification (`audit:exports` exit 0, matrix all ✅)
+## P19-7 — Final audit verification (`audit:exports` exit 0, matrix all ✅)
 
 - **Status:** 🔴 Not Started
 - **Priority:** High
 - **Size:** S (30–90 min)
-- **Depends on:** `P16-1`, `P16-2`, `P16-3`, `P16-4`, `P16-5`, `P16-6`
+- **Depends on:** `P19-1`, `P19-2`, `P19-3`, `P19-4`, `P19-5`, `P19-6`
 
 ### Description
 
-Phase 16 "Definition of done" gate per `DEVELOPMENT_PLAN.md`: prove the docs+audit deliverables are complete and self-consistent. `pnpm audit:exports` must exit 0 — **every** library export is demonstrated in `apps/` or ignored-with-reason — the README's links all resolve, and the spec's [§7 Feature Coverage Matrix](../TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix) is fully ✅ (all 50 rows). This closes the phase and, with it, the whole project's coverage contract (Appendix B).
+Phase 19 "Definition of done" gate per `DEVELOPMENT_PLAN.md`: prove the docs+audit deliverables are complete and self-consistent. `pnpm audit:exports` must exit 0 — **every** library export is demonstrated in `apps/` or ignored-with-reason — the README's links all resolve, and the spec's [§7 Feature Coverage Matrix](../TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix) is fully ✅ (all 50 rows). This closes the phase and, with it, the whole project's coverage contract (Appendix B).
 
 ### Acceptance Criteria
 
 - [ ] `pnpm audit:exports` exits 0 — every export of `@bymax-one/nest-cache` (`.` + `./shared`) is demonstrated in `apps/` or listed in `.audit-ignore.json` with a reason.
 - [ ] Every internal link in `README.md` resolves (docs links + section anchors + the matrix link).
-- [ ] The spec's [§7 Feature Coverage Matrix](../TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix) is fully ✅ — all **50** rows demonstrated (including row #50, the logger bridge, from P16-5).
+- [ ] The spec's [§7 Feature Coverage Matrix](../TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix) is fully ✅ — all **50** rows demonstrated (including row #50, the logger bridge, from P19-5).
 - [ ] `pnpm lint`, `pnpm typecheck`, `pnpm format:check` all exit 0 across the touched docs/scripts.
-- [ ] The `export-usage-check` CI job (P16-1) is green.
+- [ ] The `export-usage-check` CI job (P19-1) is green.
 
 ### Files to create / modify
 
-- _(none — verification only; fix the relevant P16-x deliverable if a check fails)_
+- _(none — verification only; fix the relevant P19-x deliverable if a check fails)_
 
 ### Agent Execution Prompt
 
 > Role: Senior engineer running the phase's final acceptance gate.
-> Context: Task P16-7 of `docs/DEVELOPMENT_PLAN.md` §Phase 16. DoD: `pnpm audit:exports` exits 0, the README renders with working links, and the §7 coverage matrix is fully ✅. The audit is the contract that every one of the 50 Feature-Coverage-Matrix rows (Appendix B) is demonstrated. References: spec §7, §27, §28.
-> Objective: Verify all Phase 16 deliverables and close the phase (and the project's coverage contract).
+> Context: Task P19-7 of `docs/DEVELOPMENT_PLAN.md` §Phase 19. DoD: `pnpm audit:exports` exits 0, the README renders with working links, and the §7 coverage matrix is fully ✅. The audit is the contract that every one of the 50 Feature-Coverage-Matrix rows (Appendix B) is demonstrated. References: spec §7, §27, §28.
+> Objective: Verify all Phase 19 deliverables and close the phase (and the project's coverage contract).
 > Steps:
 >
-> 1. Run `pnpm audit:exports` (P16-1). It MUST exit 0 — every export demonstrated or ignored-with-reason. If it reports an undocumented export, that is a real gap: either demonstrate the symbol in `apps/` or add a justified `.audit-ignore.json` entry, then re-run. Do NOT lower the bar.
+> 1. Run `pnpm audit:exports` (P19-1). It MUST exit 0 — every export demonstrated or ignored-with-reason. If it reports an undocumented export, that is a real gap: either demonstrate the symbol in `apps/` or add a justified `.audit-ignore.json` entry, then re-run. Do NOT lower the bar.
 > 2. Verify the README: confirm every relative link target exists and every in-page anchor resolves; confirm the badges render (black `000000` flat-square) and the matrix-summary link points at `docs/TECHNICAL_SPECIFICATION.md` §7.
-> 3. Open the spec's [§7 Feature Coverage Matrix](TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix) and confirm **all 50 rows** are marked ✅ — including row #50 (logger bridge, P16-5). If any row is not ✅, trace it to its owning phase and resolve before closing.
+> 3. Open the spec's [§7 Feature Coverage Matrix](TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix) and confirm **all 50 rows** are marked ✅ — including row #50 (logger bridge, P19-5). If any row is not ✅, trace it to its owning phase and resolve before closing.
 > 4. Run `pnpm lint && pnpm typecheck && pnpm format:check` — all must exit 0. Confirm the `export-usage-check` CI job passes (re-run if needed).
-> 5. If any check fails, fix it in the corresponding P16-x deliverable (do NOT patch around it here), then return.
+> 5. If any check fails, fix it in the corresponding P19-x deliverable (do NOT patch around it here), then return.
 >    Constraints:
 >
 > - Follow `docs/DEVELOPMENT_PLAN.md` §2 Global Conventions; English-only.
@@ -449,9 +449,9 @@ Phase 16 "Definition of done" gate per `DEVELOPMENT_PLAN.md`: prove the docs+aud
 4. ✅ Increment the **Progress** counter in the file header.
 5. ✅ Update the matching row in [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#progress-summary).
 6. ✅ Recompute "Overall progress" in `DEVELOPMENT_PLAN.md` (sum across all phases).
-7. ✅ Append `- P16-7 ✅ YYYY-MM-DD — <one-line summary>` to **Completion log**.
+7. ✅ Append `- P19-7 ✅ YYYY-MM-DD — <one-line summary>` to **Completion log**.
 
-When this task is 🟢, Phase 16 is 7/7 — switch the Phase 16 row in `DEVELOPMENT_PLAN.md` Progress Summary to 🟢 Done. With P16-7 green, the whole project's [§7 Feature Coverage Matrix](../TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix) should be fully ✅ (every export demonstrated or ignored-with-reason — the Appendix B contract is satisfied).
+When this task is 🟢, Phase 19 is 7/7 — switch the Phase 19 row in `DEVELOPMENT_PLAN.md` Progress Summary to 🟢 Done. With P19-7 green, the whole project's [§7 Feature Coverage Matrix](../TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix) should be fully ✅ (every export demonstrated or ignored-with-reason — the Appendix B contract is satisfied).
 
 ⚠️ Never mark done with failing verification.
 

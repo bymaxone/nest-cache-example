@@ -121,8 +121,11 @@ cache-admin UI; reviewers auditing the library's API; and AI agents executing th
 - **NG2 — No authentication.** Out of scope — that is `@bymax-one/nest-auth`'s job. The dashboard is
   open on localhost.
 - **NG3 — No database / ORM.** Origin data is in-memory.
-- **NG4 — Not a 100%-coverage/mutation-gated repo.** Those gates belong to the **library**. The
-  example ships a focused E2E smoke suite (§22), not a coverage wall.
+- **NG4 — _(superseded)_ Not a 100%-coverage/mutation-gated repo.** Revised by decision (see
+  `DEVELOPMENT_PLAN.md` Appendix C): because this is the reference implementation other projects
+  copy and the library is not yet published, the repo now adopts the full library-grade bar —
+  100% unit coverage (Phase 16), E2E of every flow (Phase 17), and Stryker mutation (Phase 18),
+  with the Phase 15 smoke suite as the fast integration tier on top.
 - **NG5 — Not a Redis tutorial.** It assumes Redis basics; it teaches the **library's** abstractions
   over Redis.
 
