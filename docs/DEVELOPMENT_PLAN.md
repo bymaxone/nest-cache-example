@@ -33,7 +33,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 >
 > **All 17 phase files are scaffolded** under [`docs/tasks/`](tasks/) — the per-phase totals below are firm.
 >
-> **Overall progress: 77 / 107 tasks done (72%)**
+> **Overall progress: 85 / 107 tasks done (79%)**
 
 | #   | Phase                                     | Tasks file                            | Size | Done / Total | %    | Status |
 | --- | ----------------------------------------- | ------------------------------------- | ---- | ------------ | ---- | ------ |
@@ -50,7 +50,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 | 10  | Lua Scripts & Cache Stampede              | `phase-10-lua-stampede.md`            | M    | 5 / 5        | 100% | 🟢     |
 | 11  | Connection Topologies & Error Surface     | `phase-11-topologies-errors.md`       | M    | 6 / 6        | 100% | 🟢     |
 | 12  | `apps/web` Skeleton + Design System       | `phase-12-web-skeleton-design.md`     | L    | 7 / 7        | 100% | 🟢     |
-| 13  | Dashboard — Observe pages                 | `phase-13-dashboard-observe.md`       | L    | 0 / 8        | 0%   | 🔴     |
+| 13  | Dashboard — Observe pages                 | `phase-13-dashboard-observe.md`       | L    | 8 / 8        | 100% | 🟢     |
 | 14  | Dashboard — Real-time & Labs pages        | `phase-14-dashboard-realtime-labs.md` | L    | 0 / 9        | 0%   | 🔴     |
 | 15  | Testing — E2E smoke + Web smoke           | `phase-15-testing.md`                 | M    | 0 / 6        | 0%   | 🔴     |
 | 16  | Docs, README & Export Audit               | `phase-16-docs-readme-audit.md`       | M    | 0 / 7        | 0%   | 🔴     |

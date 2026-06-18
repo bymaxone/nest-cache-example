@@ -2,7 +2,7 @@
 
 > **Source:** [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#phase-13--dashboard-observe-pages) §Phase 13
 > **Total tasks:** 8
-> **Progress:** 🔴 0 / 8 done (0%)
+> **Progress:** 🟢 8 / 8 done (100%)
 >
 > **Status legend:** 🔴 Not Started · 🟡 In Progress · 🔵 In Review · 🟢 Done · ⚪ Blocked
 
@@ -10,20 +10,20 @@
 
 | ID    | Task                                                                 | Status | Priority | Size | Depends on        |
 | ----- | -------------------------------------------------------------------- | ------ | -------- | ---- | ----------------- |
-| P13-1 | `components/charts/` — Recharts panel set (8 components)             | 🔴     | High     | L    | Phase 5, Phase 12 |
-| P13-2 | `app/page.tsx` — Overview (golden signals + breakdowns)              | 🔴     | High     | L    | P13-1, P13-7      |
-| P13-3 | `app/explorer/page.tsx` — filter rail + strategy toggle + `KeyTable` | 🔴     | High     | L    | P13-7             |
-| P13-4 | `KeyDetailDrawer` — Value/Raw/TTL/Metadata + actions + flush         | 🔴     | High     | M    | P13-3             |
-| P13-5 | `app/playground/page.tsx` — one card per data structure              | 🔴     | Medium   | M    | P13-7             |
-| P13-6 | `app/tenants/page.tsx` — `TenantSplit` + isolation-proof flow        | 🔴     | Medium   | M    | P13-3, P13-7      |
-| P13-7 | TanStack Query hooks — `useKeys` / `useMetrics` / `useInfo`          | 🔴     | High     | M    | Phase 5, Phase 12 |
-| P13-8 | Phase verification (golden signals · scan · op-appears · isolation)  | 🔴     | Medium   | S    | P13-1..P13-7      |
+| P13-1 | `components/charts/` — Recharts panel set (8 components)             | 🟢     | High     | L    | Phase 5, Phase 12 |
+| P13-2 | `app/page.tsx` — Overview (golden signals + breakdowns)              | 🟢     | High     | L    | P13-1, P13-7      |
+| P13-3 | `app/explorer/page.tsx` — filter rail + strategy toggle + `KeyTable` | 🟢     | High     | L    | P13-7             |
+| P13-4 | `KeyDetailDrawer` — Value/Raw/TTL/Metadata + actions + flush         | 🟢     | High     | M    | P13-3             |
+| P13-5 | `app/playground/page.tsx` — one card per data structure              | 🟢     | Medium   | M    | P13-7             |
+| P13-6 | `app/tenants/page.tsx` — `TenantSplit` + isolation-proof flow        | 🟢     | Medium   | M    | P13-3, P13-7      |
+| P13-7 | TanStack Query hooks — `useKeys` / `useMetrics` / `useInfo`          | 🟢     | High     | M    | Phase 5, Phase 12 |
+| P13-8 | Phase verification (golden signals · scan · op-appears · isolation)  | 🟢     | Medium   | S    | P13-1..P13-7      |
 
 ---
 
 ## P13-1 — `components/charts/` — Recharts panel set (8 components)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** L (half-day+)
 - **Depends on:** `Phase 5`, `Phase 12`
@@ -34,16 +34,16 @@ Build the reusable chart layer the Observe pages compose: `MetricTile`, `HitRate
 
 ### Acceptance Criteria
 
-- [ ] `components/charts/MetricTile.tsx` — stat + sparkline + Δ vs previous equal window; accessible status is **color + icon + text** (never color alone).
-- [ ] `components/charts/HitRateGauge.tsx` — gauge with the exact % beside it; green > 90%, amber 50–90%, red < 50% (DASHBOARD §2 principle 3).
-- [ ] `components/charts/HitMissArea.tsx` — stacked hit/miss **area**, **brushable** (drag sets the global time range via `nuqs`); the signature panel.
-- [ ] `components/charts/OpsStream.tsx` — streaming ops/sec area split by command (GET/SET/DEL) with a **pause** control (no unstoppable motion — a11y).
-- [ ] `components/charts/LatencyLines.tsx` — p50/p95/p99 **lines**, **µs precision**, never rounded to "0ms" (DASHBOARD §2 principle 4).
-- [ ] `components/charts/TypeDonut.tsx` — keys-by-type donut (string/hash/set), **click-to-filter** into the Explorer.
-- [ ] `components/charts/MemoryByPrefix.tsx` — horizontal bar of `MEMORY USAGE` sampled per prefix, click-to-filter.
-- [ ] `components/charts/ExpiryAnalysis.tsx` — % keys with vs without TTL (stacked bar / donut).
-- [ ] Loading state is a **skeleton**, not a spinner (DASHBOARD §2 principle 8); empty state is **action-oriented** (DASHBOARD §2 principle 9).
-- [ ] All chart data comes through `lib/api-client.ts` typed responses; no component fetches raw keys; each chart ships a screen-reader summary / data-table fallback.
+- [x] `components/charts/MetricTile.tsx` — stat + sparkline + Δ vs previous equal window; accessible status is **color + icon + text** (never color alone).
+- [x] `components/charts/HitRateGauge.tsx` — gauge with the exact % beside it; green > 90%, amber 50–90%, red < 50% (DASHBOARD §2 principle 3).
+- [x] `components/charts/HitMissArea.tsx` — stacked hit/miss **area**, **brushable** (drag sets the global time range via `nuqs`); the signature panel.
+- [x] `components/charts/OpsStream.tsx` — streaming ops/sec area split by command (GET/SET/DEL) with a **pause** control (no unstoppable motion — a11y).
+- [x] `components/charts/LatencyLines.tsx` — p50/p95/p99 **lines**, **µs precision**, never rounded to "0ms" (DASHBOARD §2 principle 4).
+- [x] `components/charts/TypeDonut.tsx` — keys-by-type donut (string/hash/set), **click-to-filter** into the Explorer.
+- [x] `components/charts/MemoryByPrefix.tsx` — horizontal bar of `MEMORY USAGE` sampled per prefix, click-to-filter.
+- [x] `components/charts/ExpiryAnalysis.tsx` — % keys with vs without TTL (stacked bar / donut).
+- [x] Loading state is a **skeleton**, not a spinner (DASHBOARD §2 principle 8); empty state is **action-oriented** (DASHBOARD §2 principle 9).
+- [x] All chart data comes through `lib/api-client.ts` typed responses; no component fetches raw keys; each chart ships a screen-reader summary / data-table fallback.
 
 ### Files to create / modify
 
@@ -95,7 +95,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P13-2 — `app/page.tsx` — Overview (golden signals + breakdowns)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** L (half-day+)
 - **Depends on:** `P13-1`, `P13-7`
@@ -106,13 +106,13 @@ The landing page (`/`): a strict top-left-first, general→specific layout of th
 
 ### Acceptance Criteria
 
-- [ ] `app/page.tsx` renders the **health strip**: six golden-signal tiles — hit-rate **gauge**, throughput (ops/sec), latency **p95**, memory **bullet/gauge** (`used_memory` vs `maxmemory`), keys-in-namespace (+Δ), expired/evicted — each with a sparkline.
-- [ ] **Hit / miss over time** stacked area is present, **brushable**, and writes the time range to the URL (`nuqs`).
-- [ ] **Throughput & latency row**: `OpsStream` (with pause) left, `LatencyLines` (p50/p95/p99, µs precision) right.
-- [ ] **Keyspace breakdown**: `TypeDonut`, `MemoryByPrefix`, `ExpiryAnalysis`, and a top-prefixes bar — each **click-to-filter** into `/explorer`.
-- [ ] **Connection & pipeline health** band: status (color + icon + text), mode, uptime, connected clients, fragmentation ratio, `evicted_keys`, `expired_keys` — sourced from `/admin/info`.
-- [ ] A `🎓` scoped-demo callout explains the two metric sources (app per-prefix counters + Redis `INFO`) per DASHBOARD §5 / §17.3.
-- [ ] Page uses skeletons (not spinners) while loading and the `max-w-7xl` chart-heavy width from the design system shell.
+- [x] `app/page.tsx` renders the **health strip**: six golden-signal tiles — hit-rate **gauge**, throughput (ops/sec), latency **p95**, memory **bullet/gauge** (`used_memory` vs `maxmemory`), keys-in-namespace (+Δ), expired/evicted — each with a sparkline.
+- [x] **Hit / miss over time** stacked area is present, **brushable**, and writes the time range to the URL (`nuqs`).
+- [x] **Throughput & latency row**: `OpsStream` (with pause) left, `LatencyLines` (p50/p95/p99, µs precision) right.
+- [x] **Keyspace breakdown**: `TypeDonut`, `MemoryByPrefix`, `ExpiryAnalysis`, and a top-prefixes bar — each **click-to-filter** into `/explorer`.
+- [x] **Connection & pipeline health** band: status (color + icon + text), mode, uptime, connected clients, fragmentation ratio, `evicted_keys`, `expired_keys` — sourced from `/admin/info`.
+- [x] A `🎓` scoped-demo callout explains the two metric sources (app per-prefix counters + Redis `INFO`) per DASHBOARD §5 / §17.3.
+- [x] Page uses skeletons (not spinners) while loading and the `max-w-7xl` chart-heavy width from the design system shell.
 
 ### Files to create / modify
 
@@ -161,7 +161,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P13-3 — `app/explorer/page.tsx` — filter rail + strategy toggle + `KeyTable`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** L (half-day+)
 - **Depends on:** `P13-7`
@@ -172,14 +172,14 @@ The daily-driver Key Explorer (`/explorer`) — a namespace key browser modeled 
 
 ### Acceptance Criteria
 
-- [ ] `app/explorer/page.tsx` with a filter rail: `prefix`, `type` (string/hash/set), `ttl` (has-TTL / no-TTL) facets; the active tenant scopes the default prefix to `tenant:{id}:*`.
-- [ ] **Scan/keys toggle** defaults to `scan` (cursor-based, non-blocking, infinite-scroll); selecting `keys` shows a persistent **⚠ O(N) blocks-the-server, dev-only** badge.
-- [ ] The resolved match pattern from `KeyBuilder` (e.g. `cache-example:product:*`) is displayed.
-- [ ] `components/explorer/KeyTable.tsx` — **virtualized** (TanStack Table + Virtual) with columns `key` / `type` / `ttl` (draining ring + label) / `size`; newest-first; cursor-paged via the `useKeys` infinite query.
-- [ ] The **TTL ring** is a **custom SVG** radial component (shared with TTL Live's `TtlRing` shape), not a chart library widget.
-- [ ] All filters + strategy + tenant are persisted in the URL via `nuqs`; the view is a copy-paste deep-link.
-- [ ] Cluster mode disables both strategies with an `UNSUPPORTED_IN_CLUSTER` callout; loading shows skeleton rows; empty state is action-oriented ("No keys in this namespace yet — seed one from the Playground →").
-- [ ] `size` column fetches `MEMORY USAGE` **lazily / on demand**, not for every row up front.
+- [x] `app/explorer/page.tsx` with a filter rail: `prefix`, `type` (string/hash/set), `ttl` (has-TTL / no-TTL) facets; the active tenant scopes the default prefix to `tenant:{id}:*`.
+- [x] **Scan/keys toggle** defaults to `scan` (cursor-based, non-blocking, infinite-scroll); selecting `keys` shows a persistent **⚠ O(N) blocks-the-server, dev-only** badge.
+- [x] The resolved match pattern from `KeyBuilder` (e.g. `cache-example:product:*`) is displayed.
+- [x] `components/explorer/KeyTable.tsx` — **virtualized** (TanStack Table + Virtual) with columns `key` / `type` / `ttl` (draining ring + label) / `size`; newest-first; cursor-paged via the `useKeys` infinite query.
+- [x] The **TTL ring** is a **custom SVG** radial component (shared with TTL Live's `TtlRing` shape), not a chart library widget.
+- [x] All filters + strategy + tenant are persisted in the URL via `nuqs`; the view is a copy-paste deep-link.
+- [x] Cluster mode disables both strategies with an `UNSUPPORTED_IN_CLUSTER` callout; loading shows skeleton rows; empty state is action-oriented ("No keys in this namespace yet — seed one from the Playground →").
+- [x] `size` column fetches `MEMORY USAGE` **lazily / on demand**, not for every row up front.
 
 ### Files to create / modify
 
@@ -230,7 +230,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P13-4 — `KeyDetailDrawer` — Value/Raw/TTL/Metadata + actions + flush
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (half-day)
 - **Depends on:** `P13-3`
@@ -241,14 +241,14 @@ The Explorer's value inspector — a drawer that opens on row click with four ta
 
 ### Acceptance Criteria
 
-- [ ] `components/explorer/KeyDetailDrawer.tsx` opens on row click with four tabs: **Value**, **Raw**, **TTL**, **Metadata**.
-- [ ] **Value** tab renders the deserialized value (chosen by type: `get` / `hgetall` / `smembers`) in a collapsible **`@uiw/react-json-view`** tree.
-- [ ] **Raw** tab shows the raw stored string (`getRaw`) — the bytes Redis holds.
-- [ ] **TTL** tab shows a live countdown ring + **[Extend +60s]** (`POST …/expire`) and **[Persist ∞]** (`POST …/persist`).
-- [ ] **Metadata** tab shows type, encoding, byte size (`MEMORY USAGE`), and the key's composed segments.
-- [ ] Actions present: copy key, copy value, refresh, **delete** (`DELETE /admin/keys/:key`), persist — each mutation **invalidates** the keys/detail queries on success and toasts via `sonner`.
-- [ ] A guarded **[Flush namespace]** button in the **page header** calls `DELETE /admin/namespace`; when the API is in production it renders the `403 cache.flush_disabled_in_production` structured error (color + icon + text by severity).
-- [ ] Drawer actions show a spinner only for the short blocking submit; lists re-render from invalidation, not optimistic guesswork on TTL expiry.
+- [x] `components/explorer/KeyDetailDrawer.tsx` opens on row click with four tabs: **Value**, **Raw**, **TTL**, **Metadata**.
+- [x] **Value** tab renders the deserialized value (chosen by type: `get` / `hgetall` / `smembers`) in a collapsible **`@uiw/react-json-view`** tree.
+- [x] **Raw** tab shows the raw stored string (`getRaw`) — the bytes Redis holds.
+- [x] **TTL** tab shows a live countdown ring + **[Extend +60s]** (`POST …/expire`) and **[Persist ∞]** (`POST …/persist`).
+- [x] **Metadata** tab shows type, encoding, byte size (`MEMORY USAGE`), and the key's composed segments.
+- [x] Actions present: copy key, copy value, refresh, **delete** (`DELETE /admin/keys/:key`), persist — each mutation **invalidates** the keys/detail queries on success and toasts via `sonner`.
+- [x] A guarded **[Flush namespace]** button in the **page header** calls `DELETE /admin/namespace`; when the API is in production it renders the `403 cache.flush_disabled_in_production` structured error (color + icon + text by severity).
+- [x] Drawer actions show a spinner only for the short blocking submit; lists re-render from invalidation, not optimistic guesswork on TTL expiry.
 
 ### Files to create / modify
 
@@ -298,7 +298,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P13-5 — `app/playground/page.tsx` — one card per data structure
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** M (half-day)
 - **Depends on:** `P13-7`, `Phase 4`
@@ -309,12 +309,12 @@ The "fire every cache operation by hand" page (`/playground`, DASHBOARD §7) —
 
 ### Acceptance Criteria
 
-- [ ] `app/playground/page.tsx` with five cards: **Strings** (`get`/`set`/`setNx`/`getRaw`/`exists`), **Numerics** (`incr`/`incr +N`/`decr`), **Hashes** (`hset`/`hget`/`hgetall`/`hdel`), **Sets** (`sadd`/`srem`/`sismember`/`smembers`/`scard`), **Batch** (`mget`/`mset`).
-- [ ] Each card hits the relevant endpoint group (`/catalog/*`, `/counters/*`, `/collections/*`) via typed `lib/api-client.ts` calls.
-- [ ] Results render as a `@uiw/react-json-view` tree or a scalar badge; every op toasts via `sonner` with a **"View in Explorer →"** action linking to `/explorer` pre-filtered to the resulting key (URL params via `nuqs`).
-- [ ] A **"resulting key"** line shows the `KeyBuilder` output for each op (e.g. `cache-example:product:99`).
-- [ ] Honest labels present: Sets card — "raw string members; serializer intentionally not applied"; Strings card shows `getRaw` (serialized) beside `get` (decoded).
-- [ ] Loading uses skeletons; the short op submit may show a spinner; empty/initial state is action-oriented.
+- [x] `app/playground/page.tsx` with five cards: **Strings** (`get`/`set`/`setNx`/`getRaw`/`exists`), **Numerics** (`incr`/`incr +N`/`decr`), **Hashes** (`hset`/`hget`/`hgetall`/`hdel`), **Sets** (`sadd`/`srem`/`sismember`/`smembers`/`scard`), **Batch** (`mget`/`mset`).
+- [x] Each card hits the relevant endpoint group (`/catalog/*`, `/counters/*`, `/collections/*`) via typed `lib/api-client.ts` calls.
+- [x] Results render as a `@uiw/react-json-view` tree or a scalar badge; every op toasts via `sonner` with a **"View in Explorer →"** action linking to `/explorer` pre-filtered to the resulting key (URL params via `nuqs`).
+- [x] A **"resulting key"** line shows the `KeyBuilder` output for each op (e.g. `cache-example:product:99`).
+- [x] Honest labels present: Sets card — "raw string members; serializer intentionally not applied"; Strings card shows `getRaw` (serialized) beside `get` (decoded).
+- [x] Loading uses skeletons; the short op submit may show a spinner; empty/initial state is action-oriented.
 
 ### Files to create / modify
 
@@ -363,7 +363,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P13-6 — `app/tenants/page.tsx` — `TenantSplit` + isolation-proof flow
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** M (half-day)
 - **Depends on:** `P13-3`, `P13-7`
@@ -374,12 +374,12 @@ Proves the two isolation stories honestly (DASHBOARD §8, spec §12.3–§12.4):
 
 ### Acceptance Criteria
 
-- [ ] `app/tenants/page.tsx` renders a **`TenantSplit`** of two panels; each shows prefix (`tenant:{id}:product`), key count, hit %, **[Seed 10]**, a key list, and **[Clear this tenant]**.
-- [ ] "Clear this tenant" calls the tenants endpoint (`scan` + `delMany` server-side) and visibly leaves the **other** tenant's keys intact on screen.
-- [ ] **Isolation proof** band: **[Seed FOREIGN namespace]** (writes `other-app:*` via raw `getClient()`, labelled the documented anti-pattern) and **[Flush namespace]** (`flushNamespace()`, guarded).
-- [ ] The result line shows the `cache-example:*` keys cleared **and** the `other-app:*` key SURVIVED (color + icon + text).
-- [ ] A callout restates the honesty: namespace is fixed per instance; tenants are prefixes; production "namespace per tenant" = one instance per tenant with `namespace` from env (spec §12.4).
-- [ ] Mutations invalidate the per-tenant key queries; loading uses skeletons; empty panels are action-oriented.
+- [x] `app/tenants/page.tsx` renders a **`TenantSplit`** of two panels; each shows prefix (`tenant:{id}:product`), key count, hit %, **[Seed 10]**, a key list, and **[Clear this tenant]**.
+- [x] "Clear this tenant" calls the tenants endpoint (`scan` + `delMany` server-side) and visibly leaves the **other** tenant's keys intact on screen.
+- [x] **Isolation proof** band: **[Seed FOREIGN namespace]** (writes `other-app:*` via raw `getClient()`, labelled the documented anti-pattern) and **[Flush namespace]** (`flushNamespace()`, guarded).
+- [x] The result line shows the `cache-example:*` keys cleared **and** the `other-app:*` key SURVIVED (color + icon + text).
+- [x] A callout restates the honesty: namespace is fixed per instance; tenants are prefixes; production "namespace per tenant" = one instance per tenant with `namespace` from env (spec §12.4).
+- [x] Mutations invalidate the per-tenant key queries; loading uses skeletons; empty panels are action-oriented.
 
 ### Files to create / modify
 
@@ -428,7 +428,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P13-7 — TanStack Query hooks — `useKeys` / `useMetrics` / `useInfo`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (half-day)
 - **Depends on:** `Phase 5`, `Phase 12`
@@ -439,12 +439,12 @@ The server-state layer the Observe pages share (spec §13.1): TanStack Query v5 
 
 ### Acceptance Criteria
 
-- [ ] `hooks/use-keys.ts` — `useKeys(query)` is a **`useInfiniteQuery`** whose `getNextPageParam` reads the opaque SCAN `cursor` from `GET /admin/keys`; stops when the cursor is exhausted.
-- [ ] `hooks/use-metrics.ts` — `useMetrics(range)` reads `GET /metrics` (hit/miss + ops series), keyed by the URL time range; suitable polling/`refetchInterval` for the streaming panels.
-- [ ] `hooks/use-info.ts` — `useInfo(section?)` reads `GET /admin/info` (parsed `INFO` key/value record).
-- [ ] Write hooks (`useSeed`, `useDeleteKey`, `usePersistKey`, `useExpireKey`, `useFlushNamespace`, `useClearTenant`) are `useMutation`s that **invalidate** the relevant query keys on success.
-- [ ] All hooks call `lib/api-client.ts`; the error type is the discriminated union keyed by `CacheErrorCode` (from `./shared`). No component uses `useEffect`+`fetch`; no `axios`.
-- [ ] Query keys are stable + namespaced (e.g. `['keys', query]`, `['metrics', range]`, `['info', section]`) so invalidation is precise.
+- [x] `hooks/use-keys.ts` — `useKeys(query)` is a **`useInfiniteQuery`** whose `getNextPageParam` reads the opaque SCAN `cursor` from `GET /admin/keys`; stops when the cursor is exhausted.
+- [x] `hooks/use-metrics.ts` — `useMetrics(range)` reads `GET /metrics` (hit/miss + ops series), keyed by the URL time range; suitable polling/`refetchInterval` for the streaming panels.
+- [x] `hooks/use-info.ts` — `useInfo(section?)` reads `GET /admin/info` (parsed `INFO` key/value record).
+- [x] Write hooks (`useSeed`, `useDeleteKey`, `usePersistKey`, `useExpireKey`, `useFlushNamespace`, `useClearTenant`) are `useMutation`s that **invalidate** the relevant query keys on success.
+- [x] All hooks call `lib/api-client.ts`; the error type is the discriminated union keyed by `CacheErrorCode` (from `./shared`). No component uses `useEffect`+`fetch`; no `axios`.
+- [x] Query keys are stable + namespaced (e.g. `['keys', query]`, `['metrics', range]`, `['info', section]`) so invalidation is precise.
 
 ### Files to create / modify
 
@@ -493,7 +493,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P13-8 — Phase verification (golden signals · scan · op-appears · isolation)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P13-1`, `P13-2`, `P13-3`, `P13-4`, `P13-5`, `P13-6`, `P13-7`
@@ -504,12 +504,12 @@ Phase 13 "Definition of done" gate per `DEVELOPMENT_PLAN.md`: with `apps/api` + 
 
 ### Acceptance Criteria
 
-- [ ] `pnpm --filter web typecheck` / `lint` / `build` all exit 0.
-- [ ] **Overview** (`/`) renders the golden-signal strip with live values (hit-rate gauge, ops/sec, p95 latency in µs precision, memory bullet, keys, expired) plus the hit/miss area and the keyspace breakdown.
-- [ ] **Explorer** (`/explorer?strategy=scan`) lists fully-namespaced keys (`cache-example:…`) with draining custom-SVG TTL rings; infinite-scroll pages the SCAN cursor; selecting `keys` shows the O(N) warning.
-- [ ] A **Playground** op (e.g. `set product:99`) then "View in Explorer →" shows the new key in the Explorer.
-- [ ] On **Tenants**, seeding both tenants then **Clear tenant A** visibly leaves tenant B's keys; the isolation-proof flush shows the foreign `other-app:*` key surviving.
-- [ ] Charts are confirmed fed by `/metrics` + `/admin/info` + `/admin/keyspace` (no browser SCAN for any chart); filters/time-range are deep-linkable via the URL.
+- [x] `pnpm --filter web typecheck` / `lint` / `build` all exit 0.
+- [x] **Overview** (`/`) renders the golden-signal strip with live values (hit-rate gauge, ops/sec, p95 latency in µs precision, memory bullet, keys, expired) plus the hit/miss area and the keyspace breakdown.
+- [x] **Explorer** (`/explorer?strategy=scan`) lists fully-namespaced keys (`cache-example:…`) with draining custom-SVG TTL rings; infinite-scroll pages the SCAN cursor; selecting `keys` shows the O(N) warning.
+- [x] A **Playground** op (e.g. `set product:99`) then "View in Explorer →" shows the new key in the Explorer.
+- [x] On **Tenants**, seeding both tenants then **Clear tenant A** visibly leaves tenant B's keys; the isolation-proof flush shows the foreign `other-app:*` key surviving.
+- [x] Charts are confirmed fed by `/metrics` + `/admin/info` + `/admin/keyspace` (no browser SCAN for any chart); filters/time-range are deep-linkable via the URL.
 
 ### Files to create / modify
 
@@ -557,3 +557,12 @@ When this task is 🟢, Phase 13 is 8/8 — switch the Phase 13 row in `DEVELOPM
 ## Completion log
 
 _(Agents append one line per finished task, newest at the bottom.)_
+
+- P13-7 ✅ 2026-06-18 — TanStack Query hooks (`useKeys` infinite SCAN, `useMetrics`, `useInfo`, `useKeyspace`, `useKeyInspect`) + write mutations with precise invalidation, over a typed `lib/cache-api.ts` endpoint layer.
+- P13-1 ✅ 2026-06-18 — Eight reusable Recharts panels (MetricTile, HitRateGauge, brushable HitMissArea, pausable OpsStream, µs-precision LatencyLines, TypeDonut, MemoryByPrefix, ExpiryAnalysis) + shadcn `chart.tsx`; server-endpoint-fed, bounded dimensions, skeleton/empty/sr-summary states.
+- P13-3 ✅ 2026-06-18 — Explorer page: URL-bound filter rail, scan/keys teaching toggle (O(N) + cluster guards), virtualized `KeyTable` (TanStack Table + Virtual) with lazy per-row inspect + custom-SVG `TtlRing`, resolved KeyBuilder pattern.
+- P13-4 ✅ 2026-06-18 — `KeyDetailDrawer` (Value/Raw/TTL/Metadata tabs via `@uiw/react-json-view`) with copy/refresh/delete/persist/extend actions + guarded `FlushNamespaceButton` rendering the 403 structured error.
+- P13-2 ✅ 2026-06-18 — Overview page: golden-signal health strip, brushable hit/miss area, throughput+latency row, click-to-filter keyspace breakdown, INFO connection band, and the two-metric-sources callout; series accumulated client-side from polled snapshots.
+- P13-5 ✅ 2026-06-18 — Playground: five data-structure cards (strings/numerics/hashes/sets/batch) firing catalog/counters/collections ops with toasts, resulting-key lines, "View in Explorer →", and the honest set/getRaw labels.
+- P13-6 ✅ 2026-06-18 — Tenants page: `TenantSplit` (per-tenant seed/clear/hit%) proving prefix scoping + `IsolationProof` (seed-foreign / flush-and-verify) proving the namespace boundary, with the honesty callout.
+- P13-8 ✅ 2026-06-18 — Phase verification: typecheck/lint/build all exit 0; client bundle is library-clean (no ioredis/NestJS); live API+Redis smoke test confirmed all four DoD behaviors (golden signals, namespaced scan, Playground op-appears, tenant isolation + foreign-key survival).

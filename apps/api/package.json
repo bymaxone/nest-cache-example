@@ -2,6 +2,33 @@
   "name": "api",
   "version": "0.0.0",
   "private": true,
+  "description": "NestJS 11 API exercising every feature of @bymax-one/nest-cache against Redis 7 — read-through caching, namespace/tenant isolation, Pub/Sub, TTL keyspace events, Lua single-flight, and the Cache Admin (Explorer) backend.",
+  "keywords": [
+    "bymax",
+    "bymax-one",
+    "nest-cache",
+    "nestjs",
+    "redis",
+    "ioredis",
+    "cache",
+    "pubsub",
+    "api",
+    "example"
+  ],
+  "homepage": "https://github.com/bymaxone/nest-cache-example/tree/main/apps/api#readme",
+  "bugs": {
+    "url": "https://github.com/bymaxone/nest-cache-example/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bymaxone/nest-cache-example.git",
+    "directory": "apps/api"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Bymax One",
+    "url": "https://github.com/bymaxone"
+  },
   "type": "module",
   "scripts": {
     "dev": "nest start --watch",

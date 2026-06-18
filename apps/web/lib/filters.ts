@@ -42,3 +42,21 @@ export const hasTtlParser = parseAsBoolean.withDefault(false)
 
 /** Explorer serialization-strategy filter (empty = all strategies). */
 export const strategyParser = parseAsString.withDefault('')
+
+/** Explorer key-listing strategies: `scan` (safe cursor, default) vs `keys` (O(N), dev-only). */
+export const SCAN_STRATEGIES = ['scan', 'keys'] as const
+
+/** A single key-listing strategy. */
+export type ScanStrategy = (typeof SCAN_STRATEGIES)[number]
+
+/** Explorer listing-strategy toggle, persisted to the URL (defaults to safe `scan`). */
+export const scanStrategyParser = parseAsStringLiteral(SCAN_STRATEGIES).withDefault('scan')
+
+/** Explorer data-type facet values (string/hash/set). */
+export const KEY_TYPES = ['string', 'hash', 'set'] as const
+
+/** A single data-type facet value. */
+export type KeyTypeFacet = (typeof KEY_TYPES)[number]
+
+/** Explorer data-type facet, persisted to the URL (`null` = all types). */
+export const keyTypeParser = parseAsStringLiteral(KEY_TYPES)

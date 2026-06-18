@@ -7,7 +7,8 @@
  * NestJS API over REST (`NEXT_PUBLIC_API_URL`) and receives live cache events
  * over a socket.io WebSocket (`NEXT_PUBLIC_WS_URL`), so both the HTTP origin and
  * its `ws`/`wss` variants must appear in `connect-src`. `frame-ancestors 'none'`
- * blocks clickjacking; HSTS is enabled in production only.
+ * blocks clickjacking, `object-src 'none'` forbids plugin/embed vectors, and
+ * `base-uri 'self'` pins `<base>`; HSTS is enabled in production only.
  *
  * Linting is centralized at the workspace root (`eslint .`); Next 16 no longer
  * runs ESLint during the build, so no per-build lint configuration is needed.
@@ -74,6 +75,10 @@ const nextConfig = {
               "img-src 'self' data:",
               "font-src 'self'",
               `connect-src ${connectSrc}`,
+              // Defense-in-depth beyond the default-src fallback: forbid plugins/embeds
+              // outright and pin <base> so an injected tag cannot retarget relative URLs.
+              "object-src 'none'",
+              "base-uri 'self'",
               "frame-ancestors 'none'",
             ].join('; '),
           },
