@@ -403,7 +403,7 @@ The frontend bar (spec §22 "Web smoke" + "Web unit"; Appendix C `web-smoke`). *
 
 ### Description
 
-Wire a CI stub with the four jobs this phase proves — **`lint` + `typecheck` + `test:e2e` + `web build`** (full CI incl. the export-usage check is Phase 16) — and close the phase by running the Definition-of-Done gate: `pnpm test:e2e` green against a real Redis (Testcontainers), the web smoke green, and `pnpm --filter web build` green. The CI `e2e` job must provision a Docker daemon (GitHub-hosted runners have one) so Testcontainers can boot `redis:7-alpine`; this repo carries **no** Stryker job and **no** coverage gate (Appendix C).
+Wire a CI stub with the four jobs this phase proves — **`lint` + `typecheck` + `test:e2e` + `web build`** (full CI incl. the export-usage check is Phase 19) — and close the phase by running the Definition-of-Done gate: `pnpm test:e2e` green against a real Redis (Testcontainers), the web smoke green, and `pnpm --filter web build` green. The CI `e2e` job must provision a Docker daemon (GitHub-hosted runners have one) so Testcontainers can boot `redis:7-alpine`; this repo carries **no** Stryker job and **no** coverage gate (Appendix C).
 
 ### Acceptance Criteria
 
@@ -415,13 +415,13 @@ Wire a CI stub with the four jobs this phase proves — **`lint` + `typecheck` +
 
 ### Files to create / modify
 
-- `.github/workflows/ci.yml` — `lint` + `typecheck` + `e2e` + `web-build` jobs (stub; export-usage job is Phase 16).
+- `.github/workflows/ci.yml` — `lint` + `typecheck` + `e2e` + `web-build` jobs (stub; export-usage job is Phase 19).
 - _(verification only otherwise — fix earlier P15 task files if a check fails)_
 
 ### Agent Execution Prompt
 
 > Role: Senior DevOps / TypeScript engineer wiring CI + closing the phase.
-> Context: Task P15-6 of `docs/DEVELOPMENT_PLAN.md` §Phase 15. Definition of done: `pnpm test:e2e` passes against a real Redis container; the web smoke passes; `pnpm --filter web build` is green (spec §22, Appendix C). §2 mandates `pnpm/action-setup@v4` + setup-node `node-version: '24'` + `cache: pnpm` + `--frozen-lockfile`. The `audit:exports` / `export-usage-check` job is **Phase 16** — out of scope here. GitHub-hosted runners include a Docker daemon, so Testcontainers works in the `e2e` job without extra services.
+> Context: Task P15-6 of `docs/DEVELOPMENT_PLAN.md` §Phase 15. Definition of done: `pnpm test:e2e` passes against a real Redis container; the web smoke passes; `pnpm --filter web build` is green (spec §22, Appendix C). §2 mandates `pnpm/action-setup@v4` + setup-node `node-version: '24'` + `cache: pnpm` + `--frozen-lockfile`. The `audit:exports` / `export-usage-check` job is **Phase 19** — out of scope here. GitHub-hosted runners include a Docker daemon, so Testcontainers works in the `e2e` job without extra services.
 > Objective: Add the CI stub (4 jobs) and run the phase DoD gate.
 > Steps:
 >
@@ -430,7 +430,7 @@ Wire a CI stub with the four jobs this phase proves — **`lint` + `typecheck` +
 >    - `typecheck` → `pnpm typecheck`
 >    - `e2e` → `pnpm test:e2e` (Testcontainers boots `redis:7-alpine` with `--notify-keyspace-events Ex` via the P15-1 helper; the runner's Docker daemon suffices — no `services:` block needed, though you may add one as a fallback note in a comment).
 >    - `web-build` → `pnpm --filter @nest-cache-example/web build`.
-> 2. Do **NOT** add a `stryker`/mutation job, a coverage-threshold gate, or the export-usage job (Phase 16). Add a short comment at the top of the file: `# Example-app CI bar (Appendix C): lint + typecheck + E2E smoke + web build. No mutation/coverage gate.`
+> 2. Do **NOT** add a `stryker`/mutation job, a coverage-threshold gate, or the export-usage job (Phase 19). Add a short comment at the top of the file: `# Example-app CI bar (Appendix C): lint + typecheck + E2E smoke + web build. No mutation/coverage gate.`
 > 3. Run the phase DoD locally and fix forward into the relevant P15 task file if anything fails (do not weaken a test to make it pass):
 >    - `pnpm test:e2e` with Docker running.
 >    - `pnpm --filter @nest-cache-example/web test:e2e` (Playwright smoke) against a running stack.
@@ -440,7 +440,7 @@ Wire a CI stub with the four jobs this phase proves — **`lint` + `typecheck` +
 >
 > - Follow §2 + Appendix C. **No Stryker, no 100% `coverageThreshold`** anywhere in CI or config — the example-app bar is lint + typecheck + E2E smoke + web build.
 > - Do not skip hooks or use `--no-verify`; do not lower any threshold to go green.
-> - Keep the workflow a faithful stub of Phase 16's full CI (same setup steps) so Phase 16 only adds the export-usage job + release polish.
+> - Keep the workflow a faithful stub of Phase 19's full CI (same setup steps) so Phase 19 only adds the export-usage job + release polish.
 >   Verification:
 > - `pnpm test:e2e` — expected: exit 0 against a real Redis container (Docker up).
 > - `pnpm --filter @nest-cache-example/web build` — expected: exit 0.

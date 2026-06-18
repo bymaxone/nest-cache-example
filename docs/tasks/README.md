@@ -22,7 +22,10 @@
 | 13    | `phase-13-dashboard-observe.md`       | Overview + Explorer + Playground + Tenants pages                                                |
 | 14    | `phase-14-dashboard-realtime-labs.md` | Pub/Sub + TTL Live + Stampede + Serializer + Errors + Connection pages                          |
 | 15    | `phase-15-testing.md`                 | E2E smoke (Testcontainers `redis:7-alpine` + `ioredis-mock`) + web Playwright smoke             |
-| 16    | `phase-16-docs-readme-audit.md`       | README (badges, journeys) + curl walkthroughs + export-usage audit                              |
+| 16    | `phase-16-unit-coverage.md`           | Unit tests → 100% coverage (api Jest + web Vitest, all four metrics)                            |
+| 17    | `phase-17-e2e-flows.md`               | E2E of every HTTP route + WebSocket channel (supertest + socket.io-client + Testcontainers)     |
+| 18    | `phase-18-mutation-stryker.md`        | Stryker mutation testing (api `break:100` / web `break:90`) + `docs/stryker/`                   |
+| 19    | `phase-19-docs-readme-audit.md`       | README (badges, journeys) + curl walkthroughs + export-usage audit                              |
 
 ## Task-file conventions
 
