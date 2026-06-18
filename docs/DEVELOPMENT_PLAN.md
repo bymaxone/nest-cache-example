@@ -33,7 +33,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 >
 > **All 17 phase files are scaffolded** under [`docs/tasks/`](tasks/) — the per-phase totals below are firm.
 >
-> **Overall progress: 94 / 107 tasks done (88%)**
+> **Overall progress: 100 / 107 tasks done (93%)**
 
 | #   | Phase                                     | Tasks file                            | Size | Done / Total | %    | Status |
 | --- | ----------------------------------------- | ------------------------------------- | ---- | ------------ | ---- | ------ |
@@ -52,7 +52,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 | 12  | `apps/web` Skeleton + Design System       | `phase-12-web-skeleton-design.md`     | L    | 7 / 7        | 100% | 🟢     |
 | 13  | Dashboard — Observe pages                 | `phase-13-dashboard-observe.md`       | L    | 8 / 8        | 100% | 🟢     |
 | 14  | Dashboard — Real-time & Labs pages        | `phase-14-dashboard-realtime-labs.md` | L    | 9 / 9        | 100% | 🟢     |
-| 15  | Testing — E2E smoke + Web smoke           | `phase-15-testing.md`                 | M    | 0 / 6        | 0%   | 🔴     |
+| 15  | Testing — E2E smoke + Web smoke           | `phase-15-testing.md`                 | M    | 6 / 6        | 100% | 🟢     |
 | 16  | Docs, README & Export Audit               | `phase-16-docs-readme-audit.md`       | M    | 0 / 7        | 0%   | 🔴     |
 
 ### How to update this dashboard
@@ -412,10 +412,10 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 **Prerequisites:** Phases 4–14 (each shipped with its own happy-path proof).
 **Deliverables:**
 
-- [ ] `apps/api/test/*.e2e-spec.ts` — Testcontainers `redis:7-alpine`: read-through + TTL, namespace isolation + `flushNamespace`, Pub/Sub fan-out, the Lua single-flight, and each `CacheException` path; `BymaxCacheModule.forRoot` sync path covered (matrix #2).
-- [ ] Fast specs with `ioredis-mock` where a real server isn't needed (data-structure round-trips, serializer comparison).
-- [ ] `apps/web` Vitest unit — `lib/cache-status.ts` mapping + the **shared-subpath import resolves in a browser context** (matrix #48); Playwright smoke (shell loads, status badge green, explorer scan renders, publish round-trips).
-- [ ] CI wiring stub: `lint` + `typecheck` + `test:e2e` + `web build` jobs (full CI is Phase 16/out-of-scope polish).
+- [x] `apps/api/test/*.e2e-spec.ts` — Testcontainers `redis:7-alpine`: read-through + TTL, namespace isolation + `flushNamespace`, Pub/Sub fan-out, the Lua single-flight, and each `CacheException` path; `BymaxCacheModule.forRoot` sync path covered (matrix #2).
+- [x] Fast specs with `ioredis-mock` where a real server isn't needed (data-structure round-trips, serializer comparison).
+- [x] `apps/web` Vitest unit — `lib/cache-status.ts` mapping + the **shared-subpath import resolves in a browser context** (matrix #48); Playwright smoke (shell loads, status badge green, explorer scan renders, publish round-trips).
+- [x] CI wiring stub: `lint` + `typecheck` + `test:e2e` + `web build` jobs (full CI is Phase 16/out-of-scope polish).
 
 **Demonstrates:** matrix #2 (sync `forRoot`); cross-cutting verification of all rows. **References:** spec §22, DASHBOARD §18.
 **Definition of done:** `pnpm test:e2e` passes against a real Redis container; the web smoke passes; `pnpm --filter web build` is green.

@@ -44,6 +44,11 @@ coverage/
 coverage.json
 .nyc_output
 
+# Playwright (web E2E smoke) artifacts
+test-results/
+playwright-report/
+playwright/.cache/
+
 # ============================================
 # Mutation Testing (Stryker)
 # ============================================

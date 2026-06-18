@@ -1,0 +1,66 @@
+# Example-app CI bar (DEVELOPMENT_PLAN.md Appendix C): lint + typecheck + E2E smoke + web build.
+# No mutation/coverage gate — those belong to the @bymax-one/nest-cache library, not this app.
+# Stub: the export-usage check and release polish are added with the full CI later.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Least privilege: the jobs only check out, install, and run checks — no writes.
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+
+  e2e:
+    runs-on: ubuntu-latest
+    # GitHub-hosted runners ship a Docker daemon, so Testcontainers boots
+    # redis:7-alpine (with --notify-keyspace-events Ex) directly — no services: block.
+    # Scoped to the API suite: the web Playwright smoke is a running-stack check
+    # (web + API + Redis) run locally / in the fuller stack job, not this stub.
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter api test:e2e
+
+  web-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter web build
