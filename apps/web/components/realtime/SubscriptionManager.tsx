@@ -74,7 +74,13 @@ export function SubscriptionManager({ onRowsChange }: SubscriptionManagerProps =
       ).then(unwrap),
     onSuccess: (result) =>
       setRows((prev) =>
-        prev.map((row) => (row.channel === result.channel ? { ...row, refs: result.refs } : row)),
+        prev.map((row) =>
+          // Match on (channel, pattern): the same string can be both an exact and
+          // a pattern subscription, which are independent in Redis pub/sub.
+          row.channel === result.channel && row.pattern === result.pattern
+            ? { ...row, refs: result.refs }
+            : row,
+        ),
       ),
     onError: (error) =>
       toast.error('Subscription update failed', {
@@ -86,7 +92,9 @@ export function SubscriptionManager({ onRowsChange }: SubscriptionManagerProps =
     const channel = newChannel.trim()
     if (channel.length === 0) return
     setRows((prev) =>
-      prev.some((row) => row.channel === channel)
+      // De-dupe by (channel, pattern) so the same string can be added as both an
+      // exact `subscribe` and a `psubscribe` pattern independently.
+      prev.some((row) => row.channel === channel && row.pattern === isPattern)
         ? prev
         : [...prev, { channel, pattern: isPattern, refs: 0 }],
     )
@@ -106,7 +114,7 @@ export function SubscriptionManager({ onRowsChange }: SubscriptionManagerProps =
         <ul className="space-y-2">
           {rows.map((row) => (
             <li
-              key={row.channel}
+              key={`${row.pattern ? 'p' : 'e'}:${row.channel}`}
               className="flex items-center justify-between gap-2 rounded-lg border border-(--glass-border) bg-(--glass-bg) p-2"
             >
               <div className="flex min-w-0 items-center gap-2">

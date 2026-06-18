@@ -131,9 +131,12 @@ export function TtlLiveView() {
   // after the fade. Driven by the server event — not the local countdown.
   useEffect(() => {
     for (const event of expiredRef.current) {
+      // Only act on expiries for a currently-rendered tile; a foreign or
+      // not-yet-registered key is skipped WITHOUT being marked handled, so a tile
+      // registered after its event can still fade on a later pass.
+      if (!tileKeysRef.current.has(event.key)) continue
       if (handledRef.current.has(event.key)) continue
       handledRef.current.add(event.key)
-      if (!tileKeysRef.current.has(event.key)) continue
       setTiles((prev) =>
         prev.map((tile) => (tile.key === event.key ? { ...tile, fading: true } : tile)),
       )
@@ -178,7 +181,7 @@ export function TtlLiveView() {
       <EventFeed<ExpiredEvent>
         items={feedItems}
         ariaLabel="Live TTL expiry feed"
-        getKey={(event, index) => `${event.at}-${index}`}
+        getKey={(event) => String(event.seq)}
         emptyState={
           <span>
             No expiries yet — enable the <span className="text-foreground">Live</span> toggle and

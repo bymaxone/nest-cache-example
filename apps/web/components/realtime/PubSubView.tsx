@@ -116,7 +116,7 @@ export function PubSubView() {
       <EventFeed<ChannelEvent>
         items={events}
         ariaLabel="Live Pub/Sub message feed"
-        getKey={(event, index) => `${event.at}-${index}`}
+        getKey={(event) => String(event.seq)}
         emptyState={
           <span>
             No messages yet — enable the <span className="text-foreground">Live</span> toggle and

@@ -13,7 +13,7 @@
 
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   createCacheSocket,
   parseChannelEvent,
@@ -37,6 +37,9 @@ export function useCacheSocket(enabled: boolean): RingBuffer<CacheEvent> {
   const [buffer] = useState(() => new RingBuffer<CacheEvent>(BUFFER_CAPACITY))
   // Bumped once per flush so the host component re-renders and re-reads the buffer.
   const [, setVersion] = useState(0)
+  // Monotonic, never-reset identity counter shared across reconnects, so a key
+  // never collides with a still-buffered event after the Live toggle cycles.
+  const seqRef = useRef(0)
 
   useEffect(() => {
     if (!enabled) return
@@ -55,9 +58,11 @@ export function useCacheSocket(enabled: boolean): RingBuffer<CacheEvent> {
       raf ||= requestAnimationFrame(flush)
     }
 
-    socket.on('cache:connection', (raw: unknown) => schedule(parseConnectionEvent(raw)))
-    socket.on('cache:event', (raw: unknown) => schedule(parseChannelEvent(raw)))
-    socket.on('cache:expired', (raw: unknown) => schedule(parseExpiredEvent(raw)))
+    socket.on('cache:connection', (raw: unknown) =>
+      schedule(parseConnectionEvent(raw, seqRef.current++)),
+    )
+    socket.on('cache:event', (raw: unknown) => schedule(parseChannelEvent(raw, seqRef.current++)))
+    socket.on('cache:expired', (raw: unknown) => schedule(parseExpiredEvent(raw, seqRef.current++)))
 
     return () => {
       if (raf) cancelAnimationFrame(raf)

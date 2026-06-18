@@ -246,7 +246,7 @@ export function ConnectionView() {
           <EventFeed<ConnectionEvent>
             items={connectionEvents.slice().reverse()}
             ariaLabel="Live connection lifecycle feed"
-            getKey={(event, index) => `${event.at}-${index}`}
+            getKey={(event) => String(event.seq)}
             emptyState={
               <span>
                 No lifecycle events yet — enable the <span className="text-foreground">Live</span>{' '}

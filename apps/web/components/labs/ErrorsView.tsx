@@ -63,7 +63,9 @@ export function ErrorsView() {
       if (result.ok) throw new Error('Expected an error response from the trigger endpoint')
       return result.error
     },
-    onError: () => toast.error('Unexpected non-error response'),
+    // Runs for a genuine request failure (network/CORS) or the explicit throw when
+    // the endpoint unexpectedly succeeds — surface the real message either way.
+    onError: (error) => toast.error('Trigger failed', { description: error.message }),
   })
 
   const response = trigger.data
