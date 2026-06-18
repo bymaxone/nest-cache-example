@@ -21,8 +21,11 @@ export default {
   // and Docker-free `*.spec.ts` (ioredis-mock fast lane).
   testMatch: ['**/*.e2e-spec.ts', '**/*.spec.ts'],
   testEnvironment: 'node',
-  // Container boot dominates: each real-Redis spec starts a fresh redis:7-alpine.
-  testTimeout: 60_000,
+  // Container boot dominates `beforeAll`: each real-Redis spec starts a fresh
+  // redis:7-alpine. This must exceed the container's own 120s startup timeout
+  // (redis-container.ts) — plus headroom for a cold image pull — or `beforeAll`
+  // times out before Testcontainers would have reported the container ready.
+  testTimeout: 150_000,
   moduleFileExtensions: ['ts', 'js', 'mjs', 'cjs', 'json'],
   extensionsToTreatAsEsm: ['.ts'],
   transform: {

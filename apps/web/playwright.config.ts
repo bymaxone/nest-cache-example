@@ -3,11 +3,12 @@
  *
  * A single chromium project pointed at a running stack (`baseURL`): the smoke is
  * a happy-path integration check against the real dashboard, API, and Redis, so it
- * assumes the stack is already up (locally via `pnpm dev` + `pnpm infra:up`; in CI
- * the `e2e`/`web` jobs bring it up). Override the target with `PLAYWRIGHT_BASE_URL`.
+ * assumes the stack is **already up** — run it locally (`pnpm infra:up` + both
+ * `pnpm dev` servers) or in a future stack job. The current CI workflow does NOT
+ * run this smoke or bootstrap the stack; override the target with `PLAYWRIGHT_BASE_URL`.
  *
- * This is the example-app web bar (docs/DEVELOPMENT_PLAN.md Appendix C): a focused
- * happy-path smoke, not an exhaustive UI suite — and no coverage gate.
+ * This is the example-app web smoke bar (docs/DEVELOPMENT_PLAN.md Appendix C): a
+ * focused happy-path check, not an exhaustive UI suite.
  *
  * @module playwright.config
  */

@@ -407,10 +407,10 @@ Wire a CI stub with the four jobs this phase proves — **`lint` + `typecheck` +
 
 ### Acceptance Criteria
 
-- [x] `.github/workflows/ci.yml` exists with jobs: **`lint`** (`pnpm lint`), **`typecheck`** (`pnpm typecheck`), **`e2e`** (`pnpm test:e2e` — Testcontainers, Docker available on the runner), **`web-build`** (`pnpm --filter @nest-cache-example/web build`).
+- [x] `.github/workflows/ci.yml` exists with jobs: **`lint`** (`pnpm lint`), **`typecheck`** (`pnpm typecheck`), **`e2e`** (`pnpm --filter api test:e2e` — the API Testcontainers suite, Docker available on the runner; the web Playwright smoke needs a running stack and is not a CI-stub job), **`web-build`** (`pnpm --filter web build`).
 - [x] Every job uses `pnpm/action-setup@v4` + `actions/setup-node@v5` (`node-version: '24'`, `cache: pnpm`) and `pnpm install --frozen-lockfile`.
 - [x] The workflow contains **no `stryker` / mutation job** and **no `coverageThreshold` enforcement** (matches Appendix C — example-app bar).
-- [x] Phase DoD verified locally: `pnpm test:e2e` passes against a real Redis container, the web smoke passes, and `pnpm --filter @nest-cache-example/web build` exits 0.
+- [x] Phase DoD verified locally: `pnpm test:e2e` passes against a real Redis container, the web smoke passes, and `pnpm --filter web build` exits 0.
 - [x] `pnpm lint` and `pnpm typecheck` exit 0 across the workspace with the new test files present.
 
 ### Files to create / modify
