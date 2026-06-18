@@ -1,10 +1,37 @@
 {
   "name": "nest-cache-example",
   "private": true,
+  "description": "Reference application demonstrating every public export of @bymax-one/nest-cache — a NestJS 11 API and a Next.js 16 observability dashboard backed by Redis 7.",
+  "keywords": [
+    "bymax",
+    "bymax-one",
+    "nest-cache",
+    "nestjs",
+    "nextjs",
+    "redis",
+    "ioredis",
+    "cache",
+    "observability",
+    "dashboard",
+    "reference-app",
+    "example",
+    "monorepo"
+  ],
+  "homepage": "https://github.com/bymaxone/nest-cache-example#readme",
+  "bugs": {
+    "url": "https://github.com/bymaxone/nest-cache-example/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bymaxone/nest-cache-example.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Bymax One",
+    "url": "https://github.com/bymaxone"
+  },
   "type": "module",
   "packageManager": "pnpm@10.8.0",
-  "license": "MIT",
-  "author": "Bymax One",
   "engines": {
     "node": ">=24",
     "pnpm": ">=10.8"
@@ -37,5 +64,10 @@
     "prettier": "^3",
     "typescript": "^5.9.0",
     "typescript-eslint": "^8.61.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "postcss": "^8.5.10"
+    }
   }
 }

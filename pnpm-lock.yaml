@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  postcss: ^8.5.10
+
 importers:
 
   .:
@@ -136,8 +139,8 @@ importers:
         specifier: ^3
         version: 3.14.3(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@uiw/react-json-view':
-        specifier: 2.0.0-alpha.43
-        version: 2.0.0-alpha.43(@babel/runtime@8.0.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        specifier: ^1.12.2
+        version: 1.12.2(@babel/runtime@8.0.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -1550,8 +1553,8 @@ packages:
     resolution: {integrity: sha512-6fJ9MHWtK14C1DSkiMlHUSOmrVebL7150xZJBlJiL62jjhIA4JmOq6flwBgDxIdBKKdoiZRel+dfPD5MLfny3w==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@uiw/react-json-view@2.0.0-alpha.43':
-    resolution: {integrity: sha512-PMj+6xRDCPbVGccfLUDhx7yGrmVBSeFx3py6bqDds4QIYScXo9GEgtTbWXn3gXpoehsmOu//6dveYTf872wu3Q==}
+  '@uiw/react-json-view@1.12.2':
+    resolution: {integrity: sha512-IrL7tqPMgPMgdpjsgfArUepVE37DHlgcmkNgUQ92uNcRbO2+iUHXWysNc9nNsJB6ctb+wIinI5JNRqsqwHER5g==}
     peerDependencies:
       '@babel/runtime': '>=7.10.0'
       react: '>=18.0.0'
@@ -2851,10 +2854,6 @@ packages:
   pluralize@8.0.0:
     resolution: {integrity: sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==}
     engines: {node: '>=4'}
-
-  postcss@8.4.31:
-    resolution: {integrity: sha512-PS08Iboia9mts/2ygV3eLpY5ghnUcfLV/EXTOW1E2qYxJKGGBUtNjN76FYHnMs36RmARn41bC0AZmn+rR0OVpQ==}
-    engines: {node: ^10 || ^12 || >=14}
 
   postcss@8.5.15:
     resolution: {integrity: sha512-FfR8sjd4em2T6fb3I2MwAJU7HWVMr9zba+enmQeeWFfCbm+UOC/0X4DS8XtpUTMwWMGbjKYP7xjfNekzyGmB3A==}
@@ -4893,7 +4892,7 @@ snapshots:
       '@typescript-eslint/types': 8.61.1
       eslint-visitor-keys: 5.0.1
 
-  '@uiw/react-json-view@2.0.0-alpha.43(@babel/runtime@8.0.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
+  '@uiw/react-json-view@1.12.2(@babel/runtime@8.0.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
     dependencies:
       '@babel/runtime': 8.0.0
       react: 19.2.7
@@ -6025,7 +6024,7 @@ snapshots:
       '@swc/helpers': 0.5.15
       baseline-browser-mapping: 2.10.37
       caniuse-lite: 1.0.30001799
-      postcss: 8.4.31
+      postcss: 8.5.15
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
       styled-jsx: 5.1.6(react@19.2.7)
@@ -6140,12 +6139,6 @@ snapshots:
   picomatch@4.0.4: {}
 
   pluralize@8.0.0: {}
-
-  postcss@8.4.31:
-    dependencies:
-      nanoid: 3.3.12
-      picocolors: 1.1.1
-      source-map-js: 1.2.1
 
   postcss@8.5.15:
     dependencies:

@@ -58,6 +58,22 @@ export function connectionStatusMeta(status: ConnectionState): StatusMeta {
   return CONNECTION_STATUS_META[status]
 }
 
+/**
+ * Resolve the accessible severity descriptor for an HTTP error status.
+ *
+ * Follows the design-system error palette: `504` purple (gateway timeout),
+ * other `5xx` red (server error), `4xx` amber (client error), anything else blue.
+ *
+ * @param status - The HTTP status code of the failing response.
+ * @returns Its `{ color, icon, label }` descriptor.
+ */
+export function httpErrorSeverityMeta(status: number): StatusMeta {
+  if (status === 504) return { color: '#a855f7', icon: AlertTriangle, label: 'Gateway Timeout' }
+  if (status >= 500) return { color: '#ef4444', icon: XCircle, label: 'Server Error' }
+  if (status >= 400) return { color: '#f59e0b', icon: AlertTriangle, label: 'Client Error' }
+  return { color: '#60a5fa', icon: AlertTriangle, label: 'Notice' }
+}
+
 /** Cache lookup outcome. */
 export type HitMiss = 'hit' | 'miss'
 

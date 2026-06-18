@@ -2,6 +2,37 @@
   "name": "web",
   "version": "0.0.1",
   "private": true,
+  "description": "Next.js 16 cache observability & control dashboard for @bymax-one/nest-cache — Overview, Key Explorer, Playground, and Tenants pages over the NestJS API.",
+  "keywords": [
+    "bymax",
+    "bymax-one",
+    "nest-cache",
+    "nextjs",
+    "react",
+    "redis",
+    "cache",
+    "observability",
+    "dashboard",
+    "tailwindcss",
+    "shadcn",
+    "recharts",
+    "tanstack-query",
+    "example"
+  ],
+  "homepage": "https://github.com/bymaxone/nest-cache-example/tree/main/apps/web#readme",
+  "bugs": {
+    "url": "https://github.com/bymaxone/nest-cache-example/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bymaxone/nest-cache-example.git",
+    "directory": "apps/web"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Bymax One",
+    "url": "https://github.com/bymaxone"
+  },
   "type": "module",
   "engines": {
     "node": ">=24"
@@ -27,7 +58,7 @@
     "@tanstack/react-query": "^5",
     "@tanstack/react-table": "^8",
     "@tanstack/react-virtual": "^3",
-    "@uiw/react-json-view": "2.0.0-alpha.43",
+    "@uiw/react-json-view": "^1.12.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
