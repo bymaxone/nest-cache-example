@@ -106,6 +106,10 @@ export const api = {
     if (json !== undefined) init.body = JSON.stringify(json)
     return apiFetch<T>(path, init)
   },
-  /** Typed DELETE. */
-  del: <T>(path: string): Promise<ApiResult<T>> => apiFetch<T>(path, { method: 'DELETE' }),
+  /** Typed DELETE with an optional JSON body (some routes, e.g. ref-counted unsubscribe, take one). */
+  del: <T>(path: string, json?: unknown): Promise<ApiResult<T>> => {
+    const init: RequestInit = { method: 'DELETE' }
+    if (json !== undefined) init.body = JSON.stringify(json)
+    return apiFetch<T>(path, init)
+  },
 }
