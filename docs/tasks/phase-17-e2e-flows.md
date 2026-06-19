@@ -2,7 +2,7 @@
 
 > **Source:** [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#phase-17--e2e-every-flow-http--websocket) §Phase 17
 > **Total tasks:** 8
-> **Progress:** 🔴 0 / 8 done (0%)
+> **Progress:** 🟢 8 / 8 done (100%)
 >
 > **Status legend:** 🔴 Not Started · 🟡 In Progress · 🔵 In Review · 🟢 Done · ⚪ Blocked
 
@@ -10,14 +10,14 @@
 
 | ID    | Task                                                                                     | Status | Priority | Size | Depends on   |
 | ----- | ---------------------------------------------------------------------------------------- | ------ | -------- | ---- | ------------ |
-| P17-1 | E2E toolchain — `supertest` + `socket.io-client` helpers over `createTestApp`            | 🔴     | High     | M    | P15, P16     |
-| P17-2 | HTTP E2E — catalog (6) + metrics + health                                                | 🔴     | High     | M    | P17-1        |
-| P17-3 | HTTP E2E — admin (9 routes)                                                              | 🔴     | High     | M    | P17-1        |
-| P17-4 | HTTP E2E — collections (8) + counters (3)                                                | 🔴     | High     | M    | P17-1        |
-| P17-5 | HTTP E2E — tenants (4) + serializer-demo (3)                                             | 🔴     | High     | M    | P17-1        |
-| P17-6 | HTTP + WS E2E — pubsub (4) + `cache:event` fan-out                                       | 🔴     | High     | M    | P17-1        |
-| P17-7 | HTTP + WS E2E — ttl-events + stampede + errors-demo + `cache:expired`/`cache:connection` | 🔴     | High     | M    | P17-1        |
-| P17-8 | Phase verification gate — every route + WS channel asserted                              | 🔴     | High     | S    | P17-1..P17-7 |
+| P17-1 | E2E toolchain — `supertest` + `socket.io-client` helpers over `createTestApp`            | 🟢     | High     | M    | P15, P16     |
+| P17-2 | HTTP E2E — catalog (6) + metrics + health                                                | 🟢     | High     | M    | P17-1        |
+| P17-3 | HTTP E2E — admin (9 routes)                                                              | 🟢     | High     | M    | P17-1        |
+| P17-4 | HTTP E2E — collections (8) + counters (3)                                                | 🟢     | High     | M    | P17-1        |
+| P17-5 | HTTP E2E — tenants (4) + serializer-demo (3)                                             | 🟢     | High     | M    | P17-1        |
+| P17-6 | HTTP + WS E2E — pubsub (4) + `cache:event` fan-out                                       | 🟢     | High     | M    | P17-1        |
+| P17-7 | HTTP + WS E2E — ttl-events + stampede + errors-demo + `cache:expired`/`cache:connection` | 🟢     | High     | M    | P17-1        |
+| P17-8 | Phase verification gate — every route + WS channel asserted                              | 🟢     | High     | S    | P17-1..P17-7 |
 
 > **Phase rule — read before any task.** This phase proves the **published library through the full HTTP + WebSocket surface** of the example. Hard constraints, every task:
 >
@@ -30,7 +30,7 @@
 
 ## P17-1 — E2E toolchain: `supertest` + `socket.io-client` helpers
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90–180 min)
 - **Depends on:** `P15`, `P16`
@@ -41,11 +41,11 @@ Extend the Phase-15 `test/helpers` so every flow spec can drive the real app ove
 
 ### Acceptance Criteria
 
-- [ ] `apps/api` devDeps add `supertest` + `@types/supertest`.
-- [ ] `apps/api/test/helpers/http.ts` exports a `supertest` agent factory over `createTestApp`'s `app`.
-- [ ] `apps/api/test/helpers/socket-client.ts` connects a `socket.io-client` to the booted server, exposes typed capture buffers + a `waitForEvent(channel, predicate, timeout)` helper, and a clean `close()`.
-- [ ] `createTestApp` is confirmed/adjusted to run with the global exception filter active and a globally-applied `ZodValidationPipe` if/where the app applies one (so HTTP error envelopes are production-accurate); the socket.io adapter is initialized so the server accepts client connections under `app.init()`/`listen(0)`.
-- [ ] A smoke `apps/api/test/http-smoke.e2e-spec.ts`: `GET /health` → 200 `{ status: 'ok' }`; a socket connects and disconnects cleanly.
+- [x] `apps/api` devDeps add `supertest` + `@types/supertest`.
+- [x] `apps/api/test/helpers/http.ts` exports a `supertest` agent factory over `createTestApp`'s `app`.
+- [x] `apps/api/test/helpers/socket-client.ts` connects a `socket.io-client` to the booted server, exposes typed capture buffers + a `waitForEvent(channel, predicate, timeout)` helper, and a clean `close()`.
+- [x] `createTestApp` is confirmed/adjusted to run with the global exception filter active and a globally-applied `ZodValidationPipe` if/where the app applies one (so HTTP error envelopes are production-accurate); the socket.io adapter is initialized so the server accepts client connections under `app.init()`/`listen(0)`.
+- [x] A smoke `apps/api/test/http-smoke.e2e-spec.ts`: `GET /health` → 200 `{ status: 'ok' }`; a socket connects and disconnects cleanly.
 
 ### Files to create / modify
 
@@ -86,7 +86,7 @@ Extend the Phase-15 `test/helpers` so every flow spec can drive the real app ove
 
 ## P17-2 — HTTP E2E: catalog (6) + metrics + health
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90–180 min)
 - **Depends on:** `P17-1`
@@ -97,9 +97,9 @@ E2E every catalog route plus metrics + health through real HTTP: `GET /catalog/p
 
 ### Acceptance Criteria
 
-- [ ] `apps/api/test/catalog.e2e-spec.ts` covers all 6 catalog routes incl. the batch positional-null behavior, the 404 on unknown id, and idempotent `seed` (`{ isCreated, isPresent }`).
-- [ ] `GET /metrics` asserted (hit/miss counters move after catalog reads); `GET /health` asserts `{ status: 'ok', latencyMs >= 0 }`.
-- [ ] Invalid inputs (e.g. a bad `ids`/ttl) return the Zod-pipe 400 envelope.
+- [x] `apps/api/test/catalog.e2e-spec.ts` covers all 6 catalog routes incl. the batch positional-null behavior, the 404 on unknown id, and idempotent `seed` (`{ isCreated, isPresent }`).
+- [x] `GET /metrics` asserted (hit/miss counters move after catalog reads); `GET /health` asserts `{ status: 'ok', latencyMs >= 0 }`.
+- [x] Invalid inputs (e.g. a bad `ids`/ttl) return the Zod-pipe 400 envelope.
 
 ### Files to create / modify
 
@@ -124,7 +124,7 @@ E2E every catalog route plus metrics + health through real HTTP: `GET /catalog/p
 
 ## P17-3 — HTTP E2E: admin (9 routes)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90–180 min)
 - **Depends on:** `P17-1`
@@ -135,10 +135,10 @@ E2E the whole Admin/Explorer backend: `GET /admin/info`, `GET /admin/keyspace`, 
 
 ### Acceptance Criteria
 
-- [ ] `apps/api/test/admin.e2e-spec.ts` covers all 9 admin routes.
-- [ ] Inspect returns `{ type, value, raw, ttl, memoryBytes }`; 404 on an absent key; `DELETE /admin/namespace` clears `cache-example:*` (foreign key survives).
-- [ ] `POST /admin/seed?count=N` creates N keys (verified via `GET /admin/keys`).
-- [ ] Bad params (key charset / count bounds) return the 400 envelope.
+- [x] `apps/api/test/admin.e2e-spec.ts` covers all 9 admin routes.
+- [x] Inspect returns `{ type, value, raw, ttl, memoryBytes }`; 404 on an absent key; `DELETE /admin/namespace` clears `cache-example:*` (foreign key survives).
+- [x] `POST /admin/seed?count=N` creates N keys (verified via `GET /admin/keys`).
+- [x] Bad params (key charset / count bounds) return the 400 envelope.
 
 ### Files to create / modify
 
@@ -163,7 +163,7 @@ E2E the whole Admin/Explorer backend: `GET /admin/info`, `GET /admin/keyspace`, 
 
 ## P17-4 — HTTP E2E: collections (8) + counters (3)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90–180 min)
 - **Depends on:** `P17-1`
@@ -174,9 +174,9 @@ E2E the hash-cart + tag-set routes (`GET/POST/DELETE /collections/:id/cart[/:fie
 
 ### Acceptance Criteria
 
-- [ ] `apps/api/test/collections.e2e-spec.ts` covers all 8 collections routes (cart hget/hgetall/hset/hdel, tags sadd/smembers+scard/sismember/srem).
-- [ ] `apps/api/test/counters.e2e-spec.ts` covers the 3 counter routes incl. the `by` branch and the `0`-when-absent read.
-- [ ] Invalid bodies return the 400 envelope.
+- [x] `apps/api/test/collections.e2e-spec.ts` covers all 8 collections routes (cart hget/hgetall/hset/hdel, tags sadd/smembers+scard/sismember/srem).
+- [x] `apps/api/test/counters.e2e-spec.ts` covers the 3 counter routes incl. the `by` branch and the `0`-when-absent read.
+- [x] Invalid bodies return the 400 envelope.
 
 ### Files to create / modify
 
@@ -201,7 +201,7 @@ E2E the hash-cart + tag-set routes (`GET/POST/DELETE /collections/:id/cart[/:fie
 
 ## P17-5 — HTTP E2E: tenants (4) + serializer-demo (3)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90–180 min)
 - **Depends on:** `P17-1`
@@ -212,9 +212,9 @@ E2E the tenant isolation routes (`GET /tenants/:t/products/:id` prefix-scoped re
 
 ### Acceptance Criteria
 
-- [ ] `apps/api/test/tenants.e2e-spec.ts` covers all 4 tenant routes; asserts `source` flips cache↔origin, `clearTenant` scopes to one tenant, and `prove-isolation` shows the foreign key surviving a flush.
-- [ ] `apps/api/test/serializer-demo.e2e-spec.ts` covers roundtrip (raw vs decoded vs rawBypass), the Date-survival caveat (`dateSurvived`), and `GET /serializer/active`.
-- [ ] Bad `codec` / tenant id → 400 envelope.
+- [x] `apps/api/test/tenants.e2e-spec.ts` covers all 4 tenant routes; asserts `source` flips cache↔origin, `clearTenant` scopes to one tenant, and `prove-isolation` shows the foreign key surviving a flush.
+- [x] `apps/api/test/serializer-demo.e2e-spec.ts` covers roundtrip (raw vs decoded vs rawBypass), the Date-survival caveat (`dateSurvived`), and `GET /serializer/active`.
+- [x] Bad `codec` / tenant id → 400 envelope.
 
 ### Files to create / modify
 
@@ -239,7 +239,7 @@ E2E the tenant isolation routes (`GET /tenants/:t/products/:id` prefix-scoped re
 
 ## P17-6 — HTTP + WS E2E: pubsub (4) + `cache:event` fan-out
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90–180 min)
 - **Depends on:** `P17-1`
@@ -250,10 +250,10 @@ E2E the Pub/Sub routes (`POST /pubsub/publish`, `POST /pubsub/subscribe`, `DELET
 
 ### Acceptance Criteria
 
-- [ ] `apps/api/test/pubsub.e2e-spec.ts` (HTTP+WS) covers all 4 routes.
-- [ ] A connected socket client receives a `cache:event` for a published message (exact channel + a `product:*` pattern), with the namespaced channel surfaced.
-- [ ] Ref-counted `POST`/`DELETE /pubsub/subscribe` returns the updated ref counts; a double/unknown unsubscribe is a safe no-op.
-- [ ] `POST /pubsub/throw` triggers the handler-error isolation without breaking other delivery.
+- [x] `apps/api/test/pubsub.e2e-spec.ts` (HTTP+WS) covers all 4 routes.
+- [x] A connected socket client receives a `cache:event` for a published message (exact channel + a `product:*` pattern), with the namespaced channel surfaced.
+- [x] Ref-counted `POST`/`DELETE /pubsub/subscribe` returns the updated ref counts; a double/unknown unsubscribe is a safe no-op.
+- [x] `POST /pubsub/throw` triggers the handler-error isolation without breaking other delivery.
 
 ### Files to create / modify
 
@@ -278,7 +278,7 @@ E2E the Pub/Sub routes (`POST /pubsub/publish`, `POST /pubsub/subscribe`, `DELET
 
 ## P17-7 — HTTP + WS E2E: ttl-events + stampede + errors-demo + `cache:expired`/`cache:connection`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90–180 min)
 - **Depends on:** `P17-1`
@@ -289,10 +289,10 @@ Close the route + WS surface: `POST /ttl-events/seed` drives a real key expiry t
 
 ### Acceptance Criteria
 
-- [ ] `apps/api/test/ttl-events.e2e-spec.ts`: `POST /ttl-events/seed` → the socket receives a `cache:expired` frame for the namespaced key (needs `--notify-keyspace-events Ex`).
-- [ ] `apps/api/test/stampede-flow.e2e-spec.ts`: `POST /stampede?concurrency=N` returns the timeline + summary (1 origin + N−1 hits) over HTTP.
-- [ ] `apps/api/test/errors-flow.e2e-spec.ts`: `POST /errors/:code` for representative 4xx/5xx/504 codes asserts the HTTP status + filter envelope; the `cache.`-prefix normalization + unknown-code 400 are covered.
-- [ ] A socket client observes at least one `cache:connection` frame during the run.
+- [x] `apps/api/test/ttl-events.e2e-spec.ts`: `POST /ttl-events/seed` → the socket receives a `cache:expired` frame for the namespaced key (needs `--notify-keyspace-events Ex`).
+- [x] `apps/api/test/stampede-flow.e2e-spec.ts`: `POST /stampede?concurrency=N` returns the timeline + summary (1 origin + N−1 hits) over HTTP.
+- [x] `apps/api/test/errors-flow.e2e-spec.ts`: `POST /errors/:code` for representative 4xx/5xx/504 codes asserts the HTTP status + filter envelope; the `cache.`-prefix normalization + unknown-code 400 are covered.
+- [x] A socket client observes at least one `cache:connection` frame during the run.
 
 ### Files to create / modify
 
@@ -317,7 +317,7 @@ Close the route + WS surface: `POST /ttl-events/seed` drives a real key expiry t
 
 ## P17-8 — Phase verification gate: every route + WS channel asserted
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `P17-1`..`P17-7`
@@ -328,10 +328,10 @@ Close the phase: confirm every one of the 38 HTTP routes + 3 WS channels is asse
 
 ### Acceptance Criteria
 
-- [ ] A route→spec map shows every controller route + `/health` + all 3 WS channels covered.
-- [ ] `pnpm --filter api test:e2e` runs the whole suite green with Docker up.
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm format:check` clean.
-- [ ] No `@ts-ignore`/`eslint-disable`/`.skip`/`.todo` in the new specs.
+- [x] A route→spec map shows every controller route + `/health` + all 3 WS channels covered.
+- [x] `pnpm --filter api test:e2e` runs the whole suite green with Docker up.
+- [x] `pnpm lint`, `pnpm typecheck`, `pnpm format:check` clean.
+- [x] No `@ts-ignore`/`eslint-disable`/`.skip`/`.todo` in the new specs.
 
 ### Files to create / modify
 
@@ -359,3 +359,12 @@ When this task is 🟢, Phase 17 is 8/8 — switch the Phase 17 row in `DEVELOPM
 ## Completion log
 
 _(Agents append one line per finished task, newest at the bottom.)_
+
+- P17-1 ✅ 2026-06-19 — supertest + socket.io-client harness: `httpAgent`/`scalarBody` + typed socket capture (`waitForEvent`/`close`); `createTestApp` now boots the IoAdapter and `listen(0)` exposing `port`/`baseUrl`; green HTTP + socket smoke.
+- P17-2 ✅ 2026-06-19 — catalog (6 routes: batch positional-null, single + 404, idempotent seed, TTL lifecycle) + `/metrics` hit/miss accounting + probe-safe `/health`, with the Zod 400 envelope.
+- P17-3 ✅ 2026-06-19 — admin (9 routes): INFO by section, keyspace breakdown, key listing (scan + keys), inspect (+404), expire/persist/delete, bulk seed, and namespace flush with a surviving foreign key; bad key/TTL/count → 400.
+- P17-4 ✅ 2026-06-19 — collections (8 routes: cart hash + tag set lifecycles) + counters (3 routes: views incr / stock decr incl. the `by` branch and 0-when-absent), with the 400 envelope on malformed bodies.
+- P17-5 ✅ 2026-06-19 — tenants (4 routes: source cache↔origin flip, prefix-scoped clear, foreign-key isolation proof) + serializer (3 routes: roundtrip raw/decoded/bypass, JSON Date-caveat, active codec); bad codec/tenant → 400.
+- P17-6 ✅ 2026-06-19 — pubsub (4 routes) HTTP + the `cache:event` fan-out asserted over a real socket for an exact channel and a `product:*` pattern (namespaced), plus ref-counted subscribe/unsubscribe (safe no-op) and throwing-handler isolation.
+- P17-7 ✅ 2026-06-19 — ttl-events seed → real `cache:expired` frame; stampede single-flight summary over HTTP; errors-demo representative 4xx/403/503/504/5xx filter mapping + `cache.`-prefix normalization + unknown-code 400; a `cache:connection` frame via the lifecycle bridge.
+- P17-8 ✅ 2026-06-19 — phase gate: every controller route + `/health` + all three WS channels asserted by ≥1 spec; full `test:e2e` green (21 suites / 73 tests) against real Redis; typecheck/lint/format clean; no `@ts-ignore`/`eslint-disable`/`.skip`/`.todo` in the specs.
