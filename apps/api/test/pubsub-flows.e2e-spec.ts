@@ -19,7 +19,10 @@ import { connectSocketClient, type SocketCapture } from './helpers/socket-client
 
 /** Reads the `tag` marker a test publishes, so frame predicates stay specific. */
 function tagOf(payload: unknown): string | undefined {
-  return (payload as { tag?: string }).tag
+  // The publish DTO accepts any JSON value (incl. null), so guard before reading.
+  if (typeof payload !== 'object' || payload === null) return undefined
+  const tag = (payload as { tag?: unknown }).tag
+  return typeof tag === 'string' ? tag : undefined
 }
 
 describe('pubsub HTTP + WebSocket flows (real Redis)', () => {

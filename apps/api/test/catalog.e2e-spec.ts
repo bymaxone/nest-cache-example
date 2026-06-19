@@ -15,7 +15,8 @@ import { startRedisContainer } from './helpers/redis-container.js'
 import { createTestApp, type TestApiApp } from './helpers/test-app.js'
 import { httpAgent, scalarBody } from './helpers/http.js'
 
-/** Origin-store fixtures (`product-origin.store.ts`) used for exact body assertions. */
+/** Hard-coded copies of the origin seed rows (`SEED_PRODUCTS` in `product.types.ts`),
+ *  used for exact body assertions — keep in sync if that seed data changes. */
 const PRODUCT_P1 = {
   id: 'p1',
   name: 'Wireless Headphones',

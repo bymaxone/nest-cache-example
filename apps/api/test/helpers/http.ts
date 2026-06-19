@@ -20,7 +20,10 @@ import type { Server } from 'node:http'
  */
 export function httpAgent(app: INestApplication) {
   const server: Server = app.getHttpServer()
-  return request(server)
+  // request.agent() (not request()) returns a real persistent agent, so the name is
+  // honest — cookie persistence is harmless for this cookieless app and future-proofs
+  // any spec that later relies on agent behaviour.
+  return request.agent(server)
 }
 
 /**
