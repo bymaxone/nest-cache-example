@@ -320,10 +320,7 @@ export class AdminService {
       }
       const metaResults = await batchPipeline.exec()
 
-      for (let i = 0; i < batchSlice.length; i++) {
-        const key = batchSlice[i]
-        if (key === undefined) continue
-
+      for (const [i, key] of batchSlice.entries()) {
         const typeEntry = metaResults?.[i * 3]
         const ttlEntry = metaResults?.[i * 3 + 1]
         const memEntry = metaResults?.[i * 3 + 2]

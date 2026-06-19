@@ -95,8 +95,11 @@ export class TenantsService {
     const cached = await this.cache.get<Product>(prefix, id)
     if (cached !== null) return { data: cached, source: 'cache' }
 
-    const originProduct = await fetchFromOrigin()
-    const data: Product = originProduct ?? {
+    // The tenants module has no local origin store — `fetchFromOrigin` always
+    // misses (see its JSDoc), so a deterministic placeholder is synthesized and
+    // written through the cache on every miss.
+    await fetchFromOrigin()
+    const data: Product = {
       id,
       name: `Product ${id}`,
       priceCents: 999,

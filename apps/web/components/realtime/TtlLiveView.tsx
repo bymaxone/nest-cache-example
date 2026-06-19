@@ -44,8 +44,11 @@ function deNamespace(key: string): string {
 
 /** A short, stable label for a tile from its key's trailing id segment. */
 function shortLabel(key: string): string {
-  const segments = key.split(':')
-  const id = segments[segments.length - 1] ?? key
+  // `lastIndexOf(':') + 1` is `0` for a key without a separator, so `slice` yields
+  // the whole key; for a namespaced key it returns the trailing id. This always
+  // produces a `string` (no possibly-undefined index access), so there is no
+  // unreachable fallback branch to cover.
+  const id = key.slice(key.lastIndexOf(':') + 1)
   return id.length > 8 ? `${id.slice(0, 8)}…` : id
 }
 

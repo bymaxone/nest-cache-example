@@ -1,5 +1,6 @@
-# Example-app CI bar (DEVELOPMENT_PLAN.md Appendix C): lint + typecheck + E2E smoke + web build.
-# No mutation/coverage gate — those belong to the @bymax-one/nest-cache library, not this app.
+# Example-app CI bar (DEVELOPMENT_PLAN.md Appendix C): lint + typecheck + unit coverage
+# + E2E smoke + web build. The revised bar treats this reference app as hard as the
+# library: 100% unit coverage on both apps (the `test:cov` job below).
 # Stub: the export-usage check and release polish are added with the full CI later.
 name: CI
 
@@ -36,6 +37,23 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
+
+  test:cov:
+    runs-on: ubuntu-latest
+    # Docker-free unit tier: both apps' 100/100/100/100 coverage gate. The two suites
+    # run as separate sequential steps (never concurrently) so the per-worker reload of
+    # the locally-linked `@bymax-one/nest-cache` `file:` dependency cannot multiply and
+    # exhaust the runner's memory.
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter api test:cov
+      - run: pnpm --filter web test:cov
 
   e2e:
     runs-on: ubuntu-latest

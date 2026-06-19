@@ -68,8 +68,12 @@ export class MetricsService {
 
     for (const [prefix, entry] of this.counters) {
       const { hits, misses } = entry
+      // Every counter entry is created by `bump`, which increments one field
+      // BEFORE storing it, so a stored entry always has `hits + misses >= 1`.
+      // The division is therefore always safe — no zero-total guard is needed
+      // here (the aggregate `totals` below keeps its guard for the empty case).
       const total = hits + misses
-      prefixes[prefix] = { hits, misses, hitRate: total > 0 ? hits / total : 0 }
+      prefixes[prefix] = { hits, misses, hitRate: hits / total }
       totalHits += hits
       totalMisses += misses
     }
