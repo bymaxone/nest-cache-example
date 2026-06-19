@@ -76,7 +76,9 @@ function parseAddressList(raw: string): { host: string; port: number }[] {
     .filter((entry) => entry.length > 0)
     .map((pair) => {
       // Split host:port; an absent OR empty host (e.g. ":6379") falls back to localhost.
-      const [rawHost = '', portText = ''] = pair.split(':')
+      // `split(':')` always yields index 0, so `rawHost` needs no default — only an
+      // absent port (a colon-less entry) falls back to '' and then fails the NaN check.
+      const [rawHost, portText = ''] = pair.split(':')
       const port = Number.parseInt(portText, 10)
       if (Number.isNaN(port)) {
         throw new Error(`Invalid Redis address "${pair}" — expected host:port`)
@@ -110,7 +112,9 @@ function parseNatMap(raw: string): Record<string, { host: string; port: number }
       continue
     }
     // An absent OR empty host on the reachable side falls back to localhost.
-    const [rawHost = '', portText = ''] = reachable.split(':')
+    // `split(':')` always yields index 0, so `rawHost` needs no default — only an
+    // absent port (a colon-less side) falls back to '' and then fails the NaN check.
+    const [rawHost, portText = ''] = reachable.split(':')
     const port = Number.parseInt(portText, 10)
     if (Number.isNaN(port)) {
       throw new Error(`Invalid natMap target "${reachable}" — expected host:port`)

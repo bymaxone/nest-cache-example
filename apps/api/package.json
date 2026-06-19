@@ -35,6 +35,8 @@
     "build": "nest build",
     "start": "node dist/main.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.cjs",
+    "test:cov": "NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.cjs --coverage",
     "test:e2e": "NODE_OPTIONS=--experimental-vm-modules jest --config jest-e2e.config.mjs --runInBand",
     "verify:stampede": "nest build && node scripts/verify-stampede.mjs"
   },

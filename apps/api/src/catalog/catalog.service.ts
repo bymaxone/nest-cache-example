@@ -78,14 +78,13 @@ export class CatalogService {
     const cached = await this.cache.mget<Product>(this.prefix, ids)
 
     const missingIds: string[] = []
-    for (let i = 0; i < ids.length; i++) {
+    for (const [i, id] of ids.entries()) {
       const slot = cached[i]
       if (slot !== null && slot !== undefined) {
         this.metrics.recordHit(this.prefix)
       } else {
         this.metrics.recordMiss(this.prefix)
-        const id = ids[i]
-        if (id !== undefined) missingIds.push(id)
+        missingIds.push(id)
       }
     }
 
@@ -93,14 +92,11 @@ export class CatalogService {
     const entries: Array<readonly [string, Product]> = []
     const freshMap = new Map<string, Product | null>()
 
-    for (let i = 0; i < missingIds.length; i++) {
-      const id = missingIds[i]
+    for (const [i, id] of missingIds.entries()) {
       const product = freshResults[i]
-      if (id !== undefined) {
-        freshMap.set(id, product ?? null)
-        if (product !== null && product !== undefined) {
-          entries.push([id, product])
-        }
+      freshMap.set(id, product ?? null)
+      if (product !== null && product !== undefined) {
+        entries.push([id, product])
       }
     }
 

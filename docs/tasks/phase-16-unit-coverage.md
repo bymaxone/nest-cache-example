@@ -2,7 +2,7 @@
 
 > **Source:** [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#phase-16--unit-tests-100-coverage-api--web) §Phase 16
 > **Total tasks:** 8
-> **Progress:** 🔴 0 / 8 done (0%)
+> **Progress:** 🟢 8 / 8 done (100%)
 >
 > **Status legend:** 🔴 Not Started · 🟡 In Progress · 🔵 In Review · 🟢 Done · ⚪ Blocked
 
@@ -10,14 +10,14 @@
 
 | ID    | Task                                                                      | Status | Priority | Size | Depends on   |
 | ----- | ------------------------------------------------------------------------- | ------ | -------- | ---- | ------------ |
-| P16-1 | `apps/api` unit toolchain — Jest config + `tsconfig.spec.json` + cov gate | 🔴     | High     | M    | P15          |
-| P16-2 | `apps/api` unit — pure logic (config, env, parser, pipe, filter, DTOs)    | 🔴     | High     | L    | P16-1        |
-| P16-3 | `apps/api` unit — feature services (catalog…errors-demo)                  | 🔴     | High     | L    | P16-1        |
-| P16-4 | `apps/api` unit — realtime/IO + gateway + bootstrap → close api at 100%   | 🔴     | High     | L    | P16-2, P16-3 |
-| P16-5 | `apps/web` unit toolchain — Vitest coverage (v8) + alias + setup          | 🔴     | High     | M    | P15          |
-| P16-6 | `apps/web` unit — `lib/**` + `hooks/**`                                   | 🔴     | High     | L    | P16-5        |
-| P16-7 | `apps/web` unit — `components/**` → close web at 100%                     | 🔴     | High     | XL   | P16-6        |
-| P16-8 | Phase verification gate — `test:cov` 100/100/100/100 both apps            | 🔴     | High     | S    | P16-1..P16-7 |
+| P16-1 | `apps/api` unit toolchain — Jest config + `tsconfig.spec.json` + cov gate | 🟢     | High     | M    | P15          |
+| P16-2 | `apps/api` unit — pure logic (config, env, parser, pipe, filter, DTOs)    | 🟢     | High     | L    | P16-1        |
+| P16-3 | `apps/api` unit — feature services (catalog…errors-demo)                  | 🟢     | High     | L    | P16-1        |
+| P16-4 | `apps/api` unit — realtime/IO + gateway + bootstrap → close api at 100%   | 🟢     | High     | L    | P16-2, P16-3 |
+| P16-5 | `apps/web` unit toolchain — Vitest coverage (v8) + alias + setup          | 🟢     | High     | M    | P15          |
+| P16-6 | `apps/web` unit — `lib/**` + `hooks/**`                                   | 🟢     | High     | L    | P16-5        |
+| P16-7 | `apps/web` unit — `components/**` → close web at 100%                     | 🟢     | High     | XL   | P16-6        |
+| P16-8 | Phase verification gate — `test:cov` 100/100/100/100 both apps            | 🟢     | High     | S    | P16-1..P16-7 |
 
 > **Phase rule — read before any task.** The bar is **100% on all four metrics** (statements / branches / functions / lines) for `apps/api` (Jest) and `apps/web` (Vitest), matching the siblings `nest-logger-example` / `nest-auth-example`. Hard constraints, every task:
 >
@@ -31,7 +31,7 @@
 
 ## P16-1 — `apps/api` unit toolchain (Jest config + `tsconfig.spec.json` + coverage gate)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90–180 min)
 - **Depends on:** `P15`
@@ -42,13 +42,13 @@ Stand up the **unit** Jest toolchain for `apps/api`, separate from the Phase-15 
 
 ### Acceptance Criteria
 
-- [ ] `apps/api` devDependencies already include `jest`/`ts-jest`/`@types/jest`/`@jest/globals` (from P15); no new runtime deps needed.
-- [ ] `apps/api/tsconfig.spec.json` extends `./tsconfig.json` and sets `compilerOptions.emitDecoratorMetadata: false`.
-- [ ] `apps/api/jest.config.cjs` exists: `rootDir: 'src'`, `testRegex: '.*\\.spec\\.ts$'`, ESM (`extensionsToTreatAsEsm: ['.ts']`), `ts-jest` `{ useESM: true, tsconfig: '<rootDir>/../tsconfig.spec.json', ignoreCoverageForAllDecorators: true }`, `moduleNameMapper: { '^(\\.{1,2}/.*)\\.js$': '$1' }`, `testEnvironment: 'node'`.
-- [ ] `collectCoverageFrom` = `src/**/*.ts` minus `**/*.spec.ts`, `**/*.module.ts`, `main.ts`, `**/*.dto.ts`, `**/*.d.ts`, `**/*.types.ts`, `**/index.ts`; `coverageThreshold.global` = `{ branches: 100, functions: 100, lines: 100, statements: 100 }`; `coverageDirectory: '../coverage/api'`.
-- [ ] `apps/api/package.json` scripts: `"test": "NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.cjs"`, `"test:cov": "NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.cjs --coverage"`.
-- [ ] One smoke unit spec (e.g. `src/cache/msgpack.serializer.spec.ts`) passes and the gate runs (config wired). `.stryker-tmp`/`reports` not needed yet.
-- [ ] No `coverageThreshold` removed or lowered; the existing `jest-e2e.config.mjs` is untouched (it still matches `test/**`).
+- [x] `apps/api` devDependencies already include `jest`/`ts-jest`/`@types/jest`/`@jest/globals` (from P15); no new runtime deps needed.
+- [x] `apps/api/tsconfig.spec.json` extends `./tsconfig.json` and sets `compilerOptions.emitDecoratorMetadata: false`.
+- [x] `apps/api/jest.config.cjs` exists: `rootDir: 'src'`, `testRegex: '.*\\.spec\\.ts$'`, ESM (`extensionsToTreatAsEsm: ['.ts']`), `ts-jest` `{ useESM: true, tsconfig: '<rootDir>/../tsconfig.spec.json', ignoreCoverageForAllDecorators: true }`, `moduleNameMapper: { '^(\\.{1,2}/.*)\\.js$': '$1' }`, `testEnvironment: 'node'`.
+- [x] `collectCoverageFrom` = `src/**/*.ts` minus `**/*.spec.ts`, `**/*.module.ts`, `main.ts`, `**/*.dto.ts`, `**/*.d.ts`, `**/*.types.ts`, `**/index.ts`; `coverageThreshold.global` = `{ branches: 100, functions: 100, lines: 100, statements: 100 }`; `coverageDirectory: '../coverage/api'`.
+- [x] `apps/api/package.json` scripts: `"test": "NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.cjs"`, `"test:cov": "NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.cjs --coverage"`.
+- [x] One smoke unit spec (e.g. `src/cache/msgpack.serializer.spec.ts`) passes and the gate runs (config wired). `.stryker-tmp`/`reports` not needed yet.
+- [x] No `coverageThreshold` removed or lowered; the existing `jest-e2e.config.mjs` is untouched (it still matches `test/**`).
 
 ### Files to create / modify
 
@@ -93,7 +93,7 @@ Stand up the **unit** Jest toolchain for `apps/api`, separate from the Phase-15 
 
 ## P16-2 — `apps/api` unit: pure logic (config, env, parser, pipe, filter, DTOs)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** L (3–6 h)
 - **Depends on:** `P16-1`
@@ -104,11 +104,11 @@ Unit-test every **pure-logic** unit in `apps/api/src` — the branch-dense, depe
 
 ### Acceptance Criteria
 
-- [ ] Specs exist and pass for: `cache.config`, `env.schema`, `info.parser`, `zod-validation.pipe`, `cache-exception.filter`, `msgpack.serializer`, `metrics.service`.
-- [ ] Every DTO schema under `**/dto/*.ts` has a spec asserting at least one accept + one reject per branch (regex bounds, coerce, transforms, refines) — e.g. `tenant-params` TENANT_ID regex, `stampede-query` coerce+bounds, `error-code-param` `cache.` normalization, `products-query` split/trim/cap-50.
-- [ ] `cache.config` covers standalone/sentinel/cluster modes, natMap empty vs non-empty, the prototype-pollution skip, and serializer json vs msgpack selection.
-- [ ] `cache-exception.filter` is tested with a mocked `ArgumentsHost`/`Response` (no supertest); asserts status from `getStatus()` and the `{ error: { code, message, details } }` envelope.
-- [ ] These files report 100% on all four metrics in the coverage run; any dead branch found is removed from source (note it in the completion log line).
+- [x] Specs exist and pass for: `cache.config`, `env.schema`, `info.parser`, `zod-validation.pipe`, `cache-exception.filter`, `msgpack.serializer`, `metrics.service`.
+- [x] Every DTO schema under `**/dto/*.ts` has a spec asserting at least one accept + one reject per branch (regex bounds, coerce, transforms, refines) — e.g. `tenant-params` TENANT_ID regex, `stampede-query` coerce+bounds, `error-code-param` `cache.` normalization, `products-query` split/trim/cap-50.
+- [x] `cache.config` covers standalone/sentinel/cluster modes, natMap empty vs non-empty, the prototype-pollution skip, and serializer json vs msgpack selection.
+- [x] `cache-exception.filter` is tested with a mocked `ArgumentsHost`/`Response` (no supertest); asserts status from `getStatus()` and the `{ error: { code, message, details } }` envelope.
+- [x] These files report 100% on all four metrics in the coverage run; any dead branch found is removed from source (note it in the completion log line).
 
 ### Files to create / modify
 
@@ -150,7 +150,7 @@ Unit-test every **pure-logic** unit in `apps/api/src` — the branch-dense, depe
 
 ## P16-3 — `apps/api` unit: feature services (catalog … errors-demo)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** L (3–6 h)
 - **Depends on:** `P16-1`
@@ -161,12 +161,12 @@ Unit-test the DI-heavy **feature services** by constructing each directly with m
 
 ### Acceptance Criteria
 
-- [ ] Each service above has a spec constructing it with hand-mocked `CacheService` (+ `ProductOriginStore`/`MetricsService`/`ConfigService`/token mocks as needed); every method + branch covered.
-- [ ] `catalog.service.getProducts` covers the hit/miss/back-fill positional logic; `seedProduct` covers the override-merge precedence.
-- [ ] `admin.service` covers scan vs keys strategy, the inspect TYPE dispatch (`string`/`hash`/`set`/other), `getKeyspaceBreakdown` aggregation, and `splitNamespacedKey`.
-- [ ] `errors-demo.service` covers all 15 trigger entries (real-API mocked to throw the right `CacheException`, simulated entries, the serializer/cluster config branches, and the fail-closed `trigger()` throw).
-- [ ] Controllers covered: catalog (incl. `null → NotFoundException`), health (`try/catch → degraded`), and the remaining thin controllers (delegation + route metadata where a StringLiteral mutant would otherwise survive in P18).
-- [ ] Coverage for all of the above at 100% in the run.
+- [x] Each service above has a spec constructing it with hand-mocked `CacheService` (+ `ProductOriginStore`/`MetricsService`/`ConfigService`/token mocks as needed); every method + branch covered.
+- [x] `catalog.service.getProducts` covers the hit/miss/back-fill positional logic; `seedProduct` covers the override-merge precedence.
+- [x] `admin.service` covers scan vs keys strategy, the inspect TYPE dispatch (`string`/`hash`/`set`/other), `getKeyspaceBreakdown` aggregation, and `splitNamespacedKey`.
+- [x] `errors-demo.service` covers all 15 trigger entries (real-API mocked to throw the right `CacheException`, simulated entries, the serializer/cluster config branches, and the fail-closed `trigger()` throw).
+- [x] Controllers covered: catalog (incl. `null → NotFoundException`), health (`try/catch → degraded`), and the remaining thin controllers (delegation + route metadata where a StringLiteral mutant would otherwise survive in P18).
+- [x] Coverage for all of the above at 100% in the run.
 
 ### Files to create / modify
 
@@ -198,7 +198,7 @@ Unit-test the DI-heavy **feature services** by constructing each directly with m
 
 ## P16-4 — `apps/api` unit: realtime/IO + gateway + bootstrap → close api at 100%
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** L (3–6 h)
 - **Depends on:** `P16-2`, `P16-3`
@@ -209,11 +209,11 @@ Cover the remaining api units — the realtime/IO services and bootstrap glue �
 
 ### Acceptance Criteria
 
-- [ ] Specs cover `pubsub.bridge.service`, `ttl-events.service`, `stampede.service`, `events.gateway`, `cache.events`, the `cache.module` factory, `SocketIoAdapter`, and the trivial data/probe files.
-- [ ] `ttl-events.service` covers the cluster-mode early return, the namespace-prefix filter (kept vs dropped), the subscriber `error` listener, and the `quit()` catch.
-- [ ] `pubsub.bridge.service` covers add (new vs ref-increment), remove (decrement vs last-listener unsubscribe vs unknown-channel no-op), and the throwing-handler default sub.
-- [ ] `stampede.service` reachable branches covered with `jest.useFakeTimers()` + injected eval/cache fakes (the winner/loser/bounded paths); no real timers.
-- [ ] **`pnpm --filter api test:cov` reports 100/100/100/100 globally** for `apps/api`.
+- [x] Specs cover `pubsub.bridge.service`, `ttl-events.service`, `stampede.service`, `events.gateway`, `cache.events`, the `cache.module` factory, `SocketIoAdapter`, and the trivial data/probe files.
+- [x] `ttl-events.service` covers the cluster-mode early return, the namespace-prefix filter (kept vs dropped), the subscriber `error` listener, and the `quit()` catch.
+- [x] `pubsub.bridge.service` covers add (new vs ref-increment), remove (decrement vs last-listener unsubscribe vs unknown-channel no-op), and the throwing-handler default sub.
+- [x] `stampede.service` reachable branches covered with `jest.useFakeTimers()` + injected eval/cache fakes (the winner/loser/bounded paths); no real timers.
+- [x] **`pnpm --filter api test:cov` reports 100/100/100/100 globally** for `apps/api`.
 
 ### Files to create / modify
 
@@ -245,7 +245,7 @@ Cover the remaining api units — the realtime/IO services and bootstrap glue �
 
 ## P16-5 — `apps/web` unit toolchain (Vitest coverage + alias + setup)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90–180 min)
 - **Depends on:** `P15`
@@ -256,11 +256,11 @@ Upgrade the Phase-15 Vitest config into a full coverage harness: widen `include`
 
 ### Acceptance Criteria
 
-- [ ] `apps/web` devDeps add `@vitest/coverage-v8` (same major as `vitest`), `@testing-library/user-event`, and a nuqs testing adapter if needed.
-- [ ] `apps/web/vitest.config.ts`: `test.include` = `{app,components,lib,hooks}/**/*.{test,spec}.{ts,tsx}`; `resolve.alias` maps `@` → project root (or `vite-tsconfig-paths`); `test.setupFiles` = `['./vitest.setup.ts']`; `test.coverage` = `{ provider: 'v8', include: ['lib/**','components/**','hooks/**','app/**'], exclude: ['components/ui/**','app/**/layout.tsx','**/*.d.ts','**/index.ts','**/*.test.*'], thresholds: { branches:100, functions:100, lines:100, statements:100 } }`.
-- [ ] `apps/web/vitest.setup.ts` imports `@testing-library/jest-dom`.
-- [ ] `apps/web/package.json` adds `"test:cov": "vitest run --coverage"`.
-- [ ] The existing `lib/cache-status.test.ts` still passes under the new config; `pnpm --filter web test:cov` runs (will report <100% until P16-6/P16-7).
+- [x] `apps/web` devDeps add `@vitest/coverage-v8` (same major as `vitest`), `@testing-library/user-event`, and a nuqs testing adapter if needed.
+- [x] `apps/web/vitest.config.ts`: `test.include` = `{app,components,lib,hooks}/**/*.{test,spec}.{ts,tsx}`; `resolve.alias` maps `@` → project root (or `vite-tsconfig-paths`); `test.setupFiles` = `['./vitest.setup.ts']`; `test.coverage` = `{ provider: 'v8', include: ['lib/**','components/**','hooks/**','app/**'], exclude: ['components/ui/**','app/**/layout.tsx','**/*.d.ts','**/index.ts','**/*.test.*'], thresholds: { branches:100, functions:100, lines:100, statements:100 } }`.
+- [x] `apps/web/vitest.setup.ts` imports `@testing-library/jest-dom`.
+- [x] `apps/web/package.json` adds `"test:cov": "vitest run --coverage"`.
+- [x] The existing `lib/cache-status.test.ts` still passes under the new config; `pnpm --filter web test:cov` runs (will report <100% until P16-6/P16-7).
 
 ### Files to create / modify
 
@@ -293,7 +293,7 @@ Upgrade the Phase-15 Vitest config into a full coverage harness: widen `include`
 
 ## P16-6 — `apps/web` unit: `lib/**` + `hooks/**`
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** L (3–6 h)
 - **Depends on:** `P16-5`
@@ -304,11 +304,11 @@ Unit-test all of `lib/**` and `hooks/**` to 100%. The `lib/**` pure functions ar
 
 ### Acceptance Criteria
 
-- [ ] Every `lib/**` module (excluding barrels/types) has a `*.test.ts` at 100%.
-- [ ] Every `hooks/**` hook has a `*.test.ts(x)` at 100%; `flattenKeyPages` and other exported pure helpers tested directly.
-- [ ] `use-metric-series` covers the first-tick baseline, the cumulative-delta diff, commandstats parsing, the percentile, the sliding window, and reset-on-key.
-- [ ] `use-cache-socket` covers the `enabled` gate, rAF batching/flush, and teardown; `socket.io-client` is mocked.
-- [ ] The REST/socket boundaries are mocked (no real network); `lib/**` + `hooks/**` at 100% in the run.
+- [x] Every `lib/**` module (excluding barrels/types) has a `*.test.ts` at 100%.
+- [x] Every `hooks/**` hook has a `*.test.ts(x)` at 100%; `flattenKeyPages` and other exported pure helpers tested directly.
+- [x] `use-metric-series` covers the first-tick baseline, the cumulative-delta diff, commandstats parsing, the percentile, the sliding window, and reset-on-key.
+- [x] `use-cache-socket` covers the `enabled` gate, rAF batching/flush, and teardown; `socket.io-client` is mocked.
+- [x] The REST/socket boundaries are mocked (no real network); `lib/**` + `hooks/**` at 100% in the run.
 
 ### Files to create / modify
 
@@ -339,7 +339,7 @@ Unit-test all of `lib/**` and `hooks/**` to 100%. The `lib/**` pure functions ar
 
 ## P16-7 — `apps/web` unit: `components/**` → close web at 100%
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** XL (1–2 days)
 - **Depends on:** `P16-6`
@@ -350,11 +350,11 @@ Component-test `components/**` to **close `apps/web` at 100/100/100/100**. Start
 
 ### Acceptance Criteria
 
-- [ ] Every `components/**` file outside `components/ui/**` has a `*.test.tsx` at 100% (statements/branches/functions/lines).
-- [ ] `components/ui/chart.tsx` + `components/ui/json-tree.tsx` covered; the rest of `components/ui/**` excluded from the gate.
-- [ ] Recharts/virtualization handled via mocks (documented in a comment), not by excluding the component.
-- [ ] Data/socket views are rendered with their hooks mocked (`vi.mock('@/hooks/…')`) so branch paths (loading/error/empty/data) are all hit.
-- [ ] **`pnpm --filter web test:cov` reports 100/100/100/100 globally** for `apps/web`.
+- [x] Every `components/**` file outside `components/ui/**` has a `*.test.tsx` at 100% (statements/branches/functions/lines).
+- [x] `components/ui/chart.tsx` + `components/ui/json-tree.tsx` covered; the rest of `components/ui/**` excluded from the gate.
+- [x] Recharts/virtualization handled via mocks (documented in a comment), not by excluding the component.
+- [x] Data/socket views are rendered with their hooks mocked (`vi.mock('@/hooks/…')`) so branch paths (loading/error/empty/data) are all hit.
+- [x] **`pnpm --filter web test:cov` reports 100/100/100/100 globally** for `apps/web`.
 
 ### Files to create / modify
 
@@ -386,7 +386,7 @@ Component-test `components/**` to **close `apps/web` at 100/100/100/100**. Start
 
 ## P16-8 — Phase verification gate (`test:cov` 100/100/100/100 both apps)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `P16-1`, `P16-2`, `P16-3`, `P16-4`, `P16-5`, `P16-6`, `P16-7`
@@ -397,11 +397,11 @@ Close the phase: run both coverage gates, wire root `test` / `test:cov` fan-out,
 
 ### Acceptance Criteria
 
-- [ ] Root `package.json` `test` and `test:cov` fan out (`pnpm -r --if-present run test` / `test:cov`).
-- [ ] `.github/workflows/ci.yml` gains a `test:cov` job (or extends an existing one) running both apps' coverage gate.
-- [ ] `pnpm --filter api test:cov` and `pnpm --filter web test:cov` both report **100/100/100/100**.
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm format:check` clean with the new specs.
-- [ ] No `/* istanbul ignore */`, `@ts-ignore`, `eslint-disable`, `.skip`, `.todo` introduced anywhere in the new test corpus (grep clean).
+- [x] Root `package.json` `test` and `test:cov` fan out (`pnpm -r --if-present run test` / `test:cov`).
+- [x] `.github/workflows/ci.yml` gains a `test:cov` job (or extends an existing one) running both apps' coverage gate.
+- [x] `pnpm --filter api test:cov` and `pnpm --filter web test:cov` both report **100/100/100/100**.
+- [x] `pnpm lint`, `pnpm typecheck`, `pnpm format:check` clean with the new specs.
+- [x] No `/* istanbul ignore */`, `@ts-ignore`, `eslint-disable`, `.skip`, `.todo` introduced anywhere in the new test corpus (grep clean).
 
 ### Files to create / modify
 
@@ -439,3 +439,12 @@ When this task is 🟢, Phase 16 is 8/8 — switch the Phase 16 row in `DEVELOPM
 ## Completion log
 
 _(Agents append one line per finished task, newest at the bottom.)_
+
+- P16-1 ✅ 2026-06-19 — Unit Jest toolchain (`jest.config.cjs` + `tsconfig.spec.json` metadata-off + `test`/`test:cov` scripts) with the 100×4 gate; worker pool bounded to `'50%'`.
+- P16-2 ✅ 2026-06-19 — Pure-logic specs (cache.config, env.schema, info.parser, zod pipe, exception filter, msgpack, metrics) + every DTO schema at 100%.
+- P16-3 ✅ 2026-06-19 — Feature-service + controller specs (catalog, admin, collections, counters, tenants, serializer-demo, errors-demo) at 100%.
+- P16-4 ✅ 2026-06-19 — Realtime/IO + gateway + bootstrap specs; `apps/api` closed at 100/100/100/100 (53 suites, 292 tests).
+- P16-5 ✅ 2026-06-19 — Vitest v8 coverage harness (`vitest.config.ts` widened include + `@` alias + setup polyfills + `test:cov`), worker pool bounded to `'50%'`.
+- P16-6 ✅ 2026-06-19 — `lib/**` + `hooks/**` specs at 100%.
+- P16-7 ✅ 2026-06-19 — `components/**` specs (incl. the missing `components/tenants/**` trio and the `KeyTable` skeleton/virtualizer gaps); `apps/web` closed at 100/100/100/100 (73 files, 546 tests).
+- P16-8 ✅ 2026-06-19 — Root `test:cov` fan-out (`--workspace-concurrency=1`) + CI `test:cov` job; both apps 100×4, lint/typecheck/format clean, zero suppressions/skips.

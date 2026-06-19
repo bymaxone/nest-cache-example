@@ -30,7 +30,7 @@ import type { SeedCount } from './dto/seed-count.dto.js'
 const ADMIN_NAMESPACE_PREFIX = 'cache-example:'
 
 /** Validates a path param that must be a fully-qualified key in the app namespace. */
-const keyParamSchema = z.object({
+export const keyParamSchema = z.object({
   key: z
     .string()
     .min(1)

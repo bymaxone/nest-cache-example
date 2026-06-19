@@ -104,8 +104,11 @@ function sumCalls(commandstats: Record<string, string> | undefined, commands: st
 
 /** Nearest-rank percentile of an ascending-sorted sample array. */
 function percentile(sortedAsc: number[], p: number): number {
-  if (sortedAsc.length === 0) return 0
   const index = Math.min(sortedAsc.length - 1, Math.floor((p / 100) * sortedAsc.length))
+  // `noUncheckedIndexedAccess` widens the element to `number | undefined`; the read
+  // is `undefined` exactly when the window is empty (`index === -1`), which is the
+  // same case the `?? 0` fallback handles — so an empty window returns 0 and a
+  // populated one returns the nearest-rank sample.
   return sortedAsc[index] ?? 0
 }
 

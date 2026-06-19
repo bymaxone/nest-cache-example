@@ -33,7 +33,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 >
 > **All 17 phase files are scaffolded** under [`docs/tasks/`](tasks/) — the per-phase totals below are firm.
 >
-> **Overall progress: 100 / 129 tasks done (78%)**
+> **Overall progress: 108 / 129 tasks done (84%)**
 
 | #   | Phase                                     | Tasks file                            | Size | Done / Total | %    | Status |
 | --- | ----------------------------------------- | ------------------------------------- | ---- | ------------ | ---- | ------ |
@@ -53,7 +53,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 | 13  | Dashboard — Observe pages                 | `phase-13-dashboard-observe.md`       | L    | 8 / 8        | 100% | 🟢     |
 | 14  | Dashboard — Real-time & Labs pages        | `phase-14-dashboard-realtime-labs.md` | L    | 9 / 9        | 100% | 🟢     |
 | 15  | Testing — E2E smoke + Web smoke           | `phase-15-testing.md`                 | M    | 6 / 6        | 100% | 🟢     |
-| 16  | Unit Tests — 100% coverage (api + web)    | `phase-16-unit-coverage.md`           | XL   | 0 / 8        | 0%   | 🔴     |
+| 16  | Unit Tests — 100% coverage (api + web)    | `phase-16-unit-coverage.md`           | XL   | 8 / 8        | 100% | 🟢     |
 | 17  | E2E — every flow (HTTP + WebSocket)       | `phase-17-e2e-flows.md`               | L    | 0 / 8        | 0%   | 🔴     |
 | 18  | Mutation Testing — Stryker (near-100%)    | `phase-18-mutation-stryker.md`        | L    | 0 / 6        | 0%   | 🔴     |
 | 19  | Docs, README & Export Audit               | `phase-19-docs-readme-audit.md`       | M    | 0 / 7        | 0%   | 🔴     |
