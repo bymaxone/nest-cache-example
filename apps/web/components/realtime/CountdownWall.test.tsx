@@ -4,8 +4,8 @@
  *
  * Drives the empty/populated fork, the default vs overridden empty state, the
  * `fading` opacity branch, the seed-button click handlers, and the `isSeeding`
- * disabled state. The child `TtlRing` is rendered for real (it carries its own
- * timer-driven label), so fake timers are used and real timers restored after.
+ * disabled state. The child `TtlRing` is rendered for real (its timer-driven label
+ * is not advanced here); `cleanup()` + `vi.restoreAllMocks()` reset between tests.
  *
  * @module components/realtime/CountdownWall.test
  */

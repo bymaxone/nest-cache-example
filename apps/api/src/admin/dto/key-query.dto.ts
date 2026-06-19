@@ -6,8 +6,10 @@
  * strategy toggle (scan = safe, keys = blocking dev-only), and cursor/limit
  * pagination hints.
  *
- * Query-string values arrive as strings, so `z.coerce` is appropriate for
- * `limit` (positive integer) and `hasTtl` (boolean flag).
+ * Query-string values arrive as strings, so `limit` uses `z.coerce` (positive
+ * integer). `hasTtl` instead uses an explicit `true|false|1|0` parser: plain
+ * `z.coerce.boolean()` runs `Boolean(x)`, where any non-empty string — including
+ * `'false'` — is `true`, so `?hasTtl=false` could never turn the flag off.
  */
 import { z } from 'zod'
 
@@ -23,7 +25,10 @@ export const keyQuerySchema = z.object({
   pattern: z.string().optional(),
   tenant: z.string().optional(),
   type: z.enum(['string', 'hash', 'set']).optional(),
-  hasTtl: z.coerce.boolean().optional(),
+  hasTtl: z
+    .union([z.boolean(), z.string()])
+    .transform((value) => value === true || value === 'true' || value === '1')
+    .optional(),
   strategy: z.enum(['scan', 'keys']).default('scan'),
   cursor: z.string().optional(),
   limit: z.coerce.number().int().positive().max(1_000).default(200),

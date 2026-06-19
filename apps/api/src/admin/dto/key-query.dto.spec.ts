@@ -1,8 +1,8 @@
 /**
  * Accept/reject specs for the key-browser query DTO.
  *
- * Guards each branch: optional filters, the `type` enum, the coercion of
- * `hasTtl`, the `strategy` default/enum, and the coerced/bounded `limit`.
+ * Guards each branch: optional filters, the `type` enum, the explicit boolean
+ * parse of `hasTtl`, the `strategy` default/enum, and the coerced/bounded `limit`.
  *
  * @module admin/dto/key-query.dto.spec
  */
@@ -15,8 +15,8 @@ describe('keyQuerySchema', () => {
     expect(parsed).toEqual({ strategy: 'scan', limit: 200 })
   })
 
-  it('accepts every filter and coerces hasTtl/limit', () => {
-    /* Accept: all filters set; hasTtl/limit coerce from query strings to their target types. */
+  it('accepts every filter, parsing hasTtl and coercing limit', () => {
+    /* Accept: all filters set; hasTtl parses 'true' → true and limit coerces to a number. */
     const parsed = keyQuerySchema.parse({
       prefix: 'product',
       pattern: '*',
@@ -30,9 +30,16 @@ describe('keyQuerySchema', () => {
     expect(parsed).toMatchObject({ type: 'hash', hasTtl: true, strategy: 'keys', limit: 500 })
   })
 
-  it("coerces the string 'false' for hasTtl to true (Boolean coercion quirk)", () => {
-    /* Accept: z.coerce.boolean() runs Boolean(x), so a non-empty 'false' string becomes true. */
-    expect(keyQuerySchema.parse({ hasTtl: 'false' }).hasTtl).toBe(true)
+  it('parses hasTtl as an explicit boolean flag (true/false/1/0)', () => {
+    /*
+     * Accept: the boolean-string parser honors the literal value, so 'false'/'0'
+     * disable the flag and 'true'/'1'/true enable it. This avoids the
+     * Boolean('false') === true coercion footgun, keeping `?hasTtl=false` honest.
+     */
+    expect(keyQuerySchema.parse({ hasTtl: 'false' }).hasTtl).toBe(false)
+    expect(keyQuerySchema.parse({ hasTtl: '0' }).hasTtl).toBe(false)
+    expect(keyQuerySchema.parse({ hasTtl: '1' }).hasTtl).toBe(true)
+    expect(keyQuerySchema.parse({ hasTtl: true }).hasTtl).toBe(true)
   })
 
   it('rejects an unknown type enum value', () => {
