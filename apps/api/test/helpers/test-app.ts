@@ -3,10 +3,13 @@
  *
  * Compiles the production `AppModule` (so the suite exercises the actual wiring,
  * including `BymaxCacheModule.forRootAsync`) with the validated env pointed at a
- * Testcontainers Redis URL. `app.init()` runs every lifecycle hook — the
- * connection opens, the Lua scripts eager-load, the Pub/Sub bridge subscribes,
- * and the TTL keyspace subscriber attaches — so specs observe end-to-end behavior
- * against a genuine server, not a mock.
+ * Testcontainers Redis URL. The app is bound to an ephemeral loopback port with
+ * `app.listen(0)`, which runs every lifecycle hook — the connection opens, the Lua
+ * scripts eager-load, the Pub/Sub bridge subscribes, and the TTL keyspace
+ * subscriber attaches — so specs observe end-to-end behavior against a genuine
+ * server, not a mock. The socket.io adapter is initialized exactly as `main.ts`
+ * (minus CORS, which is irrelevant to same-origin loopback clients) so a real
+ * `socket.io-client` can connect and assert the `cache:*` WebSocket channels.
  *
  * `AppModule` is imported **dynamically, after** the env is set: `ConfigModule.forRoot`
  * validates `process.env` synchronously the moment its module metadata is evaluated,
@@ -21,17 +24,23 @@
  * @module test/helpers/test-app
  */
 import { Test, type TestingModule } from '@nestjs/testing'
+import { IoAdapter } from '@nestjs/platform-socket.io'
 import type { INestApplication } from '@nestjs/common'
+import type { Server } from 'node:http'
 import { CacheService } from '@bymax-one/nest-cache'
 
 /** The booted application plus the handles specs reach for most often. */
 export interface TestApiApp {
-  /** The initialized Nest application (all lifecycle hooks have run). */
+  /** The initialized, listening Nest application (all lifecycle hooks have run). */
   app: INestApplication
   /** The compiled testing module, for resolving any other provider. */
   moduleRef: TestingModule
   /** The library cache service, resolved from the real DI container. */
   cache: CacheService
+  /** Ephemeral loopback port the HTTP + socket.io server is listening on. */
+  port: number
+  /** Loopback base URL for HTTP and socket.io clients (`http://127.0.0.1:<port>`). */
+  baseUrl: string
 }
 
 /**
@@ -39,8 +48,8 @@ export interface TestApiApp {
  *
  * @param redisUrl - The container connection URL (`StartedRedisContainer.getConnectionUrl()`).
  * @param env - Optional per-spec env overrides merged over the test baseline.
- * @returns The initialized app, its module ref, and the resolved `CacheService`.
- * @throws When the module fails to compile or the connection cannot be opened.
+ * @returns The listening app, its module ref, the resolved `CacheService`, and the bound port/baseUrl.
+ * @throws When the module fails to compile, the connection cannot be opened, or the server fails to bind a TCP port.
  */
 export async function createTestApp(
   redisUrl: string,
@@ -68,7 +77,25 @@ export async function createTestApp(
 
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile()
   const app = moduleRef.createNestApplication()
-  await app.init()
+  // Same socket.io adapter as production (CORS omitted — loopback clients are
+  // same-origin), so the gateway accepts real socket.io-client connections.
+  app.useWebSocketAdapter(new IoAdapter(app))
+  // listen(0) binds a free loopback port and runs init() + every lifecycle hook;
+  // a stable listening port is what the socket.io client connects to.
+  await app.listen(0, '127.0.0.1')
 
-  return { app, moduleRef, cache: app.get(CacheService) }
+  const server: Server = app.getHttpServer()
+  const address = server.address()
+  if (address === null || typeof address === 'string') {
+    throw new Error('Test server did not bind a TCP port')
+  }
+  const port = address.port
+
+  return {
+    app,
+    moduleRef,
+    cache: app.get(CacheService),
+    port,
+    baseUrl: `http://127.0.0.1:${port}`,
+  }
 }
