@@ -1,0 +1,48 @@
+name: Setup workspace
+description: >-
+  Set up pnpm + Node, provision the local @bymax-one/nest-cache library (checked out
+  beside the repo to satisfy the `file:` dependency and built with tsup), then install
+  the workspace with a frozen lockfile.
+
+runs:
+  using: composite
+  steps:
+    - name: Set up pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10.8.0
+
+    - name: Set up Node
+      uses: actions/setup-node@v5
+      with:
+        node-version: '24'
+        cache: pnpm
+
+    # The app consumes @bymax-one/nest-cache via `file:../../../nest-cache` — a sibling
+    # of the repo checkout — so the lockfile cannot resolve until the library is on disk.
+    # Check it out and move it into place, then build it (it ships `dist/` via tsup).
+    # Once the library is published to npm and the dependency becomes a registry range,
+    # these three steps can be dropped and jobs install straight from the store.
+    - name: Check out the @bymax-one/nest-cache library
+      uses: actions/checkout@v5
+      with:
+        repository: bymaxone/nest-cache
+        ref: main
+        path: .nest-cache-lib
+
+    - name: Position the library beside the workspace
+      shell: bash
+      run: |
+        rm -rf "${GITHUB_WORKSPACE}/../nest-cache"
+        mv "${GITHUB_WORKSPACE}/.nest-cache-lib" "${GITHUB_WORKSPACE}/../nest-cache"
+
+    - name: Build the library
+      shell: bash
+      working-directory: ${{ github.workspace }}/../nest-cache
+      run: |
+        pnpm install --frozen-lockfile
+        pnpm build
+
+    - name: Install workspace dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile
