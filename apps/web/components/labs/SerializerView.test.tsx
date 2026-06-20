@@ -77,11 +77,13 @@ describe('SerializerView', () => {
   it('shows the active serializer name once the active query resolves ok', async () => {
     /*
      * Scenario: the active-serializer query resolves with the injected codec name.
-     * Rule it protects: an `ok` active query renders the ` · active: <name>` suffix.
+     * Rule it protects: an `ok` active query renders the ` · active: <name>` suffix —
+     * both the literal ` · active: ` prefix and the injected name must be present.
      */
     activeMock.mockResolvedValue({ ok: true, data: { serializer: 'JsonSerializer' } })
     render(<SerializerView />, { wrapper: Wrapper })
     await waitFor(() => expect(screen.getByText('JsonSerializer')).toBeInTheDocument())
+    expect(screen.getByText(/· active:/)).toBeInTheDocument()
   })
 
   it('does not show the active name when the active query resolves with an error', async () => {
@@ -133,6 +135,37 @@ describe('SerializerView', () => {
     expect(roundtripMock).not.toHaveBeenCalled()
   })
 
+  it('rejects a payload that parses to a primitive (number)', async () => {
+    /*
+     * Scenario: the payload is valid JSON but a bare number, not an object.
+     * Rule it protects: `typeof parsed !== 'object'` is the active OR clause, so a
+     * primitive is rejected — distinguishing the `||` from an `&&` mutant (which
+     * would let the number reach the round-trip) and the always-false guard mutant.
+     */
+    const user = userEvent.setup()
+    render(<SerializerView />, { wrapper: Wrapper })
+    const textarea = screen.getByLabelText('payload (JSON object)')
+    fireEvent.change(textarea, { target: { value: '42' } })
+    await user.click(screen.getByRole('button', { name: 'Round-trip' }))
+    expect(screen.getByText('Payload must be a JSON object')).toBeInTheDocument()
+    expect(roundtripMock).not.toHaveBeenCalled()
+  })
+
+  it('rejects a payload that parses to JSON null', async () => {
+    /*
+     * Scenario: the payload is the literal `null` (valid JSON, `typeof` object).
+     * Rule it protects: the `parsed === null` clause rejects null — a `!== null`
+     * mutant would treat null as a valid object and call the round-trip endpoint.
+     */
+    const user = userEvent.setup()
+    render(<SerializerView />, { wrapper: Wrapper })
+    const textarea = screen.getByLabelText('payload (JSON object)')
+    fireEvent.change(textarea, { target: { value: 'null' } })
+    await user.click(screen.getByRole('button', { name: 'Round-trip' }))
+    expect(screen.getByText('Payload must be a JSON object')).toBeInTheDocument()
+    expect(roundtripMock).not.toHaveBeenCalled()
+  })
+
   it('round-trips a valid object payload and renders the comparison', async () => {
     /*
      * Scenario: a valid object payload (the default) is round-tripped.
@@ -177,16 +210,101 @@ describe('SerializerView', () => {
   it('switches the active codec via the selector', async () => {
     /*
      * Scenario: the user selects the `msgpack` codec.
-     * Rule it protects: clicking a codec toggles its pressed state (and labels the
-     * subsequent request).
+     * Rule it protects: `json` is the initial codec (pressed) per the default state,
+     * and clicking a codec toggles its pressed state (and labels the subsequent
+     * request) — `codec === option` drives `aria-pressed`.
      */
     const user = userEvent.setup()
     render(<SerializerView />, { wrapper: Wrapper })
     const msgpack = screen.getByRole('button', { name: 'msgpack' })
+    // The default codec is `json`, so json starts pressed and msgpack does not.
+    expect(screen.getByRole('button', { name: 'json' })).toHaveAttribute('aria-pressed', 'true')
     expect(msgpack).toHaveAttribute('aria-pressed', 'false')
     await user.click(msgpack)
     expect(msgpack).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('button', { name: 'json' })).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('applies the pressed vs unpressed codec classNames to the selected button', async () => {
+    /*
+     * Scenario: json is the default (pressed) codec; the user switches to msgpack.
+     * Rule it protects: `codec === option` selects between the two className string
+     * literals, so the selected button carries the pressed pill (`bg-brand-500`,
+     * `text-white`) while the unselected one carries the muted pill
+     * (`text-muted-foreground`, no `bg-brand-500`). A forced-true/false condition,
+     * an inverted equality, or an emptied className string lands the wrong classes.
+     */
+    const user = userEvent.setup()
+    render(<SerializerView />, { wrapper: Wrapper })
+    const json = screen.getByRole('button', { name: 'json' })
+    const msgpack = screen.getByRole('button', { name: 'msgpack' })
+    // Default: json is pressed (brand pill), msgpack is muted.
+    expect(json).toHaveClass('bg-brand-500', 'text-white')
+    expect(msgpack).toHaveClass('text-muted-foreground')
+    expect(msgpack).not.toHaveClass('bg-brand-500')
+    // After switching, the pressed/unpressed classes swap to msgpack.
+    await user.click(msgpack)
+    expect(msgpack).toHaveClass('bg-brand-500', 'text-white')
+    expect(json).toHaveClass('text-muted-foreground')
+    expect(json).not.toHaveClass('bg-brand-500')
+  })
+
+  it('labels the request with the selected codec when round-tripping', async () => {
+    /*
+     * Scenario: the user picks `msgpack`, then round-trips the default payload.
+     * Rule it protects: the initial codec is `json` (not an empty string), and the
+     * selected codec is passed as the first argument to the round-trip request.
+     */
+    roundtripMock.mockResolvedValue(okRoundtrip())
+    const user = userEvent.setup()
+    render(<SerializerView />, { wrapper: Wrapper })
+    await user.click(screen.getByRole('button', { name: 'msgpack' }))
+    await user.click(screen.getByRole('button', { name: 'Round-trip' }))
+    await waitFor(() => expect(roundtripMock).toHaveBeenCalledTimes(1))
+    expect(roundtripMock).toHaveBeenCalledWith('msgpack', expect.any(Object))
+  })
+
+  it('renders the BYMAX_CACHE_SERIALIZER explainer with both env-var examples', () => {
+    /*
+     * Scenario: the static input-card explainer copy.
+     * Rule it protects: the explainer names `BYMAX_CACHE_SERIALIZER` and shows the
+     * `CACHE_SERIALIZER=json` vs `=msgpack` comparison hints — pinning those string
+     * literals against empty-string mutants. The paragraph textContent also pins the
+     * `{' '}` spacer literals that separate the prose from each mono span, so blanking
+     * a spacer (which would fuse two words) is caught.
+     */
+    render(<SerializerView />, { wrapper: Wrapper })
+    expect(screen.getByText('BYMAX_CACHE_SERIALIZER')).toBeInTheDocument()
+    expect(screen.getByText('CACHE_SERIALIZER=json')).toBeInTheDocument()
+    expect(screen.getByText('=msgpack')).toBeInTheDocument()
+    const explainer = screen.getByText('BYMAX_CACHE_SERIALIZER').closest('p')
+    expect(explainer).not.toBeNull()
+    expect(explainer?.textContent).toContain('fixed per instance via BYMAX_CACHE_SERIALIZER')
+    expect(explainer?.textContent).toContain('Run the API with CACHE_SERIALIZER=json')
+    expect(explainer?.textContent).toContain('json vs =msgpack')
+  })
+
+  it('renders the SerializableValue footer caveat naming each unsupported type', () => {
+    /*
+     * Scenario: the static footer caveat copy.
+     * Rule it protects: the footer enumerates the JSON-lossy types — `Date`, `Map`,
+     * `Set`, `BigInt`, `undefined`, and the `ISerializer` escape hatch — pinning
+     * those string literals against empty-string mutants. The paragraph textContent
+     * also pins the `{' '}` spacer literals between the enumerated mono spans, so a
+     * blanked spacer (which would fuse two type names) is caught.
+     */
+    render(<SerializerView />, { wrapper: Wrapper })
+    expect(screen.getByText('Map')).toBeInTheDocument()
+    expect(screen.getByText('Set')).toBeInTheDocument()
+    expect(screen.getByText('BigInt')).toBeInTheDocument()
+    expect(screen.getByText('undefined')).toBeInTheDocument()
+    expect(screen.getByText('ISerializer')).toBeInTheDocument()
+    const footer = screen.getByText('ISerializer').closest('p')
+    expect(footer).not.toBeNull()
+    expect(footer?.textContent).toContain('Map, Set')
+    expect(footer?.textContent).toContain('Set, BigInt')
+    expect(footer?.textContent).toContain('BigInt, or undefined')
+    expect(footer?.textContent).toContain('custom ISerializer')
   })
 
   it('runs the Date caveat and shows the survived badge with a non-null raw byte count', async () => {
@@ -210,6 +328,15 @@ describe('SerializerView', () => {
     await user.click(screen.getByRole('button', { name: 'Run Date caveat' }))
     await waitFor(() => expect(screen.getByText('Date survived')).toBeInTheDocument())
     expect(screen.getByText('Date survived the round-trip')).toBeInTheDocument()
+    // The survived state drives the Badge `secondary` variant string literal, whose
+    // class tokens differ from the destructive lost state (pins the variant literal).
+    expect(screen.getByText('Date survived')).toHaveClass(
+      'bg-secondary',
+      'text-secondary-foreground',
+    )
+    // raw is non-null ('BINARY' → 6 bytes), so the `raw === null` branch is NOT
+    // taken: the byte count is the encoded length, not the zero fallback.
+    expect(screen.getByText('6 B')).toBeInTheDocument()
   })
 
   it('shows the Date-lost badge and the zero-byte fallback when raw is null', async () => {
@@ -232,8 +359,15 @@ describe('SerializerView', () => {
     render(<SerializerView />, { wrapper: Wrapper })
     await user.click(screen.getByRole('button', { name: 'Run Date caveat' }))
     await waitFor(() => expect(screen.getByText('Date lost (→ ISO string)')).toBeInTheDocument())
+    // The lost state drives the Badge `destructive` variant string literal (pins it).
+    expect(screen.getByText('Date lost (→ ISO string)')).toHaveClass(
+      'bg-destructive',
+      'text-destructive-foreground',
+    )
     // The evicted (null) raw renders the SerializerCompare eviction placeholder.
     expect(screen.getByText('— (key evicted)')).toBeInTheDocument()
+    // raw === null takes the zero-byte branch (no encode of a null string).
+    expect(screen.getByText('0 B')).toBeInTheDocument()
   })
 
   it('toasts the API error message when a round-trip fails with a structured error', async () => {

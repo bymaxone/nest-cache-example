@@ -101,13 +101,23 @@ describe('StampedeService (unit)', () => {
     const { service, evalFn, getFn, setFn, load } = setup()
     evalFn.mockResolvedValue(1)
     getFn.mockResolvedValue(null)
+    // Pin a non-zero start so the elapsed window is the DIFFERENCE (1400 − 1000 = 400),
+    // not the sum — a `finishedAt - startedAt` → `+` mutant would report 2400.
+    jest.setSystemTime(1_000)
 
     const promise = service.run(singleBurst(2000))
     await jest.advanceTimersByTimeAsync(ORIGIN_LATENCY_MS)
     const result = await promise
 
     expect(result.timeline).toHaveLength(1)
-    expect(result.timeline[0]).toMatchObject({ index: 0, role: 'won', outcome: 'origin' })
+    expect(result.timeline[0]).toMatchObject({
+      index: 0,
+      role: 'won',
+      outcome: 'origin',
+      startedAt: 1_000,
+      finishedAt: 1_400,
+      durationMs: 400,
+    })
     expect(result.summary).toEqual({
       concurrency: 1,
       originFetches: 1,
@@ -117,6 +127,8 @@ describe('StampedeService (unit)', () => {
     expect(result.script).toEqual({ name: ACQUIRE_LOCK, sha: SHA })
     expect(setFn).toHaveBeenCalledWith('product', 'p1', PRODUCT, TTL)
     expect(load).toHaveBeenCalledWith(ACQUIRE_LOCK)
+    // Acquire eval passes the namespaced lock KEY and the [token, lockMs] ARGV verbatim.
+    expect(evalFn).toHaveBeenCalledWith(ACQUIRE_LOCK, ['stampede:p1'], [expect.any(String), 2000])
     // Released token-safely after populating.
     expect(evalFn).toHaveBeenCalledWith(RELEASE_LOCK, ['stampede:p1'], [expect.any(String)])
   })
@@ -169,6 +181,52 @@ describe('StampedeService (unit)', () => {
 
     const promise = service.run(singleBurst(2000))
     await jest.advanceTimersByTimeAsync(POLL_INTERVAL_MS)
+    const result = await promise
+
+    expect(result.timeline[0]).toMatchObject({ role: 'waited', outcome: 'hit' })
+    expect(result.summary).toMatchObject({ originFetches: 0, cacheHits: 1 })
+    expect(setFn).not.toHaveBeenCalled()
+  })
+
+  it('computes the hit rate as cacheHits over concurrency for a multi-contender burst', async () => {
+    /*
+     * Scenario: two contenders both lose the lock and both read the value immediately.
+     * Rule it protects: the summary hitRate is `cacheHits / concurrency` (2 / 2 = 1) —
+     * a `*` mutant would report 4. A concurrency greater than one is required to tell
+     * `/` apart from `*` (they coincide at concurrency 1).
+     */
+    const { service, evalFn, getFn } = setup()
+    evalFn.mockResolvedValue(0)
+    getFn.mockResolvedValue(PRODUCT)
+
+    const result = await service.run({ productId: 'p1', concurrency: 2, lockMs: 2000 })
+
+    expect(result.summary).toEqual({
+      concurrency: 2,
+      originFetches: 0,
+      cacheHits: 2,
+      hitRate: 1,
+    })
+  })
+
+  it('keeps polling until a late value lands — an early break would miss it', async () => {
+    /*
+     * Scenario: a loser misses the first read and the first poll, then the value lands
+     * on the second poll, all inside the lock window (lockMs=100).
+     * Rule it protects: the loop polls until `Date.now() >= deadline` where
+     * `deadline = Date.now() + lockMs`. A `-` mutant on the deadline (past deadline) or
+     * a `=> true` mutant on the break guard would break on the first iteration and fall
+     * through to a direct origin fetch — so asserting a HIT (not an origin) pins both.
+     */
+    const { service, evalFn, getFn, setFn } = setup()
+    evalFn.mockResolvedValue(0)
+    getFn
+      .mockResolvedValueOnce(null) // first read: miss
+      .mockResolvedValueOnce(null) // first poll: still missing
+      .mockResolvedValueOnce(PRODUCT) // second poll: value landed
+
+    const promise = service.run(singleBurst(100))
+    await jest.advanceTimersByTimeAsync(POLL_INTERVAL_MS * 2)
     const result = await promise
 
     expect(result.timeline[0]).toMatchObject({ role: 'waited', outcome: 'hit' })

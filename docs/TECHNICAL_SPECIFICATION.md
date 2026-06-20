@@ -305,7 +305,7 @@ Keys are composed as **`{namespace}{separator}{prefix}{separator}{id}`**. With d
 | Lint/format         | ESLint 9 (flat) + Prettier                                        | `^9` / `^3`                             | shared Bymax config                                         |
 | Git hooks           | Husky + commitlint + lint-staged                                  | —                                       | Conventional Commits, enforced locally                      |
 | API tests           | Jest + `@nestjs/testing` + Testcontainers (`redis:7-alpine`)      | `^30`                                   | E2E against real Redis                                      |
-| Web tests           | Playwright (smoke)                                                | latest                                  | dashboard happy-path                                        |
+| Web tests           | Playwright (journey suite)                                        | latest                                  | 10-page dashboard journeys (self-booting stack)             |
 
 ---
 
@@ -1380,14 +1380,14 @@ prompt, completion protocol), matching the sibling examples.
 
 ## 26 · What This Project Intentionally Excludes
 
-| Excluded                                | Why                                                                                     |
-| --------------------------------------- | --------------------------------------------------------------------------------------- |
-| Database (PostgreSQL/Prisma)            | would obscure the cache focus; in-memory origin is enough (G5)                          |
-| Authentication / JWT                    | out of scope — use `@bymax-one/nest-auth` (NG2)                                         |
-| Production deployment (K8s, CD)         | local dev reference, not a prod template (NG1)                                          |
-| 100% coverage / mutation gates          | those are the **library's** gates; the example ships a smoke suite (NG4)                |
-| Persistent metrics (Prometheus/Grafana) | RedisInsight covers Redis-level metrics; a metrics stack would bloat the example        |
-| Swagger / OpenAPI                       | matches the Bymax example convention; JSDoc + dashboard + curl journeys instead (§23.4) |
+| Excluded                                | Why                                                                                                                              |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Database (PostgreSQL/Prisma)            | would obscure the cache focus; in-memory origin is enough (G5)                                                                   |
+| Authentication / JWT                    | out of scope — use `@bymax-one/nest-auth` (NG2)                                                                                  |
+| Production deployment (K8s, CD)         | local dev reference, not a prod template (NG1)                                                                                   |
+| ~~100% coverage / mutation gates~~      | **NG4 reversed** — now IN scope: 100% unit coverage + Stryker mutation (api 100% / web 91.61%). See DEVELOPMENT_PLAN Appendix C. |
+| Persistent metrics (Prometheus/Grafana) | RedisInsight covers Redis-level metrics; a metrics stack would bloat the example                                                 |
+| Swagger / OpenAPI                       | matches the Bymax example convention; JSDoc + dashboard + curl journeys instead (§23.4)                                          |
 
 ---
 

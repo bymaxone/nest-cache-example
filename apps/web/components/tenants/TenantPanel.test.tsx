@@ -34,13 +34,21 @@ let useKeysResult: UseKeysMock = { data: { pages: [] }, isLoading: false }
 let flatKeys: string[] = []
 const clearTenant: ClearTenantMock = { mutate: vi.fn(), isPending: false }
 const getProduct = vi.fn<(tenant: string, id: string) => Promise<unknown>>()
+// Stable spy so the panel's post-seed cache invalidation can be asserted.
+const invalidateQueries = vi.fn()
+// Recording spies for the key hook + flattener: they still return the mutable
+// fixtures above, but capturing their arguments makes the panel's query filter
+// (`{ tenant, prefix }`) and the exact `data.pages ?? []` it forwards observable.
+// `clearAllMocks` resets call history but preserves these implementations.
+const useKeysSpy = vi.fn<(...args: unknown[]) => unknown>(() => useKeysResult)
+const flattenKeyPagesSpy = vi.fn<(...args: unknown[]) => unknown>(() => flatKeys)
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
 
 vi.mock('@/hooks/use-keys', () => ({
   KEYS_QUERY_ROOT: 'keys',
-  useKeys: () => useKeysResult,
-  flattenKeyPages: () => flatKeys,
+  useKeys: (...args: unknown[]) => useKeysSpy(...args),
+  flattenKeyPages: (...args: unknown[]) => flattenKeyPagesSpy(...args),
 }))
 
 vi.mock('@/hooks/use-cache-mutations', () => ({
@@ -54,7 +62,7 @@ vi.mock('@/lib/cache-api', () => ({
 }))
 
 vi.mock('@tanstack/react-query', () => ({
-  useQueryClient: () => ({ invalidateQueries: vi.fn() }),
+  useQueryClient: () => ({ invalidateQueries }),
 }))
 
 import { toast } from 'sonner'
@@ -83,6 +91,24 @@ describe('TenantPanel', () => {
     const { container } = render(<TenantPanel tenant="acme" />)
     expect(container.querySelector('.animate-pulse')).not.toBeNull()
     expect(screen.queryByText(/No keys/)).not.toBeInTheDocument()
+    // With no resolved `data`, the `?? []` fallback hands an EMPTY array to the
+    // flattener — not a `["Stryker was here"]` sentinel — so the list stays empty.
+    expect(flattenKeyPagesSpy).toHaveBeenCalledWith([])
+  })
+
+  it('subscribes to the product prefix for the tenant and forwards its resolved pages', () => {
+    /*
+     * Scenario: the panel mounts for a tenant whose key query has resolved one page.
+     * Rule it protects: `useKeys` is called with the exact `{ tenant, prefix: 'product' }`
+     * filter, and the LIVE `query.data.pages` array (not the empty fallback) is handed to
+     * `flattenKeyPages` — the `?? []` supplies the fallback only when `data` is absent, so
+     * a `&&` mutation that would forward `[]` here is caught.
+     */
+    const page = { ok: true as const, data: { keys: ['tenant:acme:product:1'], cursor: null } }
+    useKeysResult = { data: { pages: [page] }, isLoading: false }
+    render(<TenantPanel tenant="acme" />)
+    expect(useKeysSpy).toHaveBeenCalledWith({ tenant: 'acme', prefix: 'product' })
+    expect(flattenKeyPagesSpy).toHaveBeenCalledWith([page])
   })
 
   it('renders the empty prompt and a dash hit rate when the tenant has no keys', () => {
@@ -103,10 +129,13 @@ describe('TenantPanel', () => {
      * data branch renders one row per key.
      */
     flatKeys = ['tenant:acme:product:1', 'tenant:acme:product:2']
-    render(<TenantPanel tenant="acme" isActive />)
+    const { container } = render(<TenantPanel tenant="acme" isActive />)
     expect(screen.getByText('active')).toBeInTheDocument()
     expect(screen.getByText('tenant:acme:product:1')).toBeInTheDocument()
     expect(screen.getByText('tenant:acme:product:2')).toBeInTheDocument()
+    // The active panel's Card carries the brand highlight ring (the `isActive && …`
+    // class), so a blanked literal or inverted condition would drop it.
+    expect(container.firstChild).toHaveClass('ring-1', 'ring-brand-500/40')
   })
 
   it('omits the active marker when the panel is not the selected tenant', () => {
@@ -114,19 +143,25 @@ describe('TenantPanel', () => {
      * Scenario: the panel is rendered for an inactive tenant.
      * Rule it protects: the `isActive ? … : null` false arm leaves no "active" marker.
      */
-    render(<TenantPanel tenant="globex" />)
+    const { container } = render(<TenantPanel tenant="globex" />)
     expect(screen.queryByText('active')).not.toBeInTheDocument()
+    // An inactive panel never paints the highlight ring (the `isActive && …` false
+    // arm), so a forced-true condition that always rings would be caught.
+    expect(container.firstChild).not.toHaveClass('ring-1')
   })
 
   it('seeds products, counting only cache hits across the read-through loop', async () => {
     /*
-     * Scenario: a [Seed 10] burst where one read is a cache hit, one an origin miss,
-     * and the rest fail outright.
+     * Scenario: a [Seed 10] burst with TWO cache hits, ONE origin miss, and the rest
+     * failing outright.
      * Rule it protects: the `result.ok && source === 'cache'` predicate increments the
-     * hit count only on a cached hit (covering its ok/origin/!ok arms), then the
-     * session hit rate renders via the real formatter and a success toast is raised.
+     * hit count only on a cached hit. Using a different number of cache hits (2) than
+     * origin reads (1) pins the `=== 'cache'` comparison — inverting it (`!== 'cache'`)
+     * would count the single origin read instead, yielding 0.1 rather than 0.2. The
+     * `!ok` failures short-circuit the predicate so they never reach the comparison.
      */
     getProduct
+      .mockResolvedValueOnce({ ok: true, data: { data: product, source: 'cache' } })
       .mockResolvedValueOnce({ ok: true, data: { data: product, source: 'cache' } })
       .mockResolvedValueOnce({ ok: true, data: { data: product, source: 'origin' } })
       .mockResolvedValue({ ok: false, error: { code: 'x', message: 'down', status: 500 } })
@@ -136,8 +171,11 @@ describe('TenantPanel', () => {
 
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Seeded 10 products for acme'))
     expect(getProduct).toHaveBeenCalledTimes(10)
-    // 1 hit / 10 reads → the session hit rate renders via the real formatter.
-    expect(screen.getByText(formatPercent(0.1))).toBeInTheDocument()
+    // 2 cache hits / 10 reads → 0.2 via the real formatter (an origin read is NOT a hit).
+    expect(screen.getByText(formatPercent(0.2))).toBeInTheDocument()
+    expect(screen.queryByText(formatPercent(0.1))).not.toBeInTheDocument()
+    // After seeding, the key list is invalidated so the new keys appear.
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['keys'] })
   })
 
   it('shows the Seeding… label and disables the button while a seed is in flight', async () => {

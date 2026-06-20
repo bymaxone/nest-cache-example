@@ -233,6 +233,12 @@ describe('TenantsService (unit)', () => {
         foreignKeySurvived: true,
       })
       expect(clientSet).toHaveBeenCalledTimes(1)
+      // Both existence probes (the pre-seed check and the post-flush survival check)
+      // must target the exact foreign key. Asserted per-call (Nth) because the two
+      // literals are mutated independently — a single `toHaveBeenCalledWith` would pass
+      // on the other, still-correct call and let one blanked literal survive.
+      expect(clientExists).toHaveBeenNthCalledWith(1, 'other-app:demo')
+      expect(clientExists).toHaveBeenNthCalledWith(2, 'other-app:demo')
     })
 
     it('skips the seed when the foreign key already exists and reports it gone', async () => {

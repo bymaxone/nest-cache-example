@@ -22,9 +22,12 @@ import { CartItemSchema } from './dto/cart-item.dto.js'
 import { TagsSchema } from './dto/tags.dto.js'
 import type { CartLine } from './collection.types.js'
 
-const collectionIdSchema = z.object({ id: z.string().min(1) })
-const cartLineParamsSchema = z.object({ id: z.string().min(1), field: z.string().min(1) })
-const tagParamsSchema = z.object({ id: z.string().min(1), tag: z.string().min(1) })
+/** Validates the `:id` path param shared by every collections route. */
+export const collectionIdSchema = z.object({ id: z.string().min(1) })
+/** Validates the `:id` + `:field` path params for a single cart line. */
+export const cartLineParamsSchema = z.object({ id: z.string().min(1), field: z.string().min(1) })
+/** Validates the `:id` + `:tag` path params for a single tag operation. */
+export const tagParamsSchema = z.object({ id: z.string().min(1), tag: z.string().min(1) })
 
 /**
  * Handles all /collections routes (carts as hashes, tags as sets).

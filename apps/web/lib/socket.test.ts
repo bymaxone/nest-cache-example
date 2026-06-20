@@ -151,6 +151,18 @@ describe('parseConnectionEvent', () => {
     expect(ev.data).toEqual({})
     expect(ev.at).toBeGreaterThanOrEqual(before)
   })
+
+  it('treats a null data field as an empty record (the non-null guard)', () => {
+    /*
+     * Scenario: `data` is exactly `null` (typeof null === 'object').
+     * Rule it protects: `isRecord` requires `value !== null`, so a null data field
+     * falls back to `{}` — without that operand `typeof null === 'object'` alone would
+     * wrongly accept null as a record.
+     */
+    const ev = parseConnectionEvent({ event: 'ready', data: null }, 5)
+    if (ev.kind !== 'connection') throw new Error('expected a connection event')
+    expect(ev.data).toEqual({})
+  })
 })
 
 describe('parseChannelEvent', () => {

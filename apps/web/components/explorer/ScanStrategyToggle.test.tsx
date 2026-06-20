@@ -23,6 +23,9 @@ describe('ScanStrategyToggle', () => {
     expect(screen.getByRole('button', { name: 'scan' })).toBeEnabled()
     expect(screen.getByRole('button', { name: 'keys' })).toBeEnabled()
     expect(screen.getByRole('button', { name: 'scan' })).toHaveAttribute('aria-pressed', 'true')
+    // The inactive `keys` button must report unpressed: pins the `value === strategy`
+    // equality so a mutant forcing `aria-pressed` true on every button is caught.
+    expect(screen.getByRole('button', { name: 'keys' })).toHaveAttribute('aria-pressed', 'false')
     expect(screen.queryByText(/blocks the server/)).not.toBeInTheDocument()
     expect(screen.queryByText(/UNSUPPORTED_IN_CLUSTER/)).not.toBeInTheDocument()
   })
@@ -36,6 +39,9 @@ describe('ScanStrategyToggle', () => {
     render(<ScanStrategyToggle value="keys" onChange={vi.fn()} />)
     expect(screen.getByRole('status')).toHaveTextContent('O(N) — blocks the server, dev only.')
     expect(screen.getByRole('button', { name: 'keys' })).toHaveAttribute('aria-pressed', 'true')
+    // With `keys` active, `scan` must be unpressed: pins the equality the other way so
+    // a mutant that always reports pressed (or inverts the comparison) is detected.
+    expect(screen.getByRole('button', { name: 'scan' })).toHaveAttribute('aria-pressed', 'false')
   })
 
   it('disables both buttons and shows the cluster callout in cluster mode', () => {
@@ -63,5 +69,49 @@ describe('ScanStrategyToggle', () => {
     render(<ScanStrategyToggle value="scan" onChange={onChange} />)
     await user.click(screen.getByRole('button', { name: 'keys' }))
     expect(onChange).toHaveBeenCalledWith('keys')
+  })
+
+  it('styles the active option as a brand-gradient default and the inactive option as a muted ghost', () => {
+    /*
+     * Scenario: `scan` is active, `keys` is inactive (the safe default).
+     * Rule it protects: the active strategy renders the Button `default` variant —
+     * the brand gradient class `from-brand-500` — and keeps its mono label un-muted,
+     * while the inactive strategy renders the `ghost` variant
+     * (`hover:bg-(--glass-bg-hover)`) plus the `text-muted-foreground` de-emphasis.
+     * Pins the `value === strategy` variant ternary, the
+     * `value !== strategy && 'text-muted-foreground'` toggle, and the `font-mono`,
+     * `default`, and `ghost` literals against string-emptying / inversion mutants.
+     */
+    render(<ScanStrategyToggle value="scan" onChange={vi.fn()} />)
+    const active = screen.getByRole('button', { name: 'scan' })
+    const inactive = screen.getByRole('button', { name: 'keys' })
+    expect(active).toHaveClass('from-brand-500')
+    expect(active).toHaveClass('font-mono')
+    expect(active).not.toHaveClass('text-muted-foreground')
+    expect(inactive).not.toHaveClass('from-brand-500')
+    expect(inactive).toHaveClass('hover:bg-(--glass-bg-hover)')
+    expect(inactive).toHaveClass('text-muted-foreground')
+  })
+
+  it('paints the keys O(N) warning in the amber severity color', () => {
+    /*
+     * Scenario: the dangerous `keys` strategy is active (standalone, not cluster).
+     * Rule it protects: the O(N) warning callout carries its inline amber color
+     * (`#f59e0b` → rgb(245, 158, 11)) — pinning the `style` object and the hex
+     * literal against being emptied to a colorless callout.
+     */
+    render(<ScanStrategyToggle value="keys" onChange={vi.fn()} />)
+    expect(screen.getByRole('status').style.color).toBe('rgb(245, 158, 11)')
+  })
+
+  it('paints the cluster callout in the purple unsupported color', () => {
+    /*
+     * Scenario: cluster mode disables the toggle and shows the cluster callout.
+     * Rule it protects: the UNSUPPORTED_IN_CLUSTER callout carries its inline purple
+     * color (`#a855f7` → rgb(168, 85, 247)) — pinning the `style` object and the hex
+     * literal against being emptied to a colorless callout.
+     */
+    render(<ScanStrategyToggle value="keys" onChange={vi.fn()} isClusterMode />)
+    expect(screen.getByRole('status').style.color).toBe('rgb(168, 85, 247)')
   })
 })

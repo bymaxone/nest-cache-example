@@ -146,6 +146,7 @@ export class ErrorsDemoService {
    * @throws {CacheException} `SERIALIZATION_FAILED` (HTTP 500).
    */
   private triggerSerializationFailed(): unknown {
+    // Stryker disable next-line ObjectLiteral,BooleanLiteral -- `{ infer: true }` is a compile-time-only typing hint for ConfigService; emptying it or flipping the flag returns the identical runtime value.
     if (this.config.get('CACHE_SERIALIZER', { infer: true }) !== 'json') {
       throw new CacheException(CACHE_ERROR_CODES.SERIALIZATION_FAILED, { simulated: true })
     }
@@ -170,6 +171,7 @@ export class ErrorsDemoService {
    * @throws {CacheException} `UNSUPPORTED_IN_CLUSTER` (HTTP 500).
    */
   private triggerUnsupportedInCluster(): never {
+    // Stryker disable next-line ObjectLiteral,BooleanLiteral -- `{ infer: true }` is a compile-time-only typing hint for ConfigService; emptying it or flipping the flag returns the identical runtime value.
     if (this.config.get('CACHE_MODE', { infer: true }) === 'cluster') {
       // Real cluster guard: rejects the raw-client escape hatch (throws synchronously).
       this.cache.getClient()

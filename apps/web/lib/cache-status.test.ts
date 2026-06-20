@@ -103,6 +103,8 @@ describe('httpErrorSeverityMeta', () => {
     expect(httpErrorSeverityMeta(500).color).toBe('#ef4444')
     expect(httpErrorSeverityMeta(400).color).toBe('#f59e0b')
     expect(httpErrorSeverityMeta(200).color).toBe('#60a5fa')
+    // Pin the else-tier label too (not just its colour) so blanking 'Notice' is caught.
+    expect(httpErrorSeverityMeta(200).label).toBe('Notice')
     expectAccessible(httpErrorSeverityMeta(504))
     expectAccessible(httpErrorSeverityMeta(400))
   })

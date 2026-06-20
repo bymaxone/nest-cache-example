@@ -1,0 +1,28 @@
+name: nest-cache-example-test
+
+# Dedicated, ephemeral test Redis for the Playwright web smoke (mirrors the
+# nest-logger-example test-stack pattern). An ALTERNATE host port (56379) so it
+# runs alongside the dev stack (6379) without collision, tmpfs storage so nothing
+# persists between runs, and bound to 127.0.0.1. Keyspace-expiry notifications
+# (`Ex`) are enabled — the same flag the Testcontainers E2E helper passes — so the
+# TTL feed works against this stack. Persistence is disabled (`--save '' --appendonly
+# no`) since the data is throwaway.
+#
+# Brought up by `pnpm infra:test:up` (the Playwright `webServer` chains it before
+# starting the API), torn down by `pnpm infra:test:down`. The default unit/E2E
+# suites stay hermetic (the API E2E boots its own Redis via Testcontainers) and
+# never touch this file.
+services:
+  redis:
+    image: redis:7-alpine
+    command: ['redis-server', '--notify-keyspace-events', 'Ex', '--save', '', '--appendonly', 'no']
+    ports:
+      - '127.0.0.1:56379:6379'
+    tmpfs:
+      - /data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 3s
+      timeout: 3s
+      retries: 15
+      start_period: 3s

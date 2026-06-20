@@ -48,6 +48,12 @@ describe('CacheEventsBridge (unit)', () => {
     expect(errorSpy).toHaveBeenCalledWith('[cache] error', data)
     expect(logSpy).not.toHaveBeenCalled()
     expect(emitConnectionEvent).toHaveBeenCalledWith('error', data)
+    // The bridge tags its logger with the 'Cache' context; read it off the logged
+    // instance so blanking that literal (which would mislabel every cache log line)
+    // is caught.
+    const loggerInstance = errorSpy.mock.instances[0]
+    if (!loggerInstance) throw new Error('expected the error to be logged on a Logger instance')
+    expect(Reflect.get(loggerInstance, 'context')).toBe('Cache')
   })
 
   it('logs a non-error event via logger.log and broadcasts it', () => {

@@ -28,8 +28,10 @@ describe('envSchema defaults', () => {
       REDIS_PORT: 6379,
       REDIS_DB: 0,
       CACHE_MODE: 'standalone',
+      REDIS_SENTINELS: '127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381',
       REDIS_SENTINEL_MASTER: 'mymaster',
       REDIS_SENTINEL_ROLE: 'master',
+      REDIS_CLUSTER_NODES: '127.0.0.1:7000,127.0.0.1:7001,127.0.0.1:7002',
       REDIS_SENTINEL_NAT_MAP: '',
       REDIS_CLUSTER_NAT_MAP: '',
       CACHE_NAMESPACE: 'cache-example',
@@ -40,6 +42,34 @@ describe('envSchema defaults', () => {
       SHUTDOWN_TIMEOUT_MS: 5000,
     })
     expect(env.REDIS_PASSWORD).toBeUndefined()
+  })
+
+  it('accepts the replica sentinel role (both enum members)', () => {
+    /*
+     * Scenario: REDIS_SENTINEL_ROLE is explicitly set to 'replica'.
+     * Rule it protects: 'replica' is a valid enum member — blanking that literal
+     * would make the schema reject a legitimate replica-role configuration.
+     */
+    expect(envSchema.parse({ REDIS_SENTINEL_ROLE: 'replica' }).REDIS_SENTINEL_ROLE).toBe('replica')
+  })
+
+  it('enforces a minimum length of 1 on the explicitly-set string fields', () => {
+    /*
+     * Scenario: master name, namespace, and key separator are set to multi-character
+     * values (and the separator is two characters).
+     * Rule it protects: each field's `.min(1)` accepts any non-empty string — a
+     * `.min(1)` → `.max(1)` mutant would reject every value longer than one character,
+     * so accepting multi-character values (the 2-char separator in particular) pins it.
+     */
+    const env = envSchema.parse({
+      REDIS_SENTINEL_MASTER: 'primary-group',
+      CACHE_NAMESPACE: 'my-namespace',
+      CACHE_KEY_SEPARATOR: '::',
+    })
+
+    expect(env.REDIS_SENTINEL_MASTER).toBe('primary-group')
+    expect(env.CACHE_NAMESPACE).toBe('my-namespace')
+    expect(env.CACHE_KEY_SEPARATOR).toBe('::')
   })
 
   it('coerces numeric string env values to numbers', () => {

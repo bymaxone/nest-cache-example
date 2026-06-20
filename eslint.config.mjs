@@ -4,7 +4,17 @@ import prettier from 'eslint-config-prettier'
 import globals from 'globals'
 
 export default tseslint.config(
-  { ignores: ['**/dist', '**/.next', '**/coverage', '**/node_modules', '**/*.d.ts'] },
+  {
+    ignores: [
+      '**/dist',
+      '**/.next',
+      '**/coverage',
+      '**/node_modules',
+      '**/*.d.ts',
+      '**/.stryker-tmp',
+      '**/reports',
+    ],
+  },
   js.configs.recommended,
   {
     files: ['**/*.{ts,tsx,mts,cts}'],

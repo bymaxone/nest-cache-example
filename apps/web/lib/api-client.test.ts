@@ -67,6 +67,9 @@ describe('apiFetch success decoding', () => {
     )
     const out = await apiFetch<{ a: number }>('/thing')
     expect(out).toEqual({ ok: true, data: { a: 1 } })
+    // The request URL must be the base joined to the path — a blanked `${BASE}${path}`
+    // template would fetch an empty string.
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringMatching(/\/thing$/), expect.anything())
     const init = fetchMock.mock.calls[0]?.[1]
     const headers = init?.headers as Headers
     expect(headers.get('content-type')).toBe('application/json')

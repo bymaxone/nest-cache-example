@@ -43,10 +43,13 @@ describe('HealthController (unit)', () => {
       const { controller, isHealthy, ping } = setup()
       isHealthy.mockResolvedValue(true)
       ping.mockResolvedValue('PONG')
+      // Pin Date.now to a known start/end so latency is the exact DIFFERENCE: a
+      // `Date.now() - start` → `+` mutant would report the sum (~2e12), not 5.
+      jest.spyOn(Date, 'now').mockReturnValueOnce(1_000).mockReturnValueOnce(1_005)
 
       const result = await controller.health()
       expect(result.status).toBe('ok')
-      expect(result.latencyMs).toBeGreaterThanOrEqual(0)
+      expect(result.latencyMs).toBe(5)
     })
 
     it('returns degraded when the connection reports unhealthy', async () => {
@@ -70,10 +73,13 @@ describe('HealthController (unit)', () => {
        */
       const { controller, isHealthy } = setup()
       isHealthy.mockRejectedValue(new Error('redis down'))
+      // Pin the catch-path latency to the exact difference too (kills the `+` mutant
+      // on the catch branch's `Date.now() - start`).
+      jest.spyOn(Date, 'now').mockReturnValueOnce(2_000).mockReturnValueOnce(2_007)
 
       const result = await controller.health()
       expect(result.status).toBe('degraded')
-      expect(result.latencyMs).toBeGreaterThanOrEqual(0)
+      expect(result.latencyMs).toBe(7)
     })
   })
 

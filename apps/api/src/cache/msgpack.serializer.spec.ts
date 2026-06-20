@@ -29,6 +29,17 @@ describe('MsgPackSerializer (unit)', () => {
     expect(decoded.when).toBeInstanceOf(Date)
   })
 
+  it('accepts valid base64 with zero or two padding characters', () => {
+    /*
+     * Scenario: decode payloads whose base64 ends in two `=` and in none.
+     * Rule it protects: the guard's `={0,2}` quantifier admits 0, 1, or 2 padding
+     * chars — narrowing it (e.g. to a single required `=`) would wrongly reject both
+     * a two-pad (`AQ==` → fixint 1) and a zero-pad (`omFi` → fixstr "ab") payload.
+     */
+    expect(serializer.deserialize('AQ==')).toBe(1)
+    expect(serializer.deserialize('omFi')).toBe('ab')
+  })
+
   it('throws on malformed base64 input (fail-closed guard)', () => {
     /*
      * Scenario: a string that is not valid base64 is handed to deserialize.

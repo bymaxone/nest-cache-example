@@ -232,6 +232,7 @@ export class AdminService {
     // Inspect exec results — individual pipeline commands do not throw on failure;
     // errors are captured as [Error, null] tuples. Count only successful commands.
     const results = await pipeline.exec()
+    // Stryker disable next-line ArrayDeclaration -- the `?? []` fallback is reached only when exec() returns null; any non-empty replacement is filtered out by the `[err] === null` destructuring, yielding the same count of 0.
     const seeded = (results ?? []).filter(([err]) => err === null).length
     return { seeded }
   }

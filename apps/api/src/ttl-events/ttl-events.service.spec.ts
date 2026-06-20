@@ -111,11 +111,14 @@ describe('TtlEventsService (unit)', () => {
        * Rule it protects: a single-channel keyspace subscribe cannot cover every shard,
        * so init warns and returns early — no dedicated subscriber is minted.
        */
-      const { service, createSubscriberClient } = setup({ CACHE_MODE: 'cluster' })
+      const { service, createSubscriberClient, warnSpy } = setup({ CACHE_MODE: 'cluster' })
 
       await service.onModuleInit()
 
       expect(createSubscriberClient).not.toHaveBeenCalled()
+      expect(warnSpy).toHaveBeenCalledWith(
+        'Keyspace notifications are unsupported in cluster mode; TTL feed disabled.',
+      )
     })
 
     it('opens a dedicated subscriber and wires the keyspace channel in standalone mode', async () => {

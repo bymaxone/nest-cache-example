@@ -28,8 +28,8 @@ function setup(overrides: Partial<ErrorTriggerProps> = {}) {
     onTrigger,
     ...overrides,
   }
-  render(<ErrorTrigger {...props} />)
-  return { onTrigger }
+  const { container } = render(<ErrorTrigger {...props} />)
+  return { onTrigger, container }
 }
 
 describe('ErrorTrigger', () => {
@@ -84,5 +84,33 @@ describe('ErrorTrigger', () => {
     const { onTrigger } = setup({ isSelected: true })
     await user.click(screen.getByRole('button', { name: 'Trigger' }))
     expect(onTrigger).toHaveBeenCalledTimes(1)
+  })
+
+  it('colors the severity icon from the HTTP-status meta', () => {
+    /*
+     * Scenario: a 4xx client error (amber severity).
+     * Rule it protects: the leading severity icon carries the inline
+     * `style={{ color: meta.color }}` from `httpErrorSeverityMeta` (#f59e0b →
+     * rgb(245, 158, 11) for 4xx) — an empty-object mutant would drop the color.
+     */
+    const { container } = setup({ httpStatus: 400 })
+    const icon = container.querySelector<SVGElement>('svg')
+    if (!icon) throw new Error('expected the severity icon svg')
+    expect(icon.style.color).toBe('rgb(245, 158, 11)')
+  })
+
+  it('colors the HTTP-status text from the status meta and tracks the status', () => {
+    /*
+     * Scenario: a gateway timeout (504, purple) vs a server error (5xx, red).
+     * Rule it protects: the status number carries `style={{ color: meta.color }}`,
+     * and the color is derived from the status (504 → rgb(168, 85, 247), other 5xx →
+     * rgb(239, 68, 68)), so the empty-object mutant (no color) and any hardcoded
+     * color both fail.
+     */
+    setup({ httpStatus: 504 })
+    expect(screen.getByText('504').style.color).toBe('rgb(168, 85, 247)')
+
+    setup({ httpStatus: 500 })
+    expect(screen.getByText('500').style.color).toBe('rgb(239, 68, 68)')
   })
 })

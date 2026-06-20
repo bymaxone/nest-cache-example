@@ -13,7 +13,12 @@ import { jest } from '@jest/globals'
 import { RequestMethod } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import type { CartLine } from './collection.types.js'
-import { CollectionsController } from './collections.controller.js'
+import {
+  CollectionsController,
+  collectionIdSchema,
+  cartLineParamsSchema,
+  tagParamsSchema,
+} from './collections.controller.js'
 import { CollectionsService } from './collections.service.js'
 
 /** NestJS route-metadata keys (mirror @nestjs/common/constants, which has no NodeNext type subpath). */
@@ -196,6 +201,33 @@ describe('CollectionsController (unit)', () => {
         expect(reflector.get<number>(METHOD_METADATA, fn)).toBe(method)
         expect(reflector.get<string>(PATH_METADATA, fn)).toBe(path)
       }
+    })
+  })
+
+  describe('inline param schemas', () => {
+    /*
+     * Each route validates its path params with an inline Zod schema applied via the
+     * ZodValidationPipe. The accept cases use multi-character values: a `.min(1)` →
+     * `.max(1)` mutant would reject any value longer than one character, so accepting
+     * a two-char value pins every `.min(1)`. The reject cases empty one field at a
+     * time: degrading the schema to `z.object({})` would strip and accept anything,
+     * so rejecting an empty field pins the object shape.
+     */
+    it('collectionIdSchema accepts a non-empty id and rejects an empty one', () => {
+      expect(collectionIdSchema.safeParse({ id: 'c1' }).success).toBe(true)
+      expect(collectionIdSchema.safeParse({ id: '' }).success).toBe(false)
+    })
+
+    it('cartLineParamsSchema requires a non-empty id and field', () => {
+      expect(cartLineParamsSchema.safeParse({ id: 'c1', field: 'p1' }).success).toBe(true)
+      expect(cartLineParamsSchema.safeParse({ id: '', field: 'p1' }).success).toBe(false)
+      expect(cartLineParamsSchema.safeParse({ id: 'c1', field: '' }).success).toBe(false)
+    })
+
+    it('tagParamsSchema requires a non-empty id and tag', () => {
+      expect(tagParamsSchema.safeParse({ id: 'p1', tag: 't1' }).success).toBe(true)
+      expect(tagParamsSchema.safeParse({ id: '', tag: 't1' }).success).toBe(false)
+      expect(tagParamsSchema.safeParse({ id: 'p1', tag: '' }).success).toBe(false)
     })
   })
 })

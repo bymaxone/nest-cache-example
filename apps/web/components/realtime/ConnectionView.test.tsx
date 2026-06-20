@@ -55,7 +55,13 @@ vi.mock('./EventFeed', () => ({
     <div data-testid="event-feed">
       {items.length === 0
         ? emptyState
-        : items.map((item, i) => <div key={getKey(item, i)}>{renderRow(item)}</div>)}
+        : items.map((item, i) => (
+            // Surface the caller's key so a test can assert `getKey` actually ran
+            // (a `() => undefined` mutant would emit an empty `data-key`).
+            <div key={getKey(item, i)} data-key={getKey(item, i)}>
+              {renderRow(item)}
+            </div>
+          ))}
     </div>
   ),
 }))
@@ -118,6 +124,17 @@ describe('ConnectionView', () => {
     renderWithClient(<ConnectionView />)
     expect(screen.getByText('Connecting')).toBeInTheDocument()
     expect(screen.getAllByText('standalone').length).toBeGreaterThan(0)
+    // With no live mode, `activeMode` falls back to the `standalone` literal — the
+    // Mode subtitle names it as active (kills the `?? 'standalone'` fallback and the
+    // `'standalone'` literal mutants; `standalone` alone also appears as a mode row).
+    expect(screen.getByText(/CACHE_MODE/)).toHaveTextContent('active: standalone')
+    // Exactly one mode row is flagged "active" (the standalone row); forcing the
+    // `entry.mode === activeMode` ternary true/false/inverted would show 0, 2, or 3.
+    expect(screen.getAllByText('active')).toHaveLength(1)
+    // No latency yet → the ping-latency cell renders the em-dash, not an empty cell.
+    expect(screen.getByText('—')).toBeInTheDocument()
+    // The INFO section selector defaults to `memory` (the initial section state).
+    expect(within(screen.getByRole('combobox')).getByText('memory')).toBeInTheDocument()
   })
 
   it('derives a ready badge with health latency when health is ok and no live event exists', async () => {
@@ -167,8 +184,13 @@ describe('ConnectionView', () => {
     renderWithClient(<ConnectionView />)
     expect(await screen.findByText('Ready')).toBeInTheDocument()
     expect(screen.getByText('12.34ms')).toBeInTheDocument()
-    // `cluster` appears both in the active-mode subtitle and the highlighted card.
-    expect(screen.getAllByText('cluster').length).toBeGreaterThan(0)
+    // The live `cluster` mode is read from `data['mode']`, accepted by the
+    // `typeof === 'string' && TOPOLOGY_MODES.has(...)` guard, and chosen over the
+    // `?? 'standalone'` fallback — so the active mode is `cluster`, not standalone.
+    // (`cluster` also appears as a static mode row, so assert the *active* subtitle.)
+    expect(screen.getByText(/CACHE_MODE/)).toHaveTextContent('active: cluster')
+    // Only the cluster row is flagged active; standalone is not the active mode now.
+    expect(screen.getAllByText('active')).toHaveLength(1)
   })
 
   it('ignores a non-numeric latency and an unknown live mode', async () => {
@@ -182,6 +204,30 @@ describe('ConnectionView', () => {
     renderWithClient(<ConnectionView />)
     expect(await screen.findByText('1.20ms')).toBeInTheDocument()
     expect(screen.getAllByText('standalone').length).toBeGreaterThan(0)
+    // `galaxy` is not a known topology, so `TOPOLOGY_MODES.has` rejects it and the
+    // active mode falls back to `standalone` — the subtitle never reads `galaxy`.
+    expect(screen.getByText(/CACHE_MODE/)).toHaveTextContent('active: standalone')
+    expect(screen.queryByText(/active:\s*galaxy/)).not.toBeInTheDocument()
+  })
+
+  it('lists every topology mode with its summary in the Mode card', () => {
+    /*
+     * Scenario: the page renders the documented topology list.
+     * Rule it protects: `MODES.map((entry) => ...)` materializes one row per mode with
+     * its `mode` name and `summary`. A `() => undefined` map callback would render no
+     * rows, so the per-mode summary copy must be present.
+     */
+    getHealth.mockReturnValue(new Promise(() => {}))
+    renderWithClient(<ConnectionView />)
+    expect(screen.getByText('sentinel')).toBeInTheDocument()
+    expect(screen.getByText('cluster')).toBeInTheDocument()
+    expect(
+      screen.getByText(/Admin ops \(scan, flushNamespace, getClient\) succeed/),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/High availability via a sentinel quorum/)).toBeInTheDocument()
+    expect(
+      screen.getByText(/scan \/ flushNamespace \/ getClient throw UNSUPPORTED_IN_CLUSTER/),
+    ).toBeInTheDocument()
   })
 
   it('renders the INFO skeleton while the section is loading', () => {
@@ -251,26 +297,89 @@ describe('ConnectionView', () => {
 
   it('feeds the reversed connection events into the lifecycle EventFeed', async () => {
     /*
-     * Scenario: connection events are buffered.
-     * Rule it protects: the lifecycle feed receives the connection events (newest
-     * first), rendering a row per event rather than the empty state.
+     * Scenario: a non-connection entry plus two connection events are buffered.
+     * Rule it protects: the buffer is `.toArray().filter(kind === 'connection')` (the
+     * `expired` entry is dropped — it has no `.event` and would crash the row), then
+     * `.slice().reverse()` puts newest-first — so `ready` (seq 2) renders above
+     * `connect` (seq 1). Each row's key derives from `String(event.seq)`.
+     */
+    socketEvents.push(
+      { kind: 'expired', seq: 99, key: 'k', at: 1_700_000_000_000 },
+      connEvent({ seq: 1, event: 'connect', data: {} }),
+      connEvent({ seq: 2, event: 'ready', data: {} }),
+    )
+    renderWithClient(<ConnectionView />)
+    const feed = await screen.findByTestId('event-feed')
+    const lifecycle = within(feed)
+      .getAllByText(/^(ready|connect)$/)
+      .map((node) => node.textContent)
+    // Newest-first ordering: `ready` precedes `connect`; the `expired` entry is gone.
+    expect(lifecycle).toEqual(['ready', 'connect'])
+    // The row keys come from the event `seq` (kills the `() => undefined` getKey).
+    expect(feed.querySelector('[data-key="2"]')).not.toBeNull()
+    expect(feed.querySelector('[data-key="1"]')).not.toBeNull()
+  })
+
+  it('shows the lifecycle feed empty state when no connection events are buffered', () => {
+    /*
+     * Scenario: the buffer holds no connection events.
+     * Rule it protects: the feed renders its action-oriented empty state copy, including
+     * the explicit `{' '}` space that separates the inline "Live" span from "toggle" —
+     * emptying that string literal would read "Livetoggle".
+     */
+    renderWithClient(<ConnectionView />)
+    const empty = screen.getByText(/No lifecycle events yet/)
+    expect(empty).toBeInTheDocument()
+    expect(empty).toHaveTextContent('enable the Live toggle')
+  })
+
+  it('paints the status badge icon and label with the connection-state color', () => {
+    /*
+     * Scenario: the badge sits in its default `connecting` state (health pending, no live).
+     * Rule it protects: both the status icon and the label carry `style={{ color: meta.color }}`
+     * from `connectionStatusMeta` — connecting blue (`#60a5fa` → `rgb(96, 165, 250)`). An
+     * empty `style` object on either element would drop the color.
+     */
+    getHealth.mockReturnValue(new Promise(() => {}))
+    const { container } = renderWithClient(<ConnectionView />)
+    const icon = container.querySelector<SVGElement>('svg')
+    if (!icon) throw new Error('expected the status icon svg')
+    expect(icon.style.color).toBe('rgb(96, 165, 250)')
+    expect(screen.getByText('Connecting').style.color).toBe('rgb(96, 165, 250)')
+  })
+
+  it('rings only the active mode row', () => {
+    /*
+     * Scenario: the default `standalone` active mode (no live mode override).
+     * Rule it protects: the active mode's row carries the `ring-1 ring-brand-500/40`
+     * highlight from `entry.mode === activeMode && 'ring-1 …'`, while inactive rows do not.
+     * Forcing the equality true/false/inverted, swapping `&&`→`||`, or emptying the ring
+     * literal would ring the wrong number of rows (the `sentinel` row must stay un-ringed).
+     */
+    getHealth.mockReturnValue(new Promise(() => {}))
+    renderWithClient(<ConnectionView />)
+    const activeRow = screen.getByText('active').closest('[class*="rounded-lg"]')
+    expect(activeRow).not.toBeNull()
+    expect(activeRow as HTMLElement).toHaveClass('ring-1')
+    const inactiveRow = screen.getByText('sentinel').closest('[class*="rounded-lg"]')
+    expect(inactiveRow).not.toBeNull()
+    expect(inactiveRow as HTMLElement).not.toHaveClass('ring-1')
+  })
+
+  it('colors each lifecycle row by its own event state', () => {
+    /*
+     * Scenario: a `connect` and a `ready` event feed the lifecycle list.
+     * Rule it protects: each row's status span carries `style={{ color: rowMeta.color }}`
+     * derived from that row's event — `connect` (connecting) blue (`#60a5fa` →
+     * `rgb(96, 165, 250)`) and `ready` green (`#22c55e` → `rgb(34, 197, 94)`). An empty
+     * `style` object would drop the per-row color.
      */
     socketEvents.push(
       connEvent({ seq: 1, event: 'connect', data: {} }),
       connEvent({ seq: 2, event: 'ready', data: {} }),
     )
     renderWithClient(<ConnectionView />)
-    const feed = await screen.findByTestId('event-feed')
-    expect(within(feed).getByText('ready')).toBeInTheDocument()
-    expect(within(feed).getByText('connect')).toBeInTheDocument()
-  })
-
-  it('shows the lifecycle feed empty state when no connection events are buffered', () => {
-    /*
-     * Scenario: the buffer holds no connection events.
-     * Rule it protects: the feed renders its action-oriented empty state copy.
-     */
-    renderWithClient(<ConnectionView />)
-    expect(screen.getByText(/No lifecycle events yet/)).toBeInTheDocument()
+    expect(screen.getByText('connect').style.color).toBe('rgb(96, 165, 250)')
+    expect(screen.getByText('ready').style.color).toBe('rgb(34, 197, 94)')
   })
 })

@@ -105,7 +105,9 @@ describe('StringsCard', () => {
     const user = userEvent.setup()
     render(<StringsCard />)
     await user.click(screen.getByRole('button', { name: 'getRaw' }))
-    const args = runOp.mock.calls[0]?.[0] as { run: () => Promise<unknown> }
+    const args = runOp.mock.calls[0]?.[0] as { label: string; run: () => Promise<unknown> }
+    // The op is labelled `getRaw` so the result panel names the right operation.
+    expect(args.label).toBe('getRaw')
     const result = await args.run()
     expect(inspectKey).toHaveBeenCalledWith('cache-example:product:99')
     expect(result).toEqual({ ok: true, data: '{"id":"99"}' })
@@ -137,7 +139,9 @@ describe('StringsCard', () => {
     const user = userEvent.setup()
     render(<StringsCard />)
     await user.click(screen.getByRole('button', { name: 'exists' }))
-    const args = runOp.mock.calls[0]?.[0] as { run: () => Promise<unknown> }
+    const args = runOp.mock.calls[0]?.[0] as { label: string; run: () => Promise<unknown> }
+    // The op is labelled `exists` so the result panel names the right operation.
+    expect(args.label).toBe('exists')
     const result = await args.run()
     expect(ttl).toHaveBeenCalledWith('99')
     expect(result).toEqual({ ok: true, data: true })

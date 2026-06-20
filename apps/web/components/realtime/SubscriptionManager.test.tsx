@@ -53,9 +53,35 @@ describe('SubscriptionManager', () => {
     renderWithClient(<SubscriptionManager onRowsChange={onRowsChange} />)
     expect(screen.getByText('product-events')).toBeInTheDocument()
     expect(screen.getByText('product:*')).toBeInTheDocument()
+    // Each row carries a kind badge: the exact row reads `subscribe`, the pattern
+    // row reads `psubscribe` (StringLiteral guard on the badge labels).
+    expect(screen.getByText('subscribe')).toBeInTheDocument()
+    expect(screen.getByText('psubscribe')).toBeInTheDocument()
     expect(onRowsChange).toHaveBeenCalledWith([
       { channel: 'product-events', pattern: false, refs: 0 },
       { channel: 'product:*', pattern: true, refs: 0 },
+    ])
+  })
+
+  it('re-reports rows up through onRowsChange after a row is added', async () => {
+    /*
+     * Scenario: a callback consumer mounts, then the operator adds a channel.
+     * Rule it protects: the reporting effect depends on `[rows, onRowsChange]`, so it
+     * MUST re-fire when rows change — dropping the dependency array to `[]` would
+     * report only the initial rows and never the post-add set.
+     */
+    const onRowsChange = vi.fn()
+    const user = userEvent.setup()
+    renderWithClient(<SubscriptionManager onRowsChange={onRowsChange} />)
+    onRowsChange.mockClear()
+    await user.type(screen.getByLabelText('add channel / pattern'), 'cart-events')
+    await user.click(screen.getByRole('button', { name: '+ add' }))
+
+    // The effect re-runs on the new rows and reports the appended exact channel.
+    expect(onRowsChange).toHaveBeenCalledWith([
+      { channel: 'product-events', pattern: false, refs: 0 },
+      { channel: 'product:*', pattern: true, refs: 0 },
+      { channel: 'cart-events', pattern: false, refs: 0 },
     ])
   })
 
@@ -102,6 +128,38 @@ describe('SubscriptionManager', () => {
     await user.click(screen.getByRole('button', { name: 'Unsubscribe from product:*' }))
 
     await waitFor(() => expect(unsubscribe).toHaveBeenCalledWith('product:*', true))
+  })
+
+  it('updates only the row whose channel AND pattern match the server response', async () => {
+    /*
+     * Scenario: the same channel name exists both as an exact and a pattern row; the
+     * server reports a ref-count for the EXACT one.
+     * Rule it protects: the success-handler predicate matches on BOTH channel and
+     * pattern (`row.channel === result.channel && row.pattern === result.pattern`).
+     * Forcing the pattern half of that `&&` to `true` would also overwrite the
+     * same-named pattern row, so exactly one `×5` must appear — not two.
+     */
+    subscribe.mockResolvedValue({
+      ok: true,
+      data: { channel: 'dual', refs: 5, pattern: false },
+    })
+    const user = userEvent.setup()
+    renderWithClient(<SubscriptionManager />)
+    // Seed a `dual` exact row and a `dual` pattern row (same channel, both flags).
+    const input = screen.getByLabelText('add channel / pattern')
+    await user.type(input, 'dual')
+    await user.click(screen.getByRole('button', { name: '+ add' }))
+    await user.click(screen.getByRole('checkbox'))
+    await user.type(input, 'dual')
+    await user.click(screen.getByRole('button', { name: '+ add' }))
+
+    // Subscribe via the exact `dual` row (the first of the two same-named rows);
+    // only it should pick up the server ref-count.
+    const [firstDual] = screen.getAllByRole('button', { name: 'Subscribe to dual' })
+    if (!firstDual) throw new Error('expected a "Subscribe to dual" button')
+    await user.click(firstDual)
+    await waitFor(() => expect(subscribe).toHaveBeenCalled())
+    await waitFor(() => expect(screen.getAllByText('×5')).toHaveLength(1))
   })
 
   it('leaves non-matching rows untouched when the server reports a different channel', async () => {
@@ -203,12 +261,18 @@ describe('SubscriptionManager', () => {
     const checkbox = screen.getByRole('checkbox')
 
     await user.click(checkbox)
+    // The checkbox `onChange` must actually flip `isPattern` to true — a no-op handler
+    // would leave it unchecked and add `cart:*` as an exact row instead.
+    expect(checkbox).toBeChecked()
     await user.type(input, 'cart:*')
     await user.click(screen.getByRole('button', { name: '+ add' }))
 
     expect(screen.getByText('cart:*')).toBeInTheDocument()
-    // Three psubscribe badges would mean it stuck; the checkbox reset means the new
-    // row is a pattern but the checkbox itself is back to unchecked.
+    // The new row joined the seeded `product:*` as a pattern subscription, so there
+    // are now two `psubscribe` badges (proving the add used the checked pattern flag).
+    expect(screen.getAllByText('psubscribe')).toHaveLength(2)
+    // The checkbox reset means the new row is a pattern but the checkbox itself is
+    // back to unchecked.
     expect(checkbox).not.toBeChecked()
   })
 
@@ -225,6 +289,25 @@ describe('SubscriptionManager', () => {
     await user.click(screen.getByRole('button', { name: '+ add' }))
 
     expect(screen.getAllByText('product-events')).toHaveLength(1)
+  })
+
+  it('allows the same channel as both an exact and a pattern subscription', async () => {
+    /*
+     * Scenario: `product:*` already exists as a pattern row; the operator adds it as
+     * an exact (non-pattern) subscription.
+     * Rule it protects: the add de-dupe keys on BOTH channel and pattern
+     * (`row.channel === channel && row.pattern === isPattern`). Forcing the pattern
+     * half to `true` would de-dupe on channel alone and swallow the exact add, so the
+     * exact `product:*` must still be appended — two `product:*` rows in total.
+     */
+    const user = userEvent.setup()
+    renderWithClient(<SubscriptionManager />)
+    const input = screen.getByLabelText('add channel / pattern')
+    // The checkbox stays unchecked, so this adds `product:*` as an EXACT row.
+    await user.type(input, 'product:*')
+    await user.click(screen.getByRole('button', { name: '+ add' }))
+
+    expect(screen.getAllByText('product:*')).toHaveLength(2)
   })
 
   it('disables the subscribe/unsubscribe controls while a mutation is pending', async () => {

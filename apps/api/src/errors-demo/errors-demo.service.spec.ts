@@ -92,7 +92,11 @@ describe('ErrorsDemoService (unit)', () => {
       const err = await service.trigger(code).catch((e: unknown) => e)
       const ex = asCacheException(err)
       expect(ex.code).toBe(code)
-      expect(ex.details).toMatchObject({ simulated: true })
+      // Exact match (not toMatchObject): proves the per-code trigger itself raised the
+      // exception. The forced fallback in trigger() throws the same code but adds a
+      // `note` field, so an exact `{ simulated: true }` distinguishes a real trigger
+      // from the fallback — without this, a no-op trigger would pass undetected.
+      expect(ex.details).toEqual({ simulated: true })
     }
   })
 

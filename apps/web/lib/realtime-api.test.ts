@@ -73,7 +73,11 @@ describe('ttlApi', () => {
      * Rule it protects: without `id`, the body carries only `{ ttlSeconds }`.
      */
     void ttlApi.seed(30)
-    expect(post).toHaveBeenCalledWith('/ttl-events/seed', { ttlSeconds: 30 })
+    expect(post.mock.calls[0]?.[0]).toBe('/ttl-events/seed')
+    // toStrictEqual (not toHaveBeenCalledWith): loose equality ignores `undefined`
+    // props, so an always-include-id mutant emitting `{ ttlSeconds, id: undefined }`
+    // would slip past — strict equality rejects the extra key.
+    expect(post.mock.calls[0]?.[1]).toStrictEqual({ ttlSeconds: 30 })
   })
 
   it('seed includes the explicit id in the body when provided', () => {

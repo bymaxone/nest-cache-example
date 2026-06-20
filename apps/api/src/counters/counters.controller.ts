@@ -16,7 +16,8 @@ import { ZodValidationPipe } from '../common/zod-validation.pipe.js'
 import { CounterBySchema } from './dto/counter-by.dto.js'
 import type { CounterBy } from './dto/counter-by.dto.js'
 
-const counterParamsSchema = z.object({ id: z.string().min(1) })
+/** Validates the `:id` path param shared by every counters route. */
+export const counterParamsSchema = z.object({ id: z.string().min(1) })
 
 /**
  * Handles all /counters routes.

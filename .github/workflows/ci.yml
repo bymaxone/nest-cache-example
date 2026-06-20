@@ -189,6 +189,33 @@ jobs:
       - uses: ./.github/actions/setup
       - run: pnpm --filter web run build
 
+  mutation:
+    name: Mutation testing
+    # Gated behind the unit job: Stryker re-runs the same suites internally, so there is
+    # no point spending up to 45 minutes mutating a tree whose baseline tests are red.
+    needs: [install, unit]
+    runs-on: ubuntu-latest
+    # Gated: enforces api `break: 100` (zero survivors) and web `break: 90` (lib 100).
+    # `pnpm mutation` fans out serialized (`--workspace-concurrency=1`) so the locally
+    # linked @bymax-one/nest-cache is never duplicated across two Stryker runs at once;
+    # each app's `concurrency: 2` keeps the per-run worker pool within a 2-core runner.
+    # To make it advisory instead of blocking, add `continue-on-error: true` to the run.
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup
+      - name: Run Stryker mutation (api break:100, web break:90)
+        run: pnpm mutation
+      - name: Upload mutation reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-reports
+          path: |
+            apps/api/reports/mutation/
+            apps/web/reports/mutation/
+          retention-days: 7
+
   coverage-report:
     name: Coverage report
     needs: [unit, e2e-api, e2e-web]

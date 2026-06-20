@@ -33,7 +33,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 >
 > **All 17 phase files are scaffolded** under [`docs/tasks/`](tasks/) — the per-phase totals below are firm.
 >
-> **Overall progress: 116 / 129 tasks done (90%)**
+> **Overall progress: 122 / 129 tasks done (95%)**
 
 | #   | Phase                                     | Tasks file                            | Size | Done / Total | %    | Status |
 | --- | ----------------------------------------- | ------------------------------------- | ---- | ------------ | ---- | ------ |
@@ -55,7 +55,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 | 15  | Testing — E2E smoke + Web smoke           | `phase-15-testing.md`                 | M    | 6 / 6        | 100% | 🟢     |
 | 16  | Unit Tests — 100% coverage (api + web)    | `phase-16-unit-coverage.md`           | XL   | 8 / 8        | 100% | 🟢     |
 | 17  | E2E — every flow (HTTP + WebSocket)       | `phase-17-e2e-flows.md`               | L    | 8 / 8        | 100% | 🟢     |
-| 18  | Mutation Testing — Stryker (near-100%)    | `phase-18-mutation-stryker.md`        | L    | 0 / 6        | 0%   | 🔴     |
+| 18  | Mutation Testing — Stryker (near-100%)    | `phase-18-mutation-stryker.md`        | L    | 6 / 6        | 100% | 🟢     |
 | 19  | Docs, README & Export Audit               | `phase-19-docs-readme-audit.md`       | M    | 0 / 7        | 0%   | 🔴     |
 
 ### How to update this dashboard
@@ -511,21 +511,21 @@ Maintained by `scripts/audit-library-exports.mjs` (Phase 19) and surfaced as the
 
 Full **library-grade** bar — this reference app is held to the same rigor as the siblings `nest-logger-example` / `nest-auth-example`, because it is copied as a template and must prove the consumed `@bymax-one/nest-cache` surface exhaustively before the library is published. **This supersedes the earlier "lighter than the library" stance and the spec's NG4.**
 
-| Gate            | Tool / config                                                                | Threshold                            | Enforced in                  |
-| --------------- | ---------------------------------------------------------------------------- | ------------------------------------ | ---------------------------- |
-| Lint            | ESLint 9 flat (`eslint .`)                                                   | zero errors                          | CI `lint` (Phase 15)         |
-| Typecheck       | `tsc --noEmit` per package                                                   | zero errors                          | CI `typecheck`               |
-| API unit + cov  | Jest (`jest.config.cjs`, `tsconfig.spec.json` metadata-off)                  | **100 / 100 / 100 / 100**            | CI `test:cov` (Phase 16)     |
-| Web unit + cov  | Vitest + `@vitest/coverage-v8` (`{app,components,lib,hooks}`)                | **100 / 100 / 100 / 100**            | CI `test:cov` (Phase 16)     |
-| API E2E (flows) | Jest + `@nestjs/testing` + `supertest` + `socket.io-client` + Testcontainers | every HTTP route + WS channel passes | CI `e2e` (Phase 17)          |
-| API smoke/fast  | Testcontainers (`redis:7-alpine`) + `ioredis-mock`                           | headline flows + round-trips pass    | CI `e2e` (Phase 15)          |
-| API mutation    | Stryker (jest-runner + ts-checker)                                           | **`break: 100`** (0 survivors)       | CI `mutation:api` (Phase 18) |
-| Web mutation    | Stryker (vitest-runner, `ignoreStatic`)                                      | **`break: 90`** (lib 100)            | CI `mutation:web` (Phase 18) |
-| Web build       | `next build`                                                                 | succeeds                             | CI `web-build`               |
-| Web smoke       | Playwright (running stack)                                                   | happy-path passes                    | CI `web-smoke` (Phase 15)    |
-| Export usage    | `scripts/audit-library-exports.mjs` + `.audit-ignore.json`                   | every export demonstrated            | CI `export-usage` (Phase 19) |
-| Pre-commit      | husky + lint-staged                                                          | prettier + eslint --fix on staged    | local                        |
-| Commit message  | commitlint (`config-conventional`)                                           | Conventional Commits                 | local `commit-msg`           |
+| Gate            | Tool / config                                                                 | Threshold                                             | Enforced in                  |
+| --------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------- | ---------------------------- |
+| Lint            | ESLint 9 flat (`eslint .`)                                                    | zero errors                                           | CI `lint` (Phase 15)         |
+| Typecheck       | `tsc --noEmit` per package                                                    | zero errors                                           | CI `typecheck`               |
+| API unit + cov  | Jest (`jest.config.cjs`, `tsconfig.spec.json` metadata-off)                   | **100 / 100 / 100 / 100**                             | CI `test:cov` (Phase 16)     |
+| Web unit + cov  | Vitest + `@vitest/coverage-v8` (`{app,components,lib,hooks}`)                 | **100 / 100 / 100 / 100**                             | CI `test:cov` (Phase 16)     |
+| API E2E (flows) | Jest + `@nestjs/testing` + `supertest` + `socket.io-client` + Testcontainers  | every HTTP route + WS channel passes                  | CI `e2e` (Phase 17)          |
+| API smoke/fast  | Testcontainers (`redis:7-alpine`) + `ioredis-mock`                            | headline flows + round-trips pass                     | CI `e2e` (Phase 15)          |
+| API mutation    | Stryker (jest-runner + ts-checker)                                            | **`break: 100`** — achieved **100.00%** (0 survivors) | CI `mutation:api` (Phase 18) |
+| Web mutation    | Stryker (vitest-runner, `ignoreStatic`)                                       | **`break: 90`** — achieved **91.61%** (lib 100%)      | CI `mutation:web` (Phase 18) |
+| Web build       | `next build`                                                                  | succeeds                                              | CI `web-build`               |
+| Web journeys    | Playwright (self-boots the stack via `webServer` + `docker-compose.test.yml`) | 10-page journey suite (18 tests) passes               | CI `e2e-web`                 |
+| Export usage    | `scripts/audit-library-exports.mjs` + `.audit-ignore.json`                    | every export demonstrated                             | CI `export-usage` (Phase 19) |
+| Pre-commit      | husky + lint-staged                                                           | prettier + eslint --fix on staged                     | local                        |
+| Commit message  | commitlint (`config-conventional`)                                            | Conventional Commits                                  | local `commit-msg`           |
 
 > **Coverage/mutation rationale (revised).** The earlier audit note argued an example app need not re-prove the library's internal correctness. That stance is **reversed** by decision: this example is the canonical reference other Bymax projects copy, and the library is **not yet published** — so testing it to 100% coverage + near-100% mutation here is the cheapest place to harden the library's real-world usage before publish. The `emitDecoratorMetadata` phantom-branch trap is handled by compiling the unit project with `emitDecoratorMetadata: false` (`tsconfig.spec.json`) + `ignoreCoverageForAllDecorators: true`; the e2e project keeps metadata **on** (it boots the real DI container). Web mutation floors `components/**` at 90 (full UI mutation is over-engineering) while `lib/**` stays at 100.
 >

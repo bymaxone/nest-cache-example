@@ -53,16 +53,21 @@ beforeEach(() => {
 })
 
 describe('FlushNamespaceButton', () => {
-  it('opens the confirmation dialog from the trigger', async () => {
+  it('opens the confirmation dialog from the trigger without resetting the mutation', async () => {
     /*
      * Scenario: the user clicks the page-header flush trigger.
-     * Rule it protects: the destructive confirm dialog opens with its warning copy.
+     * Rule it protects: the destructive confirm dialog opens with its full warning copy,
+     * and the `if (!open) flush.reset()` guard fires reset ONLY on close — opening must
+     * NOT reset (forcing the guard true, or dropping the `!`, would reset on open).
      */
     const user = userEvent.setup()
     render(<FlushNamespaceButton />)
     await user.click(screen.getByRole('button', { name: /Flush namespace/ }))
     expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByText(/This deletes every key under/)).toBeInTheDocument()
     expect(screen.getByText(/This cannot be undone/)).toBeInTheDocument()
+    // Opening the dialog must not reset the mutation — only closing does.
+    expect(flushMock.reset).not.toHaveBeenCalled()
   })
 
   it('shows the idle Flush label and confirms a flush, toasting and closing on success', async () => {
@@ -118,6 +123,10 @@ describe('FlushNamespaceButton', () => {
     expect(alert).toHaveTextContent('Client Error · 403')
     expect(alert).toHaveTextContent('cache.flush_disabled_in_production')
     expect(alert).toHaveTextContent('Flush is disabled in production')
+    // The 4xx severity palette is amber; the alert border and the label span both paint
+    // `severity.color` via inline style, so a blanked style object is detectable.
+    expect(alert).toHaveStyle({ borderColor: '#f59e0b' })
+    expect(screen.getByText(/Client Error/)).toHaveStyle({ color: '#f59e0b' })
   })
 
   it('resets the mutation when the dialog is closed via Cancel', async () => {

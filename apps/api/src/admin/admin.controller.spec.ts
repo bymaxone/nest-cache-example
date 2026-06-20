@@ -13,7 +13,7 @@ import { jest } from '@jest/globals'
 import { RequestMethod } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import type { KeyQuery } from './dto/key-query.dto.js'
-import { AdminController, keyParamSchema } from './admin.controller.js'
+import { AdminController, keyParamSchema, infoSectionSchema } from './admin.controller.js'
 import { AdminService } from './admin.service.js'
 
 /** NestJS route-metadata keys (mirror @nestjs/common/constants, which has no NodeNext type subpath). */
@@ -243,6 +243,72 @@ describe('AdminController (unit)', () => {
        * `cache-example:x` is rejected.
        */
       expect(keyParamSchema.safeParse({ key: 'cache-example:x' }).success).toBe(false)
+    })
+
+    it('rejects with the exact refine guidance message', () => {
+      /*
+       * Scenario: a malformed key triggers the refine failure.
+       * Rule it protects: the refine carries the precise `{ message }` option text
+       * (`Key must be in the form 'cache-example:prefix:id'`). Pins both the message
+       * string and the options object so neither can be blanked without detection.
+       */
+      const result = keyParamSchema.safeParse({ key: 'cache-example:x' })
+      expect(result.success).toBe(false)
+      expect(result.error?.issues[0]?.message).toBe(
+        "Key must be in the form 'cache-example:prefix:id'",
+      )
+    })
+  })
+
+  describe('infoSectionSchema', () => {
+    /** Every INFO section the schema enumerates — each must round-trip as accepted. */
+    const ALL_INFO_SECTIONS = [
+      'server',
+      'clients',
+      'memory',
+      'persistence',
+      'stats',
+      'replication',
+      'cpu',
+      'commandstats',
+      'latencystats',
+      'cluster',
+      'keyspace',
+      'modules',
+      'errorstats',
+      'all',
+      'default',
+      'everything',
+    ] as const
+
+    it('accepts every enumerated INFO section name', () => {
+      /*
+       * Scenario: each of the 16 known section literals is parsed in turn.
+       * Rule it protects: every enum member is present — blanking any single literal
+       * (e.g. `'memory'` → `''`) or emptying the enum array would reject that section,
+       * so asserting each one individually pins all 16 string literals + the array.
+       */
+      for (const section of ALL_INFO_SECTIONS) {
+        expect(infoSectionSchema.safeParse({ section }).success).toBe(true)
+      }
+    })
+
+    it('accepts an omitted section (the optional arm)', () => {
+      /*
+       * Scenario: GET /admin/info with no `section`.
+       * Rule it protects: `.optional()` lets the section be absent.
+       */
+      expect(infoSectionSchema.safeParse({}).success).toBe(true)
+    })
+
+    it('rejects an unknown section value', () => {
+      /*
+       * Scenario: a section name outside the enum.
+       * Rule it protects: the `z.object({ section })` shape actually validates the
+       * field — degrading it to an empty object would silently strip and accept
+       * `{ section: 'bogus' }`, so rejecting it pins the schema object literal.
+       */
+      expect(infoSectionSchema.safeParse({ section: 'bogus' }).success).toBe(false)
     })
   })
 

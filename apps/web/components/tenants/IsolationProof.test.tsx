@@ -36,10 +36,14 @@ vi.mock('@/lib/cache-api', async (importOriginal) => {
 
 import { toast } from 'sonner'
 
-/** Render under a fresh, retry-disabled QueryClient so failures resolve immediately. */
+/**
+ * Render under a fresh, retry-disabled QueryClient so failures resolve immediately.
+ * The client is returned so tests can assert the cache invalidations the proof fires.
+ */
 function renderWithClient(node: ReactElement) {
   const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } })
-  return render(<QueryClientProvider client={client}>{node}</QueryClientProvider>)
+  const result = render(<QueryClientProvider client={client}>{node}</QueryClientProvider>)
+  return { ...result, client }
 }
 
 beforeEach(() => {
@@ -58,9 +62,14 @@ describe('IsolationProof', () => {
      * Rule it protects: the `prove.data` and `proveError && severity` branches both
      * start false — no success panel and no error alert until an action runs.
      */
-    renderWithClient(<IsolationProof />)
+    const { container } = renderWithClient(<IsolationProof />)
     expect(screen.getByRole('button', { name: /Seed FOREIGN namespace/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Flush namespace & verify' })).toBeInTheDocument()
+    // The explanatory note names the foreign key the anti-pattern writes.
+    expect(screen.getByText(/other-app:demo/)).toBeInTheDocument()
+    // The `{' '}` between "via raw" and the inline `getClient()` span renders a real
+    // space; a blanked space literal would weld them into "rawgetClient()".
+    expect(container.textContent).toContain('via raw getClient()')
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     expect(screen.queryByText(/SURVIVED/)).not.toBeInTheDocument()
   })
@@ -100,15 +109,44 @@ describe('IsolationProof', () => {
   it('renders the success panel with the survived foreign key after a flush', async () => {
     /*
      * Scenario: the flush clears the namespace and the foreign key survives.
-     * Rule it protects: the `prove.data` panel reports the cleared count and the
-     * `foreignKeySurvived` true arm reads "SURVIVED".
+     * Rule it protects: the `prove.data` panel reports the cleared count, names the
+     * surviving `other-app:demo` key, reads "SURVIVED" (the `foreignKeySurvived` true
+     * arm), and both result lines plus the panel border paint the design-system green
+     * (the inline `style` colour/border objects, not color-blank).
      */
     const user = userEvent.setup()
     renderWithClient(<IsolationProof />)
     await user.click(screen.getByRole('button', { name: 'Flush namespace & verify' }))
 
-    expect(await screen.findByText(/Cleared 5 keys under cache-example/)).toBeInTheDocument()
-    expect(screen.getByText(/SURVIVED/)).toBeInTheDocument()
+    const cleared = await screen.findByText(/Cleared 5 keys under cache-example/)
+    expect(cleared).toBeInTheDocument()
+    const survived = screen.getByText(/SURVIVED/)
+    expect(survived).toBeInTheDocument()
+    // The success panel names the foreign key AND its verdict with the `{' '}` space
+    // between them intact ("other-app:demo SURVIVED"), so a blanked space literal that
+    // welds them into "other-app:demoSURVIVED" is caught.
+    expect(survived).toHaveTextContent('other-app:demo SURVIVED')
+    // Both result lines are painted the design-system green via the inline style color.
+    expect(cleared).toHaveStyle({ color: '#22c55e' })
+    expect(survived).toHaveStyle({ color: '#22c55e' })
+    // The bordered panel wrapping the two lines carries the green accent border.
+    expect(cleared.closest('div')).toHaveStyle({ borderColor: '#22c55e' })
+  })
+
+  it('invalidates the keys and keyspace caches after a successful flush', async () => {
+    /*
+     * Scenario: a flush succeeds and must refresh the dependent views.
+     * Rule it protects: the `prove` `onSuccess` invalidates BOTH the keys and the
+     * keyspace query roots (the two `queryKey` arrays), so the explorer/keyspace
+     * surfaces re-fetch after the namespace is cleared.
+     */
+    const user = userEvent.setup()
+    const { client } = renderWithClient(<IsolationProof />)
+    const invalidate = vi.spyOn(client, 'invalidateQueries')
+    await user.click(screen.getByRole('button', { name: 'Flush namespace & verify' }))
+
+    await waitFor(() => expect(invalidate).toHaveBeenCalledWith({ queryKey: ['keys'] }))
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['keyspace'] })
   })
 
   it('reports an unexpectedly-removed foreign key when it did not survive', async () => {
@@ -150,6 +188,10 @@ describe('IsolationProof', () => {
     expect(alert).toHaveTextContent('Client Error · 403')
     expect(alert).toHaveTextContent('cache.flush_disabled_in_production')
     expect(alert).toHaveTextContent('Flush is disabled in production')
+    // The 4xx severity palette is amber; the alert border and the label span both
+    // paint `severity.color`, so a blanked inline style is detectable.
+    expect(alert).toHaveStyle({ borderColor: '#f59e0b' })
+    expect(screen.getByText(/Client Error/)).toHaveStyle({ color: '#f59e0b' })
     expect(toast.error).not.toHaveBeenCalled()
   })
 

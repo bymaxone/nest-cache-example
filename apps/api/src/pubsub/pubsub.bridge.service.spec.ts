@@ -116,6 +116,33 @@ describe('PubSubBridgeService (unit)', () => {
       expect(emitMessage).toHaveBeenCalledWith('cache-example:product:42', { id: 42 })
     })
 
+    it('stores each default subscription under its own channel key with the right pattern flag', async () => {
+      /*
+       * Scenario: after bootstrap, re-add each default channel.
+       * Rule it protects: each `subs.set` keyed the entry by its exact channel string
+       * with the correct `isPattern` flag. Re-adding a known channel must find the
+       * stored entry (refs 1 → 2) and echo its stored `isPattern` — a blanked key would
+       * miss the entry (refs back to 1) and a flipped flag would echo the wrong kind.
+       */
+      const { service, subscribe, psubscribe } = setup()
+      subscribe.mockResolvedValue(makeUnsub())
+      psubscribe.mockResolvedValue(makeUnsub())
+      await service.onModuleInit()
+
+      await expect(service.addSubscription('product-events', false)).resolves.toEqual({
+        refs: 2,
+        isPattern: false,
+      })
+      await expect(service.addSubscription('product:*', true)).resolves.toEqual({
+        refs: 2,
+        isPattern: true,
+      })
+      await expect(service.addSubscription(ERROR_DEMO_CHANNEL, false)).resolves.toEqual({
+        refs: 2,
+        isPattern: false,
+      })
+    })
+
     it('registers a handler whose throw is the error-isolation demo', async () => {
       /*
        * Scenario: invoke the error-demo channel's registered handler.

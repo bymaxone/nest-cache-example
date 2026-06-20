@@ -44,6 +44,12 @@ describe('LatencyLines', () => {
     expect(
       screen.getByText('Latest latency — p50 0.412ms, p95 1.20ms, p99 3.45ms.'),
     ).toBeInTheDocument()
+    // With a non-empty series the frame must NOT show the empty state. The summary
+    // renders regardless of the empty branch (it is the non-visual fallback), so the
+    // absence of "No data yet." is what pins `isEmpty={data.length === 0}` — forcing
+    // that prop to a constant `true` (L48) would swap the chart body for the empty
+    // state while the summary still ships.
+    expect(screen.queryByText('No data yet.')).not.toBeInTheDocument()
   })
 
   it('renders the loading skeleton when loading', () => {

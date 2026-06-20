@@ -139,6 +139,29 @@ describe('EventFeed', () => {
     expect(screen.queryByText(/jump to latest/)).not.toBeInTheDocument()
   })
 
+  it('keeps the pill hidden while un-pinned until an event actually arrives', () => {
+    /*
+     * Scenario: the reader scrolls into history (un-pin) but no new event has arrived.
+     * Rule it protects: the pill predicate is `!isPinned && newCount > 0`, so being
+     * un-pinned alone is not enough — with `newCount` still 0 no pill renders. Kills
+     * the `&&`→`||` logical mutant and the `newCount > 0` → `true`/`>= 0` mutants,
+     * all of which would surface a spurious "0 new — jump to latest" pill here.
+     */
+    render(
+      <EventFeed<Item>
+        items={[{ id: 1 }]}
+        getKey={(item) => String(item.id)}
+        renderRow={(item) => <span>row-{item.id}</span>}
+        emptyState={<span>empty</span>}
+      />,
+    )
+    const region = screen.getByRole('log')
+    Object.defineProperty(region, 'scrollTop', { value: 100, configurable: true })
+    fireEvent.scroll(region)
+    // Un-pinned, zero arrivals → neither the pill button nor its copy is present.
+    expect(screen.queryByText(/jump to latest/)).not.toBeInTheDocument()
+  })
+
   it('re-pins and hides the pill when the reader scrolls back to the top', () => {
     /*
      * Scenario: the reader scrolls down (un-pin), an event arrives, then scrolls back up.

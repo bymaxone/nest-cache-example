@@ -38,6 +38,11 @@ describe('OpsStream', () => {
      */
     render(<OpsStream data={bucket(12, 5, 1)} />)
     expect(screen.getByText('Latest ops/sec — GET 12, SET 5, DEL 1.')).toBeInTheDocument()
+    // With a non-empty rendered series the frame must NOT show the empty state. The
+    // summary renders regardless of the empty branch, so the absence of "No data yet."
+    // is what pins `isEmpty={rendered.length === 0}` — forcing that prop to a constant
+    // `true` (L61) would swap the chart body for the empty state while the summary ships.
+    expect(screen.queryByText('No data yet.')).not.toBeInTheDocument()
   })
 
   it('renders the loading skeleton when loading', () => {
