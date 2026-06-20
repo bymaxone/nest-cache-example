@@ -74,9 +74,9 @@ export class RingBuffer<T> {
 
   /** Drop oldest entries until the buffer is within capacity. */
   private trim(): void {
-    if (this.buf.length > this.capacity) {
-      this.buf.splice(0, this.buf.length - this.capacity)
-    }
+    // `splice` tolerates a non-positive delete count as a no-op, so no length guard is
+    // needed: when within capacity the overflow is ≤ 0 and nothing is removed.
+    this.buf.splice(0, this.buf.length - this.capacity)
   }
 }
 

@@ -50,11 +50,14 @@ describe('PlaygroundCard', () => {
   it('renders a scalar outcome as a badge with its label, resulting key, and Explorer link', () => {
     /*
      * Scenario: a successful scalar op (e.g. incr → 7) with a key and Explorer href.
-     * Rule it protects: a primitive value renders as a stringified badge; the
-     * `resultingKey` and `explorerHref` branches both render their rows.
+     * Rule it protects: a primitive value renders as a stringified badge — NOT the JSON
+     * tree (whose scalar path renders a `<pre>` block). The `OpValue` predicate routes a
+     * non-null primitive to the badge: forcing the branch true, OR-ing the operands, or
+     * negating the `typeof === 'object'` check would route 7 into `JsonTree`, producing a
+     * `<pre>` that must be absent. The `resultingKey` and `explorerHref` rows also render.
      */
     const outcome: OpOutcome = { label: 'incr', value: 7, resultingKey: 'cache-example:views:p1' }
-    render(
+    const { container } = render(
       <PlaygroundCard
         title="Numerics"
         ops="incr"
@@ -66,27 +69,52 @@ describe('PlaygroundCard', () => {
     )
     expect(screen.getByText('incr result')).toBeInTheDocument()
     expect(screen.getByText('7')).toBeInTheDocument()
+    // The badge path renders no `<pre>`; the JSON-tree scalar path would.
+    expect(container.querySelector('pre')).toBeNull()
     expect(screen.getByText('cache-example:views:p1')).toBeInTheDocument()
     const link = screen.getByRole('link', { name: 'View in Explorer →' })
     expect(link).toHaveAttribute('href', '/explorer?prefix=views')
   })
 
-  it('renders an object outcome as a JSON tree', () => {
+  it('renders an object outcome as a JSON tree rather than a stringified badge', () => {
     /*
      * Scenario: a successful op returning an object (e.g. hgetall).
-     * Rule it protects: the `typeof value === 'object'` branch of `OpValue` renders
-     * the JSON tree rather than a scalar badge — the object's fields are visible.
+     * Rule it protects: the `value !== null && typeof value === 'object'` branch of
+     * `OpValue` renders the JSON tree (fields split across nodes), NOT the scalar badge.
+     * Inverting the condition, blanking the `'object'` literal, or forcing it false would
+     * route the object through `JSON.stringify`, surfacing the compact `{"sku_1":2}`
+     * string as a single text node — which must NOT appear.
      */
-    const outcome: OpOutcome = { label: 'hgetall', value: { sku_1: { quantity: 2 } } }
+    const outcome: OpOutcome = { label: 'hgetall', value: { sku_1: 2 } }
     const { container } = render(
       <PlaygroundCard title="Hashes" ops="hgetall" outcome={outcome}>
         <span>controls</span>
       </PlaygroundCard>,
     )
     expect(screen.getByText('hgetall result')).toBeInTheDocument()
-    // The JSON viewer splits the key across nodes; assert the rendered field name
-    // appears somewhere in the tree rather than as a single exact-text node.
+    // The JSON viewer splits the object across nodes; the field name is rendered.
     expect(container.textContent).toContain('sku_1')
+    // The badge fallback would stringify the whole object into one node — assert it is absent.
+    expect(screen.queryByText('{"sku_1":2}')).not.toBeInTheDocument()
+  })
+
+  it('renders a null scalar outcome as a badge, not a JSON tree', () => {
+    /*
+     * Scenario: an op whose decoded value is `null`.
+     * Rule it protects: the `value !== null` guard short-circuits, so `null` renders as
+     * the scalar badge text "null" (via `JSON.stringify(null)`). Dropping the null guard
+     * (`value === null`, or forcing the branch true) would route null into `JsonTree`
+     * instead, so the literal "null" badge text would not appear.
+     */
+    const outcome: OpOutcome = { label: 'get', value: null }
+    const { container } = render(
+      <PlaygroundCard title="Strings" ops="get" outcome={outcome}>
+        <span>controls</span>
+      </PlaygroundCard>,
+    )
+    expect(screen.getByText('null')).toBeInTheDocument()
+    // The badge path renders no `<pre>`; routing null into the JSON tree would.
+    expect(container.querySelector('pre')).toBeNull()
   })
 
   it('renders the undefined fallback badge for an undefined scalar value', () => {

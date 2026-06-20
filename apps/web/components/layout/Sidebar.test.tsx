@@ -108,4 +108,30 @@ describe('Sidebar', () => {
     render(<Sidebar isOpen={false} />)
     expect(screen.getByText(`ns: ${APP_NAMESPACE}`)).toBeInTheDocument()
   })
+
+  it('shows the rail (flex) when open as the mobile overlay', () => {
+    /*
+     * Scenario: the mobile overlay is open (`isOpen`).
+     * Rule it protects: the `isOpen ? 'flex' : 'hidden lg:flex'` true arm applies the
+     * `flex` display class so the overlay is visible — blanking the literal would leave
+     * the open rail without its display class.
+     */
+    render(<Sidebar isOpen />)
+    const nav = screen.getByRole('navigation')
+    expect(nav).toHaveClass('flex')
+    expect(nav).not.toHaveClass('hidden')
+  })
+
+  it('hides the rail on mobile (hidden, desktop-only flex) when closed', () => {
+    /*
+     * Scenario: the closed rail on a mobile viewport.
+     * Rule it protects: the `isOpen ? 'flex' : 'hidden lg:flex'` false arm hides the rail
+     * on mobile while keeping it shown on desktop (`lg:flex`) — blanking the literal would
+     * leave the closed rail visible on mobile.
+     */
+    render(<Sidebar isOpen={false} />)
+    const nav = screen.getByRole('navigation')
+    expect(nav).toHaveClass('hidden')
+    expect(nav).toHaveClass('lg:flex')
+  })
 })

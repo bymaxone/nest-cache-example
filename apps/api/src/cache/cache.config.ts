@@ -35,9 +35,11 @@ export function buildCacheOptions(
   config: ConfigService<Env, true>,
   events: ICacheEvents,
 ): BymaxCacheModuleOptions {
+  // Stryker disable next-line ObjectLiteral,BooleanLiteral -- `{ infer: true }` is a compile-time-only typing hint for ConfigService; emptying it or flipping the flag returns the identical runtime value.
   const mode = config.get('CACHE_MODE', { infer: true })
 
   const serializer =
+    // Stryker disable next-line ObjectLiteral,BooleanLiteral -- `{ infer: true }` is a compile-time-only typing hint for ConfigService; emptying it or flipping the flag returns the identical runtime value.
     config.get('CACHE_SERIALIZER', { infer: true }) === 'msgpack'
       ? new MsgPackSerializer()
       : undefined // undefined → library default JsonSerializer
@@ -78,7 +80,9 @@ function parseAddressList(raw: string): { host: string; port: number }[] {
       // Split host:port; an absent OR empty host (e.g. ":6379") falls back to localhost.
       // `split(':')` always yields index 0, so `rawHost` needs no default — only an
       // absent port (a colon-less entry) falls back to '' and then fails the NaN check.
-      const [rawHost, portText = ''] = pair.split(':')
+      const segments = pair.split(':')
+      // Stryker disable next-line StringLiteral -- the port default is reached only for a colon-less entry; parseInt('') is NaN and any replacement string is NaN too, so both throw identically.
+      const [rawHost, portText = ''] = segments
       const port = Number.parseInt(portText, 10)
       if (Number.isNaN(port)) {
         throw new Error(`Invalid Redis address "${pair}" — expected host:port`)
@@ -102,8 +106,9 @@ function parseAddressList(raw: string): { host: string; port: number }[] {
  */
 function parseNatMap(raw: string): Record<string, { host: string; port: number }> | undefined {
   const map: Record<string, { host: string; port: number }> = {}
-  for (const entry of raw.split(',').map((value) => value.trim())) {
-    if (entry.length === 0) continue
+  for (const entry of raw.split(',')) {
+    // Each `=` side is trimmed below, so whitespace around the whole entry is removed
+    // there too; a blank or half entry then falls through to the `!announced` guard.
     const [announced, reachable] = entry.split('=').map((value) => value.trim())
     if (!announced || !reachable) continue
     // Skip prototype-polluting keys: an env-supplied `__proto__` etc. must never
@@ -114,7 +119,9 @@ function parseNatMap(raw: string): Record<string, { host: string; port: number }
     // An absent OR empty host on the reachable side falls back to localhost.
     // `split(':')` always yields index 0, so `rawHost` needs no default — only an
     // absent port (a colon-less side) falls back to '' and then fails the NaN check.
-    const [rawHost, portText = ''] = reachable.split(':')
+    const segments = reachable.split(':')
+    // Stryker disable next-line StringLiteral -- the port default is reached only for a colon-less side; parseInt('') is NaN and any replacement string is NaN too, so both throw identically.
+    const [rawHost, portText = ''] = segments
     const port = Number.parseInt(portText, 10)
     if (Number.isNaN(port)) {
       throw new Error(`Invalid natMap target "${reachable}" — expected host:port`)

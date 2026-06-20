@@ -111,6 +111,10 @@ describe('FilterRail', () => {
     const { onHasTtlChange } = setup({ hasTtl: false })
     const toggle = screen.getByRole('button', { name: 'Has TTL' })
     expect(toggle).toHaveAttribute('aria-pressed', 'false')
+    // Off renders the `outline` variant (its `text-foreground`) with the mono label —
+    // pinning the `outline` and `font-mono` literals against being emptied.
+    expect(toggle).toHaveClass('text-foreground')
+    expect(toggle).toHaveClass('font-mono')
     await user.click(toggle)
     expect(onHasTtlChange).toHaveBeenCalledWith(true)
   })
@@ -124,7 +128,45 @@ describe('FilterRail', () => {
     const { onHasTtlChange } = setup({ hasTtl: true })
     const toggle = screen.getByRole('button', { name: 'Has TTL' })
     expect(toggle).toHaveAttribute('aria-pressed', 'true')
+    // On renders the `default` variant — the brand gradient `from-brand-500` —
+    // pinning the `default` literal against being emptied.
+    expect(toggle).toHaveClass('from-brand-500')
     await user.click(toggle)
     expect(onHasTtlChange).toHaveBeenCalledWith(false)
+  })
+
+  it('styles the active prefix chip as a brand default and inactive chips as outline', () => {
+    /*
+     * Scenario: the `product` prefix is active; `cart` is an inactive chip.
+     * Rule it protects: the active quick-pick chip renders the Button `default`
+     * variant (`from-brand-500`) while inactive chips render the `outline` variant
+     * (`text-foreground`) — pinning the `prefix === option` variant ternary and the
+     * `default`/`outline` literals against inversion / string-emptying mutants.
+     */
+    setup({ prefix: 'product' })
+    const active = screen.getByRole('button', { name: 'product' })
+    const inactive = screen.getByRole('button', { name: 'cart' })
+    expect(active).toHaveClass('from-brand-500')
+    expect(inactive).not.toHaveClass('from-brand-500')
+    expect(inactive).toHaveClass('text-foreground')
+  })
+
+  it('styles the active type facet as a brand default and tints inactive facet icons', () => {
+    /*
+     * Scenario: the `string` type facet is active; `hash` is inactive.
+     * Rule it protects: the active facet renders the `default` variant
+     * (`from-brand-500`) with an un-tinted icon (its inline `style` is `undefined`),
+     * while an inactive facet renders the `outline` variant (`text-foreground`) and
+     * tints its leading icon with the data-type meta color (`hash` → #a855f7 →
+     * rgb(168, 85, 247)). Pins the `default`/`outline` literals and the
+     * `{ color: meta.color }` inactive-icon style object against being emptied.
+     */
+    setup({ type: 'string' })
+    const active = screen.getByRole('button', { name: 'String' })
+    const inactive = screen.getByRole('button', { name: 'Hash' })
+    expect(active).toHaveClass('from-brand-500')
+    expect(inactive).toHaveClass('text-foreground')
+    expect(active.querySelector('svg')?.style.color).toBe('')
+    expect(inactive.querySelector('svg')?.style.color).toBe('rgb(168, 85, 247)')
   })
 })

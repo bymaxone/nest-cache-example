@@ -20,9 +20,12 @@ import { type CacheEvent } from '@/lib/socket'
 import { type CountdownTile } from './CountdownWall'
 import { ApiRequestError } from '@/lib/cache-api'
 
+// Recording spy so the `useQueryState('live', …)` query-key the page subscribes to
+// is observable; it still returns the inert `[false, setter]` pair.
+const useQueryStateSpy = vi.fn<(...args: unknown[]) => unknown>(() => [false, vi.fn()])
 vi.mock('nuqs', async (importOriginal) => ({
   ...(await importOriginal<typeof import('nuqs')>()),
-  useQueryState: () => [false, vi.fn()] as const,
+  useQueryState: (...args: unknown[]) => useQueryStateSpy(...args),
 }))
 
 // `toast` is called both as a function (bare expiry toast) and via `.success` /
@@ -99,7 +102,16 @@ vi.mock('./EventFeed', () => ({
     <div data-testid="event-feed">
       {items.length === 0
         ? emptyState
-        : items.map((item, i) => <div key={getKey(item, i)}>{renderRow(item)}</div>)}
+        : items.map((item, i) => {
+            // Surface the derived key as a data attribute so the `getKey` mapping is
+            // observable (the real list key is not in the DOM).
+            const rowKey = getKey(item, i)
+            return (
+              <div key={rowKey} data-key={String(rowKey)}>
+                {renderRow(item)}
+              </div>
+            )
+          })}
     </div>
   ),
 }))
@@ -167,6 +179,42 @@ describe('TtlLiveView', () => {
       await Promise.resolve()
     })
     expect(await screen.findByText('12345678…:30')).toBeInTheDocument()
+  })
+
+  it('keeps an exactly-eight-char id verbatim, without an ellipsis', async () => {
+    /*
+     * Scenario: the seeded key's trailing id is exactly eight characters.
+     * Rule it protects: `shortLabel` truncates only when the id is STRICTLY longer than
+     * eight chars (`> 8`), so an eight-char id is shown whole — pinning the boundary
+     * against a `>= 8` mutation that would wrongly append the ellipsis.
+     */
+    seed.mockResolvedValue({
+      ok: true,
+      data: { key: 'cache-example:ttl:abcd1234', ttlSeconds: 30 },
+    })
+    renderWithClient(<TtlLiveView />)
+    await act(async () => {
+      seedTtlCb?.()
+      await Promise.resolve()
+    })
+    expect(await screen.findByText('abcd1234:30')).toBeInTheDocument()
+    expect(screen.queryByText('abcd1234…:30')).not.toBeInTheDocument()
+  })
+
+  it('tags a seeded tile with the ttl entity-prefix chip', async () => {
+    /*
+     * Scenario: the operator seeds a 30s key.
+     * Rule it protects: `addTile` stamps the tile's `prefix` as `'ttl'` so the wall can
+     * render its entity chip — a blanked prefix literal would leave the chip empty.
+     */
+    renderWithClient(<TtlLiveView />)
+    await act(async () => {
+      seedTtlCb?.()
+      await Promise.resolve()
+    })
+    await waitFor(() =>
+      expect(lastTiles.find((t) => t.key === 'cache-example:ttl:abc123')?.prefix).toBe('ttl'),
+    )
   })
 
   it('does not add a duplicate tile when the same key is seeded twice', async () => {
@@ -325,6 +373,51 @@ describe('TtlLiveView', () => {
     )
   })
 
+  it('removes ONLY the expired tile after its fade, leaving siblings in place', async () => {
+    /*
+     * Scenario: two tiles exist; only one (k1) receives a confirmed expiry.
+     * Rule it protects: the fade-removal `setTiles` filters by `tile.key !== event.key`,
+     * so it drops just the expired key and keeps k2 — pinning the filter predicate
+     * against a mutation that would discard every tile.
+     */
+    let calls = 0
+    seed.mockImplementation(() => {
+      calls += 1
+      const key = calls === 1 ? 'cache-example:ttl:k1' : 'cache-example:ttl:k2'
+      return Promise.resolve({ ok: true, data: { key, ttlSeconds: 30 } })
+    })
+    renderWithClient(<TtlLiveView />)
+    await act(async () => {
+      seedTtlCb?.()
+      await Promise.resolve()
+    })
+    await act(async () => {
+      seedTtlCb?.()
+      await Promise.resolve()
+    })
+    await waitFor(() =>
+      expect(lastTiles.map((t) => t.key).sort()).toEqual([
+        'cache-example:ttl:k1',
+        'cache-example:ttl:k2',
+      ]),
+    )
+
+    socketEvents.push(expiredEvent('cache-example:ttl:k1', 20))
+    await act(async () => {
+      seedTtlCb?.()
+      await Promise.resolve()
+    })
+
+    // After the fade timeout, k1 is gone but k2 (never expired) remains rendered.
+    await waitFor(
+      () => {
+        expect(lastTiles.some((t) => t.key === 'cache-example:ttl:k1')).toBe(false)
+        expect(lastTiles.some((t) => t.key === 'cache-example:ttl:k2')).toBe(true)
+      },
+      { timeout: 2_000 },
+    )
+  })
+
   it('ignores an expiry for a key that is not a rendered tile', async () => {
     /*
      * Scenario: an expiry arrives for a foreign key with no tile.
@@ -423,6 +516,65 @@ describe('TtlLiveView', () => {
     expect(screen.getByText('ttl:zzz')).toBeInTheDocument()
   })
 
+  it('explains the raw-subscriber expiry mechanism in the callout copy', () => {
+    /*
+     * Scenario: the static explanatory callout is rendered.
+     * Rule it protects: the prose that documents WHY expiry uses the raw subscriber —
+     * "raw subscriber, not", "The API filters them by the", "prefix. Requires" — is
+     * present verbatim, so each blanked copy fragment is detected.
+     */
+    const { container } = renderWithClient(<TtlLiveView />)
+    // The page binds the global Live toggle to the `live` query-key (a blanked key
+    // string would subscribe to the wrong param and never gate the socket buffer).
+    expect(useQueryStateSpy).toHaveBeenCalledWith('live', expect.anything())
+    const text = container.textContent ?? ''
+    expect(text).toContain('raw subscriber, not')
+    expect(text).toContain('The API filters them by the')
+    expect(text).toContain('prefix. Requires')
+    // The `{' '}` separators between the prose and the inline `<span>` terms must
+    // render real spaces; a blanked space literal would weld the words together.
+    expect(text).toContain('not PubSubService')
+    expect(text).toContain('the cache-example:')
+    expect(text).toContain('Requires notify-keyspace-events')
+  })
+
+  it('feeds only expired-kind events, ignoring other socket channels', () => {
+    /*
+     * Scenario: the buffer holds a non-expiry `event`-kind message alongside one
+     * `expired` event.
+     * Rule it protects: `expiredEvents` filters strictly on `kind === 'expired'`, so a
+     * `connection`/`event` message never reaches the expiry feed — pinning the predicate
+     * against an always-true mutation that would leak foreign channels into the feed.
+     */
+    socketEvents.push({ kind: 'event', seq: 5, channel: 'orders', payload: { id: 1 }, at: 1 })
+    socketEvents.push(expiredEvent('cache-example:ttl:only', 6))
+    renderWithClient(<TtlLiveView />)
+    const feed = screen.getByTestId('event-feed')
+    expect(feed).toHaveTextContent('ttl:only')
+    // Exactly one row — the non-expiry channel is filtered out.
+    expect(feed.children).toHaveLength(1)
+    expect(screen.queryByText('orders')).not.toBeInTheDocument()
+  })
+
+  it('orders the expiry feed newest-first', () => {
+    /*
+     * Scenario: two expiries arrive in order (older `aaa`, then newer `bbb`).
+     * Rule it protects: the feed is `expiredEvents.slice().reverse()`, so the most
+     * recent expiry renders first — pinning the defensive-copy `.reverse()` against a
+     * mutation that drops it (leaving the oldest-first source order). The per-row key is
+     * derived from `event.seq`, so each row exposes its stable identity.
+     */
+    socketEvents.push(expiredEvent('cache-example:ttl:aaa', 1))
+    socketEvents.push(expiredEvent('cache-example:ttl:bbb', 2))
+    renderWithClient(<TtlLiveView />)
+    const feed = screen.getByTestId('event-feed')
+    const rows = feed.textContent ?? ''
+    expect(rows.indexOf('ttl:bbb')).toBeLessThan(rows.indexOf('ttl:aaa'))
+    // Newest-first row carries the seq-derived key (`getKey(event) => String(seq)`).
+    expect(feed.children[0]).toHaveAttribute('data-key', '2')
+    expect(feed.children[1]).toHaveAttribute('data-key', '1')
+  })
+
   it('shows a non-namespaced expired key verbatim in the feed', () => {
     /*
      * Scenario: an expiry event whose key lacks the app namespace prefix.
@@ -440,6 +592,11 @@ describe('TtlLiveView', () => {
      * Rule it protects: the unmount cleanup clears outstanding timeouts so no
      * setState fires on an unmounted tree.
      */
+    // The fade-removal delay (mirrors the source `FADE_DURATION_MS`) tags the specific
+    // timeout the cleanup must clear, so we can assert the EXACT timer id is cleared
+    // rather than that clearTimeout merely ran (other machinery clears timers too).
+    const FADE_DURATION_MS = 700
+    const setSpy = vi.spyOn(globalThis, 'setTimeout')
     const clearSpy = vi.spyOn(globalThis, 'clearTimeout')
     const { unmount } = renderWithClient(<TtlLiveView />)
     await act(async () => {
@@ -454,7 +611,14 @@ describe('TtlLiveView', () => {
     })
     await waitFor(() => expect(lastTiles.some((t) => t.fading === true)).toBe(true))
 
+    // The expiry effect scheduled the 700ms fade-removal timer; capture its id.
+    const fadeIndex = setSpy.mock.calls.findIndex((args) => args[1] === FADE_DURATION_MS)
+    expect(fadeIndex).toBeGreaterThanOrEqual(0)
+    const fadeTimerId = setSpy.mock.results[fadeIndex]?.value
+
     unmount()
-    expect(clearSpy).toHaveBeenCalled()
+    // The unmount cleanup must clear THAT pending fade timer (an emptied effect or
+    // cleanup body would leave it dangling).
+    expect(clearSpy).toHaveBeenCalledWith(fadeTimerId)
   })
 })

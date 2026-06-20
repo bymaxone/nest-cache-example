@@ -87,6 +87,12 @@ describe('SerializerDemoService (unit)', () => {
       })
       expect(setInner).toHaveBeenCalledWith(DEMO_PREFIX, 'last', payload, undefined)
       expect(setRaw).toHaveBeenCalledWith(DEMO_PREFIX, 'raw', '{"x":1}')
+      // Pin every key id: the read-back and bypass reads must target the same
+      // `last`/`raw` ids that were written — blanking any id would still round-trip
+      // internally (write "" then read "") and go undetected without these.
+      expect(getRaw).toHaveBeenCalledWith(DEMO_PREFIX, 'last')
+      expect(getInner).toHaveBeenCalledWith(DEMO_PREFIX, 'last')
+      expect(getRaw).toHaveBeenCalledWith(DEMO_PREFIX, 'raw')
     })
 
     it('skips the bypass and reports zero bytes when the key was evicted', async () => {
@@ -116,7 +122,7 @@ describe('SerializerDemoService (unit)', () => {
        * Rule it protects: `hasWhen` passes all three arms and `when instanceof Date`
        * is true, so `dateSurvived` is true and the MessagePack note is chosen.
        */
-      const { service, getInner, getRaw } = setup()
+      const { service, setInner, getInner, getRaw } = setup()
       getRaw.mockResolvedValue('<bytes>')
       getInner.mockResolvedValue({ when: new Date('2026-06-01T00:00:00.000Z') })
 
@@ -126,6 +132,9 @@ describe('SerializerDemoService (unit)', () => {
         dateSurvived: true,
         note: 'MessagePack preserves Date intact',
       })
+      // Pin the `caveat` key id on the write and both read-backs.
+      expect(setInner).toHaveBeenCalledWith(DEMO_PREFIX, 'caveat', expect.anything(), undefined)
+      expect(getRaw).toHaveBeenCalledWith(DEMO_PREFIX, 'caveat')
       expect(getInner).toHaveBeenCalledWith(DEMO_PREFIX, 'caveat')
     })
 

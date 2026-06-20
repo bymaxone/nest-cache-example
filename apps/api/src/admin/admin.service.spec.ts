@@ -165,6 +165,9 @@ function setup() {
     info,
     getInner,
     hgetallInner,
+    pipeType,
+    pipeTtl,
+    pipeMemory,
     pipeSet,
     pipeExec,
     clientType,
@@ -211,18 +214,21 @@ describe('AdminService (unit)', () => {
 
     it('scans with a tenant but no prefix/pattern, breaking at the limit and returning the last key as cursor', async () => {
       /*
-       * Scenario: strategy=scan, tenant set, prefix and pattern omitted, limit 2.
+       * Scenario: strategy=scan, tenant set, prefix and pattern omitted, limit 3 with
+       * more keys available than the limit.
        * Rule it protects: the match collapses to `tenant:<t>:` and `*`; the loop breaks
-       * once `limit` keys are collected and the cursor is the last collected key.
+       * once `limit` keys are collected and the cursor is the LAST collected key
+       * (`keys.at(-1)`). The limit (3) and key count (≥4) are chosen so the last index
+       * differs from index 1 — distinguishing `at(-1)` from any other fixed index.
        */
       const { service, scanFacade } = setup()
-      scanFacade.mockReturnValue(asyncIterableOf(['k1', 'k2', 'k3']))
-      const query: KeyQuery = { strategy: 'scan', tenant: 't2', limit: 2 }
+      scanFacade.mockReturnValue(asyncIterableOf(['k1', 'k2', 'k3', 'k4']))
+      const query: KeyQuery = { strategy: 'scan', tenant: 't2', limit: 3 }
 
       const result = await service.listKeys(query)
 
-      expect(result).toEqual({ keys: ['k1', 'k2'], cursor: 'k2', strategy: 'scan' })
-      expect(scanFacade).toHaveBeenCalledWith('tenant:t2:', '*', 2)
+      expect(result).toEqual({ keys: ['k1', 'k2', 'k3'], cursor: 'k3', strategy: 'scan' })
+      expect(scanFacade).toHaveBeenCalledWith('tenant:t2:', '*', 3)
     })
 
     it('scans without a tenant using the bare prefix and reports a null cursor below the limit', async () => {
@@ -456,17 +462,21 @@ describe('AdminService (unit)', () => {
        * JSON payload, and only `[null, …]` (error-free) tuples are counted as seeded.
        */
       const { service, build, pipeSet, pipeExec, pipelineFacade } = setup()
+      // Two successful tuples and one errored: the success count (2) differs from the
+      // error count (1), so counting `err === null` cannot be confused with its inverse.
       pipeExec.mockResolvedValue([
+        [null, 'OK'],
         [null, 'OK'],
         [new Error('boom'), null],
       ])
 
-      const result = await service.seed(2)
+      const result = await service.seed(3)
 
-      expect(result).toEqual({ seeded: 1 })
+      expect(result).toEqual({ seeded: 2 })
       expect(pipelineFacade).toHaveBeenCalledTimes(1)
       expect(build).toHaveBeenNthCalledWith(1, 'product', '1')
       expect(build).toHaveBeenNthCalledWith(2, 'product', '2')
+      expect(build).toHaveBeenNthCalledWith(3, 'product', '3')
       expect(pipeSet).toHaveBeenNthCalledWith(
         1,
         'cache-example:product:1',
@@ -656,18 +666,24 @@ describe('AdminService (unit)', () => {
       expect(clientScan).toHaveBeenCalledTimes(2)
       expect(clientScan).toHaveBeenNthCalledWith(1, '0', 'MATCH', 'cache-example:*', 'COUNT', 200)
       expect(clientScan).toHaveBeenNthCalledWith(2, '7', 'MATCH', 'cache-example:*', 'COUNT', 200)
+      // The empty first page must `continue` WITHOUT opening a pipeline — only the
+      // single key on the second page is probed, so exec runs exactly once.
+      expect(pipeExec).toHaveBeenCalledTimes(1)
     })
 
-    it('stops sampling at the 1000-key cap even when the cursor is still open', async () => {
+    it('stops sampling at exactly the 1000-key cap even when the cursor is still open', async () => {
       /*
-       * Scenario: a single page of 1001 keys with a non-zero cursor.
-       * Rule it protects: the inner loop breaks at KEYSPACE_SAMPLE_CAP (1000) and the
-       * do/while exits because `sampled < cap` is false despite the open cursor.
+       * Scenario: a single page of 1001 keys with a non-zero cursor, and meta supplied
+       * for all 1001 so the 1001st key WOULD aggregate if it were sampled.
+       * Rule it protects: the inner loop breaks at `sampled >= KEYSPACE_SAMPLE_CAP`
+       * (exactly 1000, not 1001) and the do/while exits because `sampled < cap` is false
+       * despite the open cursor. Providing full 1001-key meta makes the off-by-one
+       * boundary (`>=` vs `>`, or a never-break mutant) observable as a 1001 count.
        */
       const { service, clientScan, pipeExec } = setup()
       const batch = Array.from({ length: 1001 }, (_unused, i) => `cache-example:product:${i}`)
       const meta: Array<[Error | null, unknown]> = []
-      for (let i = 0; i < 1000; i++) {
+      for (let i = 0; i < 1001; i++) {
         meta.push([null, 'string'], [null, '-1'], [null, '1'])
       }
       clientScan.mockResolvedValue(['5', batch])
@@ -679,6 +695,73 @@ describe('AdminService (unit)', () => {
       expect(result.expiry).toEqual({ withTtl: 0, noTtl: 1000 })
       expect(result.byPrefix).toEqual([{ prefix: 'product', bytes: 1000 }])
       expect(clientScan).toHaveBeenCalledTimes(1)
+    })
+
+    it('counts a TTL=0 key as active, a set key in its bucket, and queues TYPE/TTL/MEMORY per key', async () => {
+      /*
+       * Scenario: a batch of one string key with TTL exactly 0 and one set key.
+       * Rule it protects: the `ttlVal >= 0` boundary counts TTL=0 as withTtl (not the
+       * `> 0` off-by-one); the `type === 'set'` arm increments the set bucket; and the
+       * per-key loop body actually queues TYPE/TTL/MEMORY for every key (an empty body
+       * would still aggregate from the mocked meta, so the queue calls are asserted).
+       */
+      const { service, clientScan, pipeExec, pipeType, pipeTtl, pipeMemory } = setup()
+      clientScan.mockResolvedValue(['0', ['cache-example:product:1', 'cache-example:tags:1']])
+      pipeExec.mockResolvedValue([
+        [null, 'string'],
+        [null, '0'],
+        [null, '10'],
+        [null, 'set'],
+        [null, '-1'],
+        [null, '5'],
+      ])
+
+      const result = await service.getKeyspaceBreakdown()
+
+      expect(result.byType).toEqual({ string: 1, hash: 0, set: 1 })
+      expect(result.expiry).toEqual({ withTtl: 1, noTtl: 1 })
+      expect(result.byPrefix).toEqual([
+        { prefix: 'product', bytes: 10 },
+        { prefix: 'tags', bytes: 5 },
+      ])
+      for (const key of ['cache-example:product:1', 'cache-example:tags:1']) {
+        expect(pipeType).toHaveBeenCalledWith(key)
+        expect(pipeTtl).toHaveBeenCalledWith(key)
+        expect(pipeMemory).toHaveBeenCalledWith('USAGE', key)
+      }
+    })
+
+    it('decrements the sample budget for a ghost key so a later page is still scanned', async () => {
+      /*
+       * Scenario: page one returns the full 1000-key budget with its last key a TTL=-2
+       * ghost; page two (cursor still open) carries one more real key.
+       * Rule it protects: the ghost path does `sampled--` so the consumed budget drops
+       * back below the cap, letting the do/while fetch page two. An `sampled++` mutant
+       * would overshoot the cap and stop after page one, losing the page-two key.
+       */
+      const { service, clientScan, pipeExec } = setup()
+      const page1 = Array.from({ length: 1000 }, (_unused, i) => `cache-example:product:${i}`)
+      const page1Meta: Array<[Error | null, unknown]> = []
+      for (let i = 0; i < 999; i++) {
+        page1Meta.push([null, 'string'], [null, '-1'], [null, '10'])
+      }
+      // Last key on page one is a TTL=-2 ghost — processed, then un-counted via sampled--.
+      page1Meta.push([null, 'string'], [null, '-2'], [null, '10'])
+
+      clientScan
+        .mockResolvedValueOnce(['9', page1])
+        .mockResolvedValueOnce(['0', ['cache-example:product:extra']])
+      pipeExec.mockResolvedValueOnce(page1Meta).mockResolvedValueOnce([
+        [null, 'string'],
+        [null, '-1'],
+        [null, '10'],
+      ])
+
+      const result = await service.getKeyspaceBreakdown()
+
+      // 999 strings on page one (the 1000th was a ghost) + 1 on page two = 1000.
+      expect(result.byType.string).toBe(1000)
+      expect(clientScan).toHaveBeenCalledTimes(2)
     })
   })
 })

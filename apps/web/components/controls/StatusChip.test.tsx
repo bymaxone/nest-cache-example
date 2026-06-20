@@ -136,6 +136,10 @@ describe('StatusChip', () => {
     expect(await screen.findByText('Reconnecting')).toBeInTheDocument()
     expect(screen.queryByText(/ms$/)).not.toBeInTheDocument()
     expect(screen.queryByText(/^· /)).not.toBeInTheDocument()
+    // The unknown mode string itself must never reach the DOM: pins the
+    // `TOPOLOGY_MODES.has(rawMode)` allow-list guard so a mutant forcing the mode
+    // condition always-true (which would render `· galaxy`) is caught.
+    expect(screen.queryByText(/galaxy/)).not.toBeInTheDocument()
   })
 
   it('falls back to the health latency when the live event omits it', async () => {
@@ -149,5 +153,91 @@ describe('StatusChip', () => {
     renderChip('?live=true')
     expect(screen.getByText('Connecting')).toBeInTheDocument()
     expect(await screen.findByText('4ms')).toBeInTheDocument()
+  })
+
+  it('only treats connection-kind events as the live state, ignoring later non-connection events', () => {
+    /*
+     * Scenario: a `ready` connection event is followed by a non-connection (`expired`)
+     * event in the same buffer, with no /health baseline.
+     * Rule it protects: `findLast(event.kind === 'connection')` skips the trailing
+     * non-connection entry, so the live state still resolves to `ready` (not the
+     * neutral `connecting` default a kind-agnostic mutant would fall through to).
+     */
+    pushConnection('ready', { latencyMs: 5 })
+    socketBuffer.push({ kind: 'expired', seq: 1, key: 'cache-example:product:1', at: Date.now() })
+    renderChip('?live=true')
+    expect(screen.getByText('Ready')).toBeInTheDocument()
+    expect(screen.queryByText('Connecting')).not.toBeInTheDocument()
+    expect(screen.getByText('5ms')).toBeInTheDocument()
+  })
+
+  it('drops a non-numeric live latency and falls back to the numeric health latency', async () => {
+    /*
+     * Scenario: a live `ready` event carries a string latency while /health reports a
+     * numeric one.
+     * Rule it protects: the `typeof rawLatency === 'number'` guard rejects the string
+     * so `liveLatency` is undefined and the chip renders the health latency — a mutant
+     * forcing that guard always-true would surface the string and show no `…ms`.
+     */
+    healthResult = { ok: true, data: { status: 'ok', latencyMs: 6 } }
+    pushConnection('ready', { latencyMs: 'n/a' })
+    renderChip('?live=true')
+    expect(await screen.findByText('6ms')).toBeInTheDocument()
+    expect(screen.queryByText(/n\/a/)).not.toBeInTheDocument()
+  })
+
+  it('spins and colors the status icon while connecting (the default state)', () => {
+    /*
+     * Scenario: the chip sits in its neutral `connecting` default (no health, no live).
+     * Rule it protects: `isSpinning` is true for `connecting`, so the icon carries the
+     * `animate-spin` class — pinning the `state === 'connecting' || state === 'reconnecting'`
+     * predicate (including its `'connecting'` literal and the `isSpinning && 'animate-spin'`
+     * branch) and the `'animate-spin'` literal itself. The icon and label both take the
+     * connecting blue from `meta.color` (jsdom normalizes `#60a5fa` to `rgb(96, 165, 250)`),
+     * so the empty `style` object mutants drop the color.
+     */
+    const { container } = renderChip()
+    expect(screen.getByText('Connecting')).toBeInTheDocument()
+    const icon = container.querySelector<SVGElement>('svg')
+    if (!icon) throw new Error('expected the status icon svg')
+    expect(icon).toHaveClass('animate-spin')
+    expect(icon.style.color).toBe('rgb(96, 165, 250)')
+    expect(screen.getByText('Connecting').style.color).toBe('rgb(96, 165, 250)')
+  })
+
+  it('keeps the status icon spinning while reconnecting', () => {
+    /*
+     * Scenario: a live `reconnecting` event drives the chip into the spinning amber state.
+     * Rule it protects: the `state === 'reconnecting'` arm of `isSpinning` (its
+     * `'reconnecting'` literal and equality) keeps the icon spinning even though the state
+     * is not `connecting`; the icon + label take the reconnecting amber (`#f59e0b` →
+     * `rgb(245, 158, 11)`).
+     */
+    pushConnection('reconnecting', {})
+    const { container } = renderChip('?live=true')
+    expect(screen.getByText('Reconnecting')).toBeInTheDocument()
+    const icon = container.querySelector<SVGElement>('svg')
+    if (!icon) throw new Error('expected the status icon svg')
+    expect(icon).toHaveClass('animate-spin')
+    expect(icon.style.color).toBe('rgb(245, 158, 11)')
+    expect(screen.getByText('Reconnecting').style.color).toBe('rgb(245, 158, 11)')
+  })
+
+  it('stops the icon spin and colors it green once ready', () => {
+    /*
+     * Scenario: a live `ready` event resolves the chip to the steady `ready` state.
+     * Rule it protects: `isSpinning` is false for `ready`, so the icon must NOT carry
+     * `animate-spin` — catching a mutant that forces `isSpinning` always-true or swaps the
+     * `&&` to `||` (which would spin a steady icon). The icon + label take the ready green
+     * (`#22c55e` → `rgb(34, 197, 94)`).
+     */
+    pushConnection('ready', {})
+    const { container } = renderChip('?live=true')
+    expect(screen.getByText('Ready')).toBeInTheDocument()
+    const icon = container.querySelector<SVGElement>('svg')
+    if (!icon) throw new Error('expected the status icon svg')
+    expect(icon).not.toHaveClass('animate-spin')
+    expect(icon.style.color).toBe('rgb(34, 197, 94)')
+    expect(screen.getByText('Ready').style.color).toBe('rgb(34, 197, 94)')
   })
 })

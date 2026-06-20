@@ -13,7 +13,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { NuqsTestingAdapter } from 'nuqs/adapters/testing'
+import { NuqsTestingAdapter, type OnUrlUpdateFunction } from 'nuqs/adapters/testing'
 import { type ReactNode } from 'react'
 import { CACHE_ERROR_CODES } from '@bymax-one/nest-cache/shared'
 import { type ApiResult } from '@/lib/api-client'
@@ -55,11 +55,22 @@ vi.mock('@/hooks/use-keys', () => ({
 // ExplorerView's branches isolated. The table stub surfaces the keys it received
 // and a row button that forwards the row click to open the drawer.
 vi.mock('./KeyTable', () => ({
-  KeyTable: ({ keys, onRowClick }: { keys: string[]; onRowClick?: (key: string) => void }) => (
+  KeyTable: ({
+    keys,
+    onRowClick,
+    onLoadMore,
+  }: {
+    keys: string[]
+    onRowClick?: (key: string) => void
+    onLoadMore?: () => void
+  }) => (
     <div data-testid="key-table">
       <span data-testid="key-count">{keys.length}</span>
       <button type="button" onClick={() => onRowClick?.('cache-example:product:42')}>
         open-row
+      </button>
+      <button type="button" onClick={() => onLoadMore?.()}>
+        load-more
       </button>
     </div>
   ),
@@ -85,14 +96,17 @@ function okPage(keys: string[]): ApiResult<KeyListResponse> {
 
 /**
  * Render {@link ExplorerView} inside the nuqs testing adapter with optional
- * initial search params.
+ * initial search params and an optional URL-write spy.
  *
  * @param searchParams - Initial URL search params for the nuqs state.
+ * @param onUrlUpdate - Spy invoked on each URL write (to assert the exact param name).
  * @returns The render result.
  */
-function renderView(searchParams = '') {
+function renderView(searchParams = '', onUrlUpdate?: OnUrlUpdateFunction) {
   const wrapper = ({ children }: { children: ReactNode }) => (
-    <NuqsTestingAdapter searchParams={searchParams}>{children}</NuqsTestingAdapter>
+    <NuqsTestingAdapter searchParams={searchParams} {...(onUrlUpdate ? { onUrlUpdate } : {})}>
+      {children}
+    </NuqsTestingAdapter>
   )
   return render(<ExplorerView />, { wrapper })
 }
@@ -110,10 +124,16 @@ describe('ExplorerView', () => {
     /*
      * Scenario: a fresh explorer with no tenant/prefix/pattern.
      * Rule it protects: the resolved KeyBuilder match is `namespace:*` with no
-     * stray colon segments.
+     * stray colon segments. The paragraph textContent also pins the `{' '}` spacer
+     * literals flanking the mono match span, so blanking a spacer (which would fuse
+     * the label or the trailing hint onto the pattern) is caught.
      */
     renderView()
     expect(screen.getByText('cache-example:*')).toBeInTheDocument()
+    const matchLine = screen.getByText('cache-example:*').closest('p')
+    expect(matchLine).not.toBeNull()
+    expect(matchLine?.textContent).toContain('Resolved match: cache-example:*')
+    expect(matchLine?.textContent).toContain('cache-example:* (via KeyBuilder)')
   })
 
   it('composes tenant, prefix and pattern segments into the resolved match', () => {
@@ -205,12 +225,17 @@ describe('ExplorerView', () => {
     /*
      * Scenario: the user selects the `keys` strategy.
      * Rule it protects: the strategy change handler runs `setStrategy`, surfacing the
-     * O(N) warning that only the `keys` value produces.
+     * O(N) warning that only the `keys` value produces. Asserting the literal
+     * `strategy` param name pins the `useQueryState('strategy', …)` key so a mutant
+     * renaming it (which keeps the round-trip self-consistent) is caught.
      */
     const user = userEvent.setup()
-    renderView()
+    const onUrlUpdate = vi.fn()
+    renderView('', onUrlUpdate)
     await user.click(screen.getByRole('button', { name: 'keys' }))
     expect(screen.getByRole('status')).toHaveTextContent('O(N) — blocks the server')
+    const last = onUrlUpdate.mock.calls.at(-1)?.[0]
+    expect(last?.searchParams.get('strategy')).toBe('keys')
   })
 
   it('writes the prefix filter to URL state via the rail', async () => {
@@ -228,15 +253,22 @@ describe('ExplorerView', () => {
   it('toggles the type and has-TTL facets through their handlers', async () => {
     /*
      * Scenario: the user selects a data type and the has-TTL facet.
-     * Rule it protects: the type and has-TTL change handlers run without error and
-     * reflect their pressed state.
+     * Rule it protects: the type and has-TTL change handlers run and write their
+     * respective URL params. Asserting the exact `type`/`hasTtl` param names and
+     * values pins both `useQueryState` keys and proves the rail's `onTypeChange` /
+     * `onHasTtlChange` callbacks actually invoke the setters — a no-op handler mutant
+     * would write nothing, and a renamed param would land under a different key.
      */
     const user = userEvent.setup()
-    renderView()
+    const onUrlUpdate = vi.fn()
+    renderView('', onUrlUpdate)
     await user.click(screen.getByRole('button', { name: 'String' }))
+    expect(onUrlUpdate.mock.calls.at(-1)?.[0]?.searchParams.get('type')).toBe('string')
+
     const ttlToggle = screen.getByRole('button', { name: 'Has TTL' })
     await user.click(ttlToggle)
     expect(ttlToggle).toHaveAttribute('aria-pressed', 'true')
+    expect(onUrlUpdate.mock.calls.at(-1)?.[0]?.searchParams.get('hasTtl')).toBe('true')
   })
 
   it('opens the detail drawer when a key row is clicked', async () => {
@@ -265,5 +297,19 @@ describe('ExplorerView', () => {
     expect(screen.getByTestId('drawer')).toHaveTextContent('cache-example:product:42')
     await user.click(screen.getByRole('button', { name: 'close-drawer' }))
     expect(screen.getByTestId('drawer')).toHaveTextContent('closed')
+  })
+
+  it('forwards the table load-more request to the infinite query', async () => {
+    /*
+     * Scenario: the key table asks ExplorerView for the next page.
+     * Rule it protects: `handleLoadMore` calls through to the query's `fetchNextPage`.
+     * The arrow-returning-undefined mutant (a no-op body that never calls through)
+     * would leave the infinite query un-paged, so the spy must be invoked.
+     */
+    keysQuery.data = { pages: [okPage(['cache-example:product:1'])] }
+    const user = userEvent.setup()
+    renderView()
+    await user.click(screen.getByRole('button', { name: 'load-more' }))
+    expect(keysQuery.fetchNextPage).toHaveBeenCalledTimes(1)
   })
 })

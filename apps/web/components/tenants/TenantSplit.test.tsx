@@ -37,8 +37,10 @@ describe('TenantSplit', () => {
      */
     state.activeTenant = 'acme'
     render(<TenantSplit />)
-    expect(screen.getByTestId('panel-acme')).toHaveTextContent('active')
-    expect(screen.getByTestId('panel-globex')).toHaveTextContent('inactive')
+    // Anchor the match: 'inactive' contains 'active', so an exact regex is required to
+    // distinguish the active arm from a constant-false `isActive`.
+    expect(screen.getByTestId('panel-acme')).toHaveTextContent(/^active$/)
+    expect(screen.getByTestId('panel-globex')).toHaveTextContent(/^inactive$/)
   })
 
   it('marks no panel active when the tenant selection is empty', () => {
@@ -51,5 +53,19 @@ describe('TenantSplit', () => {
     render(<TenantSplit />)
     expect(screen.getByTestId('panel-acme')).toHaveTextContent('inactive')
     expect(screen.getByTestId('panel-globex')).toHaveTextContent('inactive')
+  })
+
+  it('moves the active highlight to the second panel when it is selected', () => {
+    /*
+     * Scenario: the `tenant` query state selects `globex` (the non-first panel).
+     * Rule it protects: `isActive` tracks the per-tenant equality `tenant === activeTenant`
+     * rather than a constant — replacing it with `false` would leave globex inactive, and
+     * with `true` would also light acme. Only the matching panel is active.
+     */
+    state.activeTenant = 'globex'
+    render(<TenantSplit />)
+    // Anchored: 'inactive' contains 'active', so the active panel needs an exact match.
+    expect(screen.getByTestId('panel-globex')).toHaveTextContent(/^active$/)
+    expect(screen.getByTestId('panel-acme')).toHaveTextContent(/^inactive$/)
   })
 })

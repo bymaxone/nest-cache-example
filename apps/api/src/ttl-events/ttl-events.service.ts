@@ -84,6 +84,7 @@ export class TtlEventsService implements OnModuleInit, OnModuleDestroy {
    * @returns Resolves once the subscription is active (or immediately in cluster mode).
    */
   async onModuleInit(): Promise<void> {
+    // Stryker disable next-line ObjectLiteral,BooleanLiteral -- `{ infer: true }` is a compile-time-only typing hint for ConfigService; emptying it or flipping the flag returns the identical runtime value.
     const mode = this.config.get('CACHE_MODE', { infer: true })
     if (mode === 'cluster') {
       // Keyspace notifications require a subscription per shard; a single-channel
@@ -92,6 +93,7 @@ export class TtlEventsService implements OnModuleInit, OnModuleDestroy {
       return
     }
 
+    // Stryker disable next-line ObjectLiteral,BooleanLiteral -- `{ infer: true }` is a compile-time-only typing hint for ConfigService; emptying it or flipping the flag returns the identical runtime value.
     const db = this.config.get('REDIS_DB', { infer: true })
     // createSubscriberClient() returns a FRESH, DEDICATED connection whose
     // ownership transfers to us (spec §4/§17.3); we quit() it in onModuleDestroy.

@@ -54,6 +54,9 @@ describe('PublishCard', () => {
       description: 'Delivered to 3 subscriber(s) on product-events',
     })
     expect(await screen.findByText('3')).toBeInTheDocument()
+    // The inline summary spells out "delivered to … sub(s)" around the count; the
+    // trailing label must survive (StringLiteral guard on the ` sub(s)` text node).
+    expect(await screen.findByText(/delivered to/)).toHaveTextContent('delivered to 3 sub(s)')
   })
 
   it('blocks submit and shows an inline + toast error for invalid JSON', async () => {
@@ -141,6 +144,21 @@ describe('PublishCard', () => {
     renderWithClient(<PublishCard />)
     const channel = screen.getByLabelText('channel')
     await user.clear(channel)
+    expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled()
+  })
+
+  it('disables the Publish button when the channel is whitespace-only', async () => {
+    /*
+     * Scenario: the channel input holds only spaces.
+     * Rule it protects: the `.trim()` in `channel.trim().length === 0` collapses
+     * whitespace, so a spaces-only channel still disables publish (dropping `.trim()`
+     * would leave a non-zero length and wrongly enable the button).
+     */
+    const user = userEvent.setup()
+    renderWithClient(<PublishCard />)
+    const channel = screen.getByLabelText('channel')
+    await user.clear(channel)
+    await user.type(channel, '   ')
     expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled()
   })
 

@@ -209,6 +209,40 @@ describe('buildSentinelBlock', () => {
     // Prototype-pollution guard: the dangerous announced keys are never written.
     expect(Object.prototype.hasOwnProperty.call(block.natMap, '__proto__')).toBe(false)
     expect(Object.prototype.hasOwnProperty.call(block.natMap, 'constructor')).toBe(false)
+    // A `__proto__=…` entry must not have walked the map's prototype chain — dropping
+    // the guard would assign through the `__proto__` setter and replace the prototype.
+    expect(Object.getPrototypeOf(block.natMap)).toBe(Object.prototype)
+  })
+
+  it('trims surrounding whitespace from each sentinel address entry', () => {
+    /*
+     * Scenario: a sentinel list whose entries carry leading/trailing spaces.
+     * Rule it protects: parseAddressList trims each comma-separated entry before the
+     * host:port split, so a padded ` host:port ` resolves to a clean host — without the
+     * trim the host would retain its leading space.
+     */
+    const block = buildSentinelBlock(
+      makeConfig({ CACHE_MODE: 'sentinel', REDIS_SENTINELS: ' host1:1000 , host2:2000 ' }),
+    )
+
+    expect(block.sentinels).toEqual([
+      { host: 'host1', port: 1000 },
+      { host: 'host2', port: 2000 },
+    ])
+  })
+
+  it('trims whitespace around the natMap announced=reachable split', () => {
+    /*
+     * Scenario: a natMap entry with spaces around the `=` separator (no outer padding).
+     * Rule it protects: parseNatMap trims each side of the `=` split, so ` a:1 = b:2 `
+     * yields the clean announced key `a:1` and host `b` — without the inner trim the
+     * announced key and host would retain their surrounding spaces.
+     */
+    const block = buildSentinelBlock(
+      makeConfig({ CACHE_MODE: 'sentinel', REDIS_SENTINEL_NAT_MAP: 'a:1 = b:2' }),
+    )
+
+    expect(block.natMap).toEqual({ 'a:1': { host: 'b', port: 2 } })
   })
 
   it('throws on a colon-less sentinel address (absent port)', () => {

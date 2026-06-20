@@ -4,3 +4,5 @@ coverage
 node_modules
 pnpm-lock.yaml
 next-env.d.ts
+.stryker-tmp
+reports

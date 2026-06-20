@@ -69,17 +69,21 @@ describe('AppShell', () => {
     expect(container.querySelector('.max-w-5xl')).toBeNull()
   })
 
-  it('defaults to the narrow content well', () => {
+  it('defaults to the narrow, centered content well', () => {
     /*
      * Scenario: a standard page (no `wide`).
-     * Rule it protects: the default `wide=false` path applies the narrow width class.
+     * Rule it protects: the default `wide=false` path applies the narrow width class and
+     * the content well stays centered via `mx-auto` — blanking that literal would drop the
+     * centering class from the well.
      */
     const { container } = render(
       <AppShell>
         <p>page-body</p>
       </AppShell>,
     )
-    expect(container.querySelector('.max-w-5xl')).not.toBeNull()
+    const well = container.querySelector('.max-w-5xl')
+    expect(well).not.toBeNull()
+    expect(well).toHaveClass('mx-auto')
     expect(container.querySelector('.max-w-7xl')).toBeNull()
   })
 

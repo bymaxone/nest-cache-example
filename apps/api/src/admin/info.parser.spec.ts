@@ -48,6 +48,16 @@ describe('parseInfo', () => {
     })
   })
 
+  it('trims and lower-cases a section header carrying surrounding whitespace', () => {
+    /*
+     * Scenario: a `# ` header padded with extra spaces and mixed case.
+     * Rule it protects: the section name is `slice(2).trim().toLowerCase()` — dropping
+     * the `.trim()` would leave the surrounding spaces in the section key, so the
+     * padded header must still resolve to the clean `memory` group.
+     */
+    expect(parseInfo('#   Memory  \r\nused_memory:1\r\n')).toEqual({ memory: { used_memory: '1' } })
+  })
+
   it('returns an empty record for input with no field lines', () => {
     /*
      * Scenario: only headers, blank lines and comments — no `field:value` pairs.

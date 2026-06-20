@@ -101,6 +101,33 @@ describe('formatBytes', () => {
      */
     expect(formatBytes(5 * 1024 ** 5)).toBe('5120 TB')
   })
+
+  it('scales up at exactly one step (the >= boundary)', () => {
+    /*
+     * Scenario: a value sitting exactly on the 1024-byte step.
+     * Rule it protects: the `value >= BYTES_STEP` loop condition includes the
+     * boundary — exactly 1024 B scales to `1.0 KB`, not `1024 B` (a `>` mutant).
+     */
+    expect(formatBytes(1024)).toBe('1.0 KB')
+  })
+
+  it('drops the decimal at exactly ten in a scaled unit (the < 10 boundary)', () => {
+    /*
+     * Scenario: a value that scales to exactly 10 in a non-base unit.
+     * Rule it protects: the `value < 10` decimal rule excludes 10 itself — `10 KB`
+     * has no decimal (a `<=` mutant would render `10.0 KB`).
+     */
+    expect(formatBytes(10 * 1024)).toBe('10 KB')
+  })
+
+  it('keeps zero decimals for a single-digit base-unit value', () => {
+    /*
+     * Scenario: a tiny byte count under ten, still in the base (B) unit.
+     * Rule it protects: the `unit === 0` arm forces zero decimals — `5 B`, not
+     * `5.0 B` (a mutated `unit === 0` condition would apply the < 10 decimal rule).
+     */
+    expect(formatBytes(5)).toBe('5 B')
+  })
 })
 
 describe('formatPercent', () => {
@@ -153,6 +180,15 @@ describe('formatCount', () => {
      */
     expect(formatCount(3_400_000)).toBe('3.4M')
   })
+
+  it('switches to compact notation at exactly ten thousand (the < boundary)', () => {
+    /*
+     * Scenario: a count sitting exactly on the 10,000 threshold.
+     * Rule it protects: `Math.abs(value) < 10_000` excludes 10,000 itself, so exactly
+     * 10,000 is compact (`10K`), not grouped (`10,000`) — pinning `<` against `<=`.
+     */
+    expect(formatCount(10_000)).toBe('10K')
+  })
 })
 
 describe('formatDelta', () => {
@@ -162,6 +198,9 @@ describe('formatDelta', () => {
      * Rule it protects: a non-finite delta shows the em dash.
      */
     expect(formatDelta(Number.NaN)).toBe('—')
+    // Infinity must also short-circuit to the em dash: a dropped `!isFinite` guard
+    // would fall through to `+${formatCount(Infinity)}` and render `+—`.
+    expect(formatDelta(Number.POSITIVE_INFINITY)).toBe('—')
   })
 
   it('prefixes a positive delta with an explicit plus sign', () => {

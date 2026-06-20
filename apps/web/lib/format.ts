@@ -38,8 +38,10 @@ export function formatLatencyMs(ms: number): string {
  * @returns A compact label such as `312 B` or `1.2 MB`.
  */
 export function formatBytes(bytes: number): string {
-  if (!Number.isFinite(bytes) || bytes <= 0) return '0 B'
-  let value = bytes
+  if (!Number.isFinite(bytes)) return '0 B'
+  // Clamp negatives to zero (a byte count is never negative) so the base case renders
+  // `0 B`; `Math.max` keeps the floor explicit and observable instead of an early guard.
+  let value = Math.max(bytes, 0)
   let unit = 0
   while (value >= BYTES_STEP && unit < BYTE_UNITS.length - 1) {
     value /= BYTES_STEP
@@ -111,7 +113,9 @@ export function formatUptime(seconds: number): string {
  * @returns A 24-hour `HH:MM:SS` label.
  */
 export function formatClock(epochMs: number | string): string {
-  const ms = typeof epochMs === 'number' ? epochMs : Number(epochMs)
+  // `Number(x)` is identity for a number and coerces a numeric string, so it handles
+  // both inputs without a branch; a non-numeric string becomes NaN → the em dash below.
+  const ms = Number(epochMs)
   if (!Number.isFinite(ms)) return '—'
   return new Date(ms).toLocaleTimeString('en-US', { hour12: false })
 }

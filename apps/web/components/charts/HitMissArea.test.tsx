@@ -43,6 +43,11 @@ vi.mock('recharts', async (importOriginal) => {
           onClick={() => onChange?.({ startIndex: 0, endIndex: 5 })}
         />
         <button type="button" data-testid="brush-default" onClick={() => onChange?.({})} />
+        <button
+          type="button"
+          data-testid="brush-offset"
+          onClick={() => onChange?.({ startIndex: 6 })}
+        />
       </>
     ),
   }
@@ -114,6 +119,39 @@ describe('HitMissArea', () => {
     render(<HitMissArea data={series(10)} onBrushRange={onBrushRange} />)
     await user.click(screen.getByTestId('brush-medium'))
     expect(onBrushRange).toHaveBeenCalledWith(RANGE_PRESETS[1])
+  })
+
+  it('keeps a span at exactly the medium fraction on the middle preset', async () => {
+    /*
+     * Scenario: the brushed span lands exactly on the medium upper bound (0.75).
+     * Rule it protects: `fractionToPreset` uses an inclusive `fraction <= MEDIUM…`,
+     * so 0.75 stays on RANGE_PRESETS[1]. Buckets 0..5 of 8 → 6/8 = 0.75. Tightening
+     * `<=` to `<` (L52 EqualityOperator) would push this boundary case to the longest
+     * preset; asserting the middle preset at the boundary kills that mutant.
+     */
+    const user = userEvent.setup()
+    const onBrushRange = vi.fn()
+    render(<HitMissArea data={series(8)} onBrushRange={onBrushRange} />)
+    await user.click(screen.getByTestId('brush-medium'))
+    expect(onBrushRange).toHaveBeenCalledWith(RANGE_PRESETS[1])
+  })
+
+  it('honors a non-zero brush start and the defaulted end together', async () => {
+    /*
+     * Scenario: the brush emits only a start index (6) on a 10-bucket series, leaving
+     * the end index to default to the last bucket.
+     * Rule it protects: the span math `(end - start + 1) / data.length`. Buckets 6..9
+     * of 10 → (9 - 6 + 1)/10 = 0.4 → narrowest preset. This exact arithmetic pins three
+     * mutants at once: the start fallback (`startIndex ?? 0`, L70 — `&& 0` would zero the
+     * start to a full-window span), the end fallback (`data.length - 1`, L71 — `+ 1`
+     * would overshoot the window), and the span subtraction (`end - start`, L72 — `end +
+     * start` would balloon the fraction). Each mutation maps 6..9 to a different preset.
+     */
+    const user = userEvent.setup()
+    const onBrushRange = vi.fn()
+    render(<HitMissArea data={series(10)} onBrushRange={onBrushRange} />)
+    await user.click(screen.getByTestId('brush-offset'))
+    expect(onBrushRange).toHaveBeenCalledWith(RANGE_PRESETS[0])
   })
 
   it('maps a wide/default brush span to the longest preset and defaults missing indices', async () => {

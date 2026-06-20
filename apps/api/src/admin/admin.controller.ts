@@ -40,7 +40,7 @@ export const keyParamSchema = z.object({
 })
 
 /** Known Redis INFO section names accepted by GET /admin/info. */
-const infoSectionSchema = z.object({
+export const infoSectionSchema = z.object({
   section: z
     .enum([
       'server',

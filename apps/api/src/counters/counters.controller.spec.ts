@@ -11,7 +11,7 @@ import 'reflect-metadata'
 import { jest } from '@jest/globals'
 import { RequestMethod } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
-import { CountersController } from './counters.controller.js'
+import { CountersController, counterParamsSchema } from './counters.controller.js'
 import { CountersService } from './counters.service.js'
 
 /** NestJS route-metadata keys (mirror @nestjs/common/constants, which has no NodeNext type subpath). */
@@ -125,6 +125,19 @@ describe('CountersController (unit)', () => {
         expect(reflector.get<number>(METHOD_METADATA, fn)).toBe(method)
         expect(reflector.get<string>(PATH_METADATA, fn)).toBe(path)
       }
+    })
+  })
+
+  describe('counterParamsSchema', () => {
+    it('accepts a non-empty id and rejects an empty one', () => {
+      /*
+       * Scenario: the inline `:id` param schema is parsed directly.
+       * Rule it protects: a multi-character id is accepted (a `.min(1)` → `.max(1)`
+       * mutant would reject it) while an empty id is rejected (a `z.object({})` mutant
+       * would strip and accept it).
+       */
+      expect(counterParamsSchema.safeParse({ id: 'p1' }).success).toBe(true)
+      expect(counterParamsSchema.safeParse({ id: '' }).success).toBe(false)
     })
   })
 })

@@ -253,4 +253,81 @@ describe('StampedeView', () => {
     await user.type(product, '99')
     expect(screen.getByText('cache-example:stampede:99')).toBeInTheDocument()
   })
+
+  it('sends the trimmed productId and clamped numeric fields to the run endpoint', async () => {
+    /*
+     * Scenario: the productId has surrounding whitespace; concurrency/lockMs are default.
+     * Rule it protects: the mutation body is the real `{ productId: trim(), concurrency,
+     * lockMs }` object — not an empty object — and `productId.trim()` strips the
+     * whitespace before the request is sent.
+     */
+    runMock.mockResolvedValue(okBurst())
+    const user = userEvent.setup()
+    render(<StampedeView />, { wrapper: Wrapper })
+    const product = screen.getByLabelText('productId')
+    await user.clear(product)
+    await user.type(product, '  abc  ')
+    await user.click(screen.getByRole('button', { name: /Fire/ }))
+    await waitFor(() => expect(runMock).toHaveBeenCalledTimes(1))
+    expect(runMock).toHaveBeenCalledWith({ productId: 'abc', concurrency: 10, lockMs: 2000 })
+  })
+
+  it('disables Fire when the productId is only whitespace', async () => {
+    /*
+     * Scenario: the productId field holds spaces only.
+     * Rule it protects: the disabled guard trims before measuring length, so a
+     * whitespace-only productId is treated as blank and disables Fire — a dropped
+     * `.trim()` would leave the button enabled.
+     */
+    const user = userEvent.setup()
+    render(<StampedeView />, { wrapper: Wrapper })
+    const product = screen.getByLabelText('productId')
+    await user.clear(product)
+    await user.type(product, '   ')
+    expect(screen.getByRole('button', { name: /Fire/ })).toBeDisabled()
+  })
+
+  it('computes load reduction as concurrency ÷ originFetches', async () => {
+    /*
+     * Scenario: a burst with concurrency 10 and two origin fetches.
+     * Rule it protects: reduction = round(concurrency / originFetches) = round(10/2)
+     * = 5× — distinguishing the division from a multiplication mutant (which would
+     * read 20×) and pinning the `originFetches > 0` guard as taken.
+     */
+    const burst = okBurst()
+    const result = burst.ok
+      ? {
+          ...burst,
+          data: {
+            ...burst.data,
+            summary: { concurrency: 10, originFetches: 2, cacheHits: 8, hitRate: 0.8 },
+          },
+        }
+      : burst
+    runMock.mockResolvedValue(result)
+    const user = userEvent.setup()
+    render(<StampedeView />, { wrapper: Wrapper })
+    await user.click(screen.getByRole('button', { name: /Fire/ }))
+    await waitFor(() => expect(screen.getByText('5×')).toBeInTheDocument())
+    expect(screen.queryByText('20×')).not.toBeInTheDocument()
+  })
+
+  it('labels the script SHA strip and the namespace callout with their literal prefixes', async () => {
+    /*
+     * Scenario: a successful burst plus the default productId in the callout.
+     * Rule it protects: the SHA strip renders the literal `script:`/`sha:` labels and
+     * the callout renders the `eval` / namespaced-key explainer text — pinning those
+     * string literals against empty-string mutants.
+     */
+    runMock.mockResolvedValue(okBurst())
+    const user = userEvent.setup()
+    render(<StampedeView />, { wrapper: Wrapper })
+    await user.click(screen.getByRole('button', { name: /Fire/ }))
+    await waitFor(() => expect(screen.getByText('acquireLock')).toBeInTheDocument())
+    expect(screen.getByText(/script:/)).toBeInTheDocument()
+    expect(screen.getByText(/sha:/)).toBeInTheDocument()
+    expect(screen.getByText('eval')).toBeInTheDocument()
+    expect(screen.getByText(/namespaced by/)).toBeInTheDocument()
+    expect(screen.getByText('IScriptDefinition')).toBeInTheDocument()
+  })
 })

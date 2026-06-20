@@ -8,6 +8,7 @@
  *
  * @module metrics/metrics.service.spec
  */
+import { jest } from '@jest/globals'
 import { MetricsService } from './metrics.service.js'
 
 describe('MetricsService', () => {
@@ -47,6 +48,26 @@ describe('MetricsService', () => {
     expect(snapshot.totals).toEqual({ hits: 2, misses: 2, hitRate: 0.5 })
     // Four ops were recorded; within a sub-second window the rate equals the count.
     expect(snapshot.instantaneousOpsPerSec).toBe(4)
+  })
+
+  it('divides by the real elapsed window when more than a second has passed', () => {
+    /*
+     * Scenario: four ops recorded, then a snapshot taken two seconds after the window
+     * opened (Date.now pinned to 0 at construction, 2000 at snapshot).
+     * Rule it protects: `elapsedMs = Math.max(now - windowStart, 1)` keeps the REAL
+     * 2000ms span (a `Math.min` mutant would collapse it to 1ms and, after the
+     * SAMPLE_WINDOW_MS floor, report the raw count of 4 instead of the true 2/sec).
+     */
+    const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(0)
+    const service = new MetricsService() // windowStart = 0
+    service.recordHit('product')
+    service.recordHit('product')
+    service.recordMiss('product')
+    service.recordMiss('cart')
+    nowSpy.mockReturnValue(2_000) // snapshot two seconds later
+
+    // 4 ops over 2000ms ⇒ round(4 / 2000 * 1000) = 2 ops/sec.
+    expect(service.snapshot().instantaneousOpsPerSec).toBe(2)
   })
 
   it('resets the ops/sec sampler on each snapshot but keeps the counters', () => {

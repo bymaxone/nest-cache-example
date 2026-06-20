@@ -45,7 +45,10 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "mutation": "stryker run",
+    "mutation:incremental": "stryker run --incremental",
+    "mutation:dry-run": "stryker run --dryRunOnly"
   },
   "dependencies": {
     "@bymax-one/nest-cache": "file:../../../nest-cache",
@@ -78,6 +81,8 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.61.0",
+    "@stryker-mutator/core": "^9.6.1",
+    "@stryker-mutator/vitest-runner": "^9.6.1",
     "@tailwindcss/postcss": "^4.2.2",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
