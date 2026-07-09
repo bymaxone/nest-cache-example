@@ -1,12 +1,9 @@
-# CI pipeline — runs on every push to main and every pull request.
+# CI — thin caller of the org-wide reusable pipeline (bymaxone/.github).
 #
-# Mirrors the sibling example apps (nest-logger-example / nest-auth-example): a
-# warm-the-cache install job fans out to lint, typecheck, unit coverage, API E2E,
-# and the export-usage audit; the Playwright web smoke runs after the API E2E; a
-# final job aggregates coverage. Adapted for this app: Redis (not Postgres), the
-# API E2E boots redis:7-alpine via Testcontainers (no compose), and the consumed
-# @bymax-one/nest-cache library is provisioned from its `file:` source by the
-# shared ./.github/actions/setup composite.
+# The whole pipeline (lint, typecheck, format, coverage, e2e, export audit,
+# mutation) lives in bymaxone/.github so every repo shares one definition.
+# Mutation runs only on a push to main / manual dispatch, never on PRs or a
+# schedule. The reusables are versioned via the @v1 tag on bymaxone/.github.
 name: CI
 
 on:
@@ -14,7 +11,6 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  # Manual trigger to run the full pipeline (incl. mutation) on demand.
   workflow_dispatch:
 
 # Cancel superseded runs for the same ref so only the latest commit is verified.
@@ -22,263 +18,24 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Least-privilege at the caller; the reusables request no more than this.
 permissions:
   contents: read
 
 jobs:
-  install:
-    name: Install dependencies
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v5
-      - uses: ./.github/actions/setup
+  ci:
+    uses: bymaxone/.github/.github/workflows/node-ci.yml@v1
+    with:
+      library-repo: bymaxone/nest-cache
+      has-web: true
+      run-export-audit: true
+      run-mutation: true
+      mutation-source-globs: '^(apps/api/src/|apps/web/lib/|apps/web/components/)'
 
-  lint:
-    name: Lint
-    needs: install
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v5
-      - uses: ./.github/actions/setup
-      - run: pnpm lint
-
-  typecheck:
-    name: Type-check
-    needs: install
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v5
-      - uses: ./.github/actions/setup
-      - run: pnpm typecheck
-
-  format:
-    name: Format check
-    needs: install
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v5
-      - uses: ./.github/actions/setup
-      - run: pnpm format:check
-
-  unit:
-    name: Unit tests + coverage
-    needs: install
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v5
-      - uses: ./.github/actions/setup
-      # Each app's gate enforces 100/100/100/100 and caps its own worker pool
-      # (maxWorkers '50%'); they run as separate sequential steps so the locally
-      # linked library is never duplicated across two runners at once.
-      - name: API unit coverage
-        run: pnpm test:cov:api
-      - name: Web unit coverage
-        run: pnpm test:cov:web
-      - name: Upload API coverage
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-unit-api
-          path: apps/api/coverage/
-          retention-days: 7
-      - name: Upload web coverage
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-unit-web
-          path: apps/web/coverage/
-          retention-days: 7
-
-  e2e-api:
-    name: E2E — API
-    needs: install
-    runs-on: ubuntu-latest
-    # GitHub-hosted runners ship a Docker daemon, so the suite's Testcontainers
-    # boots redis:7-alpine (with keyspace notifications) directly — no services block.
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v5
-      - uses: ./.github/actions/setup
-      - name: Run API e2e tests
-        run: pnpm --filter api run test:e2e
-
-  e2e-web:
-    name: E2E — Web (Playwright)
-    needs: e2e-api
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    services:
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 10
-    env:
-      # API process
-      PORT: '3001'
-      WEB_ORIGIN: http://localhost:3000
-      REDIS_HOST: localhost
-      REDIS_PORT: '6379'
-      CACHE_MODE: standalone
-      # Web build/runtime → API
-      NEXT_PUBLIC_API_URL: http://localhost:3001
-      NEXT_PUBLIC_WS_URL: http://localhost:3001
-      # Playwright targets
-      PLAYWRIGHT_BASE_URL: http://localhost:3000
-      PLAYWRIGHT_API_URL: http://localhost:3001
-    steps:
-      - uses: actions/checkout@v5
-      - uses: ./.github/actions/setup
-      - name: Build API
-        run: pnpm --filter api run build
-      - name: Build web
-        run: pnpm --filter web run build
-      - name: Install Playwright Chromium
-        run: pnpm --filter web exec playwright install --with-deps chromium
-      # Boot the API and web servers and run the smoke in ONE step: backgrounded
-      # processes are torn down when a step's shell exits, so they must outlive the
-      # wait + test within the same shell. Server output is captured for triage.
-      - name: Boot the stack and run the web smoke
-        run: |
-          set -euo pipefail
-          pnpm --filter api run start > /tmp/api.log 2>&1 &
-          pnpm --filter web run start > /tmp/web.log 2>&1 &
-          npx --yes wait-on -t 90000 http-get://localhost:3001/health http-get://localhost:3000
-          pnpm --filter web run test:e2e
-      - name: Dump server logs on failure
-        if: failure()
-        run: |
-          echo '----- API -----'; cat /tmp/api.log || true
-          echo '----- WEB -----'; cat /tmp/web.log || true
-      - name: Upload Playwright results on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-results
-          path: apps/web/test-results/
-          retention-days: 7
-
-  export-usage-check:
-    name: Export usage audit
-    needs: install
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v5
-      - uses: ./.github/actions/setup
-      - run: pnpm audit:exports
-
-  web-build:
-    name: Web production build
-    needs: install
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    env:
-      # The bundle proof asserts no @nestjs / ioredis leak into the client bundle.
-      NEXT_PUBLIC_API_URL: http://localhost:3001
-      NEXT_PUBLIC_WS_URL: http://localhost:3001
-    steps:
-      - uses: actions/checkout@v5
-      - uses: ./.github/actions/setup
-      - run: pnpm --filter web run build
-
-  mutation:
-    name: Mutation testing
-    # The deepest, slowest gate. It does NOT run on pull requests — PRs are already
-    # gated by 100% unit coverage + full E2E. Mutation runs post-merge on `main` (and
-    # on manual dispatch), and only when application source actually changed, so a
-    # docs- or config-only merge spends zero minutes here. Enforces api `break: 100`
-    # (zero survivors) and web `break: 90` (lib 100). `pnpm mutation` fans out
-    # serialized (`--workspace-concurrency=1`) so the locally linked
-    # @bymax-one/nest-cache is never duplicated across two Stryker runs at once; each
-    # app's `concurrency: 2` keeps the per-run worker pool within a 2-core runner.
-    needs: [install, unit]
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'push' && github.ref == 'refs/heads/main')
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          # Two commits so the source-change probe can diff HEAD against its parent.
-          fetch-depth: 2
-      - name: Detect application-source changes
-        id: changes
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "run=true" >> "$GITHUB_OUTPUT"
-            echo "Manual dispatch — running mutation."
-            exit 0
-          fi
-          if git diff --name-only HEAD^ HEAD \
-            | grep -qE '^(apps/api/src/|apps/web/lib/|apps/web/components/)'; then
-            echo "run=true" >> "$GITHUB_OUTPUT"
-            echo "Application source changed — running mutation."
-          else
-            echo "run=false" >> "$GITHUB_OUTPUT"
-            echo "No application-source changes — skipping mutation."
-          fi
-      - uses: ./.github/actions/setup
-        if: steps.changes.outputs.run == 'true'
-      # Persist the Stryker incremental state across runs so only changed files are
-      # re-mutated (without this the `incremental` flag is a no-op on a fresh runner).
-      - name: Restore Stryker incremental cache
-        if: steps.changes.outputs.run == 'true'
-        uses: actions/cache@v4
-        with:
-          path: |
-            apps/api/reports/stryker-incremental.json
-            apps/web/reports/stryker-incremental.json
-          key: stryker-incremental-${{ github.sha }}
-          restore-keys: |
-            stryker-incremental-
-      - name: Run Stryker mutation (api break:100, web break:90)
-        if: steps.changes.outputs.run == 'true'
-        run: pnpm mutation
-      - name: Upload mutation reports
-        if: always() && steps.changes.outputs.run == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: mutation-reports
-          path: |
-            apps/api/reports/mutation/
-            apps/web/reports/mutation/
-          retention-days: 7
-
-  coverage-report:
-    name: Coverage report
-    needs: [unit, e2e-api, e2e-web]
-    if: always()
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Download API coverage
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-unit-api
-          path: coverage/api
-        continue-on-error: true
-      - name: Download web coverage
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-unit-web
-          path: coverage/web
-        continue-on-error: true
-      - name: Upload combined coverage
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-combined
-          path: coverage/
-          retention-days: 30
+  security:
+    # Dependency review only applies to a pull request — don't spawn a no-op
+    # job on push / workflow_dispatch.
+    if: github.event_name == 'pull_request'
+    uses: bymaxone/.github/.github/workflows/security.yml@v1
+    with:
+      fail-on-severity: high
