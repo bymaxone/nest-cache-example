@@ -52,7 +52,9 @@ const CORPUS_ROOTS = [
   join(REPO_ROOT, 'apps', 'web'),
 ]
 
-const CORPUS_EXTENSIONS = new Set(['.ts', '.tsx', '.mts', '.cts'])
+// TypeScript and JS/ESM extensions — `apps/web` mixes `.mjs`/`.cjs` config and
+// helper files, so a demonstration written in JS still counts toward the audit.
+const CORPUS_EXTENSIONS = new Set(['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs'])
 const CORPUS_SKIP_DIRS = new Set(['node_modules', 'dist', '.next', 'coverage', '.turbo'])
 const AUDIT_IGNORE_PATH = join(REPO_ROOT, '.audit-ignore.json')
 

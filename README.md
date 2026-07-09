@@ -163,7 +163,7 @@ summary; the full catalogue with request/response contracts lives in
 Redis events to the dashboard over socket.io. Full diagram and API contracts in
 **[docs/TECHNICAL_SPECIFICATION.md](docs/TECHNICAL_SPECIFICATION.md)**.
 
-> **Coverage rule.** Every public export of `@bymax-one/nest-cache` (the `.` and `/shared` subpaths) is referenced
+> **Coverage rule.** Every public export of `@bymax-one/nest-cache` (the `.` and `./shared` subpaths) is referenced
 > from at least one file under `apps/` — the spec's Feature Coverage Matrix maps each one to where it is used, and an
 > export-usage audit enforces it.
 
@@ -172,7 +172,7 @@ Redis events to the dashboard over socket.io. Full diagram and API contracts in
 ## ✅ Feature coverage
 
 The spec's **[§7 Feature Coverage Matrix](docs/TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix)** is the
-contract: **all 50 rows** — every public export of the `.` and `/shared` subpaths plus each documented behavior — are
+contract: **all 50 rows** — every public export of the `.` and `./shared` subpaths plus each documented behavior — are
 demonstrated somewhere under `apps/`. `scripts/audit-library-exports.mjs` (run via `pnpm audit:exports`, gated in CI
 as `export-usage-check`) parses the library's shipped `.d.ts` and fails if any export is neither referenced in `apps/`
 nor listed in [`.audit-ignore.json`](.audit-ignore.json) with a stated reason.
