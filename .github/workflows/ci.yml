@@ -14,6 +14,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Manual trigger to run the full pipeline (incl. mutation) on demand.
+  workflow_dispatch:
 
 # Cancel superseded runs for the same ref so only the latest commit is verified.
 concurrency:
@@ -191,23 +193,62 @@ jobs:
 
   mutation:
     name: Mutation testing
-    # Gated behind the unit job: Stryker re-runs the same suites internally, so there is
-    # no point spending up to 45 minutes mutating a tree whose baseline tests are red.
+    # The deepest, slowest gate. It does NOT run on pull requests — PRs are already
+    # gated by 100% unit coverage + full E2E. Mutation runs post-merge on `main` (and
+    # on manual dispatch), and only when application source actually changed, so a
+    # docs- or config-only merge spends zero minutes here. Enforces api `break: 100`
+    # (zero survivors) and web `break: 90` (lib 100). `pnpm mutation` fans out
+    # serialized (`--workspace-concurrency=1`) so the locally linked
+    # @bymax-one/nest-cache is never duplicated across two Stryker runs at once; each
+    # app's `concurrency: 2` keeps the per-run worker pool within a 2-core runner.
     needs: [install, unit]
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
-    # Gated: enforces api `break: 100` (zero survivors) and web `break: 90` (lib 100).
-    # `pnpm mutation` fans out serialized (`--workspace-concurrency=1`) so the locally
-    # linked @bymax-one/nest-cache is never duplicated across two Stryker runs at once;
-    # each app's `concurrency: 2` keeps the per-run worker pool within a 2-core runner.
-    # To make it advisory instead of blocking, add `continue-on-error: true` to the run.
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v5
+        with:
+          # Two commits so the source-change probe can diff HEAD against its parent.
+          fetch-depth: 2
+      - name: Detect application-source changes
+        id: changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "Manual dispatch — running mutation."
+            exit 0
+          fi
+          if git diff --name-only HEAD^ HEAD \
+            | grep -qE '^(apps/api/src/|apps/web/lib/|apps/web/components/)'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "Application source changed — running mutation."
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "No application-source changes — skipping mutation."
+          fi
       - uses: ./.github/actions/setup
+        if: steps.changes.outputs.run == 'true'
+      # Persist the Stryker incremental state across runs so only changed files are
+      # re-mutated (without this the `incremental` flag is a no-op on a fresh runner).
+      - name: Restore Stryker incremental cache
+        if: steps.changes.outputs.run == 'true'
+        uses: actions/cache@v4
+        with:
+          path: |
+            apps/api/reports/stryker-incremental.json
+            apps/web/reports/stryker-incremental.json
+          key: stryker-incremental-${{ github.sha }}
+          restore-keys: |
+            stryker-incremental-
       - name: Run Stryker mutation (api break:100, web break:90)
+        if: steps.changes.outputs.run == 'true'
         run: pnpm mutation
       - name: Upload mutation reports
-        if: always()
+        if: always() && steps.changes.outputs.run == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: mutation-reports
