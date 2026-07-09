@@ -111,7 +111,8 @@ function exportedNameFromClauseEntry(entry) {
  * by the library's bundler) as well as direct `export declare
  * (class|function|const|enum|abstract class) X`, `export (type|interface) X`,
  * and `export const X` forms, for robustness against future build changes.
- * `export * from '…'` wildcards are counted but contribute no named symbol.
+ * `export * from '…'` re-export wildcards are ignored — they name no symbol to
+ * search for (the shipped `.d.ts` inlines its surface, so none are emitted).
  *
  * @param text - Raw `.d.ts` file contents.
  * @returns A de-duplicated set of exported identifiers.
@@ -216,7 +217,31 @@ function collectExports(libBase) {
 }
 
 /**
+ * Remove `import` statements from a source file's text.
+ *
+ * A symbol only ever named on an import line is a re-statement, not a
+ * demonstration; stripping imports before the corpus search enforces the
+ * contract that an export counts only when it is actually used (a type
+ * annotation, a value reference, a decorator argument, …). Covers named/default/
+ * namespace/`import type` forms (including multi-line braces) and side-effect
+ * `import '…'`. `export … from '…'` re-exports are intentionally left intact.
+ *
+ * @param text - Raw source file contents.
+ * @returns The text with `import` statements removed.
+ */
+function stripImportStatements(text) {
+  return text
+    .replace(/import\s+(?:type\s+)?\{[\s\S]*?\}\s*from\s*['"][^'"]+['"];?/g, '')
+    .replace(/import\s+(?:type\s+)?[\w*]+(?:\s*,\s*\{[\s\S]*?\})?\s+from\s*['"][^'"]+['"];?/g, '')
+    .replace(/import\s+(?:type\s+)?\*\s+as\s+[\w$]+\s+from\s*['"][^'"]+['"];?/g, '')
+    .replace(/import\s*['"][^'"]+['"];?/g, '')
+}
+
+/**
  * Read and concatenate the `apps/` corpus into one searchable string.
+ *
+ * Import statements are stripped per file so a symbol counts as demonstrated
+ * only when it appears outside an import-only re-statement.
  *
  * @returns The joined corpus text and the number of files it spans.
  * @throws {Error} When no corpus files are found.
@@ -228,7 +253,7 @@ function readCorpusText() {
     throw new Error(`Empty apps/ corpus — searched:\n  ${CORPUS_ROOTS.join('\n  ')}`)
   }
   return {
-    text: files.map((file) => readFileSync(file, 'utf8')).join('\n'),
+    text: files.map((file) => stripImportStatements(readFileSync(file, 'utf8'))).join('\n'),
     fileCount: files.length,
   }
 }

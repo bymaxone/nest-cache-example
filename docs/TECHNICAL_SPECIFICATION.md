@@ -730,7 +730,7 @@ the "origin" is an in-memory store with an artificial latency so cache hits are 
 | `GET /admin/info?section=`                                           | Redis INFO                      | `info(section?)`                                     |
 | `POST /pubsub/publish`                                               | publish a message               | `PubSubService.publish`                              |
 | `POST /pubsub/subscribe` · `DELETE …/subscribe`                      | manage a subscription           | `subscribe` / `psubscribe` / `Unsubscribe`           |
-| `POST /stampede?productId=&concurrency=N`                            | stampede lab                    | `eval` (Lua lock)                                    |
+| `POST /stampede?productId=&concurrency=N&lockMs=`                    | stampede lab                    | `eval` (Lua lock)                                    |
 | `POST /ttl-events/seed`                                              | seed a short-TTL key            | `set(ttl)` → raw `__keyevent@<db>__:expired` feed    |
 | `POST /serializer/roundtrip?codec=json\|msgpack`                     | codec comparison                | `setRaw`/`getRaw` + `get`/`set`                      |
 | `GET /serializer/active`                                             | which codec is injected         | `BYMAX_CACHE_SERIALIZER` (constructor name)          |
