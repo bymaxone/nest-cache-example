@@ -245,18 +245,16 @@ curl -s -w '\n⏱  %{time_total}s\n' http://localhost:3001/catalog/products/p1
 curl -s http://localhost:3001/metrics | jq '.prefixes'
 ```
 
-**2 · Stampede collapse.** Fire N concurrent contenders at one uncached product.
-Exactly one wins the Lua `SET NX PX` lock and fetches the origin; the rest read
-the value it caches — N misses collapse into **1 origin fetch + (N−1) hits**.
+**2 · Stampede collapse.** A **single** request fires `concurrency` contenders
+internally at one uncached product. Exactly one wins the Lua `SET NX PX` lock and
+fetches the origin; the rest read the value it caches — N misses collapse into
+**1 origin fetch + (N−1) hits**.
 
 ```bash
-# 10 concurrent requests for the same key; one lock winner, nine waiters.
-seq 10 | xargs -P 10 -I{} curl -s -o /dev/null \
-  -X POST 'http://localhost:3001/stampede?productId=p2&concurrency=10&lockMs=2000'
-
-# Inspect the timeline of a single burst (1 originFetch:true + 9 hits) + script SHA1.
-curl -s -X POST 'http://localhost:3001/stampede?productId=p3&concurrency=10&lockMs=2000' \
-  | jq '{summary, scriptSha1, timeline: .timeline | length}'
+# One request → 10 internal contenders. The burst summary + resolved script SHA1.
+curl -s -X POST 'http://localhost:3001/stampede?productId=p2&concurrency=10&lockMs=2000' \
+  | jq '{summary, sha: .script.sha, contenders: (.timeline | length)}'
+# → summary.originFetches == 1, summary.cacheHits == 9 (a clean single-flight collapse)
 ```
 
 **3 · Cross-namespace isolation.** Plant a foreign-namespace key via the raw
