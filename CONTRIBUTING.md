@@ -24,7 +24,11 @@ welcome. Generic refactors that obscure how the library is wired will be decline
 ## Getting started
 
 ```bash
-# Clone + build the sibling library first (consumed pre-publish via file:, must be built before pnpm install)
+# Clone this repository
+git clone https://github.com/bymaxone/nest-cache-example.git
+cd nest-cache-example
+
+# Build the sibling library first (consumed pre-publish via file:, must be built before pnpm install)
 git clone https://github.com/bymaxone/nest-cache.git ../nest-cache
 cd ../nest-cache && pnpm install && pnpm build
 cd ../nest-cache-example
