@@ -321,6 +321,39 @@ describe('AdminService (unit)', () => {
       // The facade keys must never be invoked with an empty prefix.
       expect(keys).not.toHaveBeenCalled()
     })
+
+    it('resolves a prefixed scan with no results to a null cursor via the at(-1) fallback', async () => {
+      /*
+       * Scenario: strategy=scan, prefix set, limit 0, the facade scan yields nothing.
+       * Rule it protects: when `keys.length >= limit` holds on an EMPTY page (limit 0),
+       * `keys.at(-1)` is undefined and the `?? null` fallback resolves the cursor to
+       * null — the boundary the ternary's nullish branch guards.
+       */
+      const { service, scanFacade } = setup()
+      scanFacade.mockReturnValue(asyncIterableOf([]))
+      const query: KeyQuery = { strategy: 'scan', prefix: 'product', limit: 0 }
+
+      const result = await service.listKeys(query)
+
+      expect(result).toEqual({ keys: [], cursor: null, strategy: 'scan' })
+      expect(scanFacade).toHaveBeenCalledWith('product', '*', 0)
+    })
+
+    it('resolves a whole-namespace scan with no results to a null cursor via the at(-1) fallback', async () => {
+      /*
+       * Scenario: strategy=scan, no tenant/prefix, limit 0, the raw scan batch is empty.
+       * Rule it protects: the raw-client namespace path shares the same empty-page
+       * boundary — `keys.at(-1)` undefined resolves the cursor to null through `?? null`.
+       */
+      const { service, clientScan } = setup()
+      clientScan.mockResolvedValue(['0', []])
+      const query: KeyQuery = { strategy: 'scan', limit: 0 }
+
+      const result = await service.listKeys(query)
+
+      expect(result).toEqual({ keys: [], cursor: null, strategy: 'scan' })
+      expect(clientScan).toHaveBeenCalledWith('0', 'MATCH', 'cache-example:*', 'COUNT', 200)
+    })
   })
 
   describe('inspectKey', () => {
