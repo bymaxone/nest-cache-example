@@ -1,21 +1,27 @@
+<p align="center">
+  <img src="https://img.shields.io/badge/%40bymax--one-nest--cache--example-000000?style=for-the-badge&logo=nestjs&logoColor=E0234E" alt="nest-cache-example" />
+</p>
+
 <h1 align="center">nest-cache-example</h1>
 
 <p align="center">
-  The canonical reference application for <a href="https://github.com/bymaxone/nest-cache"><code>@bymax-one/nest-cache</code></a> —
-  a typed Redis cache module for NestJS, exercised end to end across a NestJS API and a Next.js dashboard that makes
-  the invisible parts of caching (namespace isolation, TTL expiry, Pub/Sub fan-out, single-flight) tangible on screen.
+  <strong>Reference application for <a href="https://github.com/bymaxone/nest-cache"><code>@bymax-one/nest-cache</code></a></strong><br />
+  <sub>NestJS 11 · Next.js 16 · React 19 · Redis 7 · Namespaces · TTL keyspace events · Pub/Sub · Lua single-flight · Multi-tenant</sub>
 </p>
 
 <p align="center">
-  <img alt="@bymax-one/nest-cache" src="https://img.shields.io/badge/%40bymax--one%2Fnest--cache-0.1.0-000000?style=flat-square" />
-  <img alt="Node" src="https://img.shields.io/badge/Node-%3E%3D24-000000?style=flat-square&logo=node.js&logoColor=white" />
-  <img alt="pnpm" src="https://img.shields.io/badge/pnpm-%3E%3D10.8-000000?style=flat-square&logo=pnpm&logoColor=white" />
-  <img alt="NestJS" src="https://img.shields.io/badge/NestJS-11-000000?style=flat-square&logo=nestjs&logoColor=white" />
-  <img alt="Next.js" src="https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js&logoColor=white" />
-  <img alt="React" src="https://img.shields.io/badge/React-19-000000?style=flat-square&logo=react&logoColor=white" />
-  <img alt="Redis" src="https://img.shields.io/badge/Redis-7-000000?style=flat-square&logo=redis&logoColor=white" />
-  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-000000?style=flat-square&logo=typescript&logoColor=white" />
-  <img alt="License" src="https://img.shields.io/badge/License-MIT-000000?style=flat-square" />
+  <a href="https://github.com/bymaxone/nest-cache-example/actions/workflows/ci.yml"><img src="https://github.com/bymaxone/nest-cache-example/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <img src="https://img.shields.io/badge/coverage-100%25-brightgreen?style=flat-square" alt="coverage 100%" />
+  <img src="https://img.shields.io/badge/mutation-api%20100%20%C2%B7%20web%20%E2%89%A590-brightgreen?style=flat-square" alt="mutation api 100 / web >= 90" />
+  <img src="https://img.shields.io/badge/lib-%40bymax--one%2Fnest--cache%200.1.0-6E56CF?style=flat-square" alt="library" />
+  <a href="https://github.com/bymaxone/nest-cache-example/blob/main/LICENSE"><img src="https://img.shields.io/github/license/bymaxone/nest-cache-example?style=flat-square&colorA=000000&colorB=000000" alt="license" /></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-strict-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript strict" /></a>
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-24%2B-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js 24+" /></a>
+  <a href="https://nestjs.com/"><img src="https://img.shields.io/badge/NestJS-11-E0234E?style=flat-square&logo=nestjs&logoColor=white" alt="NestJS 11" /></a>
+  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js&logoColor=white" alt="Next.js 16" /></a>
+  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React 19" /></a>
+  <a href="https://redis.io/"><img src="https://img.shields.io/badge/Redis-7-DC382D?style=flat-square&logo=redis&logoColor=white" alt="Redis 7" /></a>
+  <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/Tailwind-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind 4" /></a>
 </p>
 
 <p align="center">
@@ -33,12 +39,27 @@
 
 `@bymax-one/nest-cache` is the **what**; this repository is the **how**. It is a runnable, production-shaped demo
 that exercises **every public export** of the library across a NestJS API and a first-class Next.js observability
-dashboard — read-through caching, namespace/tenant isolation, custom serialization, Pub/Sub, TTL keyspace events,
-Lua single-flight, the full connection-topology matrix, and the Cache Admin (Explorer) backend — all against a real
-Redis 7. The demo domain is an in-memory multi-tenant product catalogue, chosen because it naturally exercises
-strings, numerics, hashes, sets, batch pipelines, SCAN, and TTL.
+dashboard. It is three things at once:
 
-### 🚀 Quick start
+- **A runnable demo.** `pnpm infra:up` + `pnpm dev` brings up a Redis 7 store and a NestJS service wired to the
+  library, plus a Next.js dashboard that fires every cache feature on demand and shows the result: a read-through
+  miss turning into a hit, a TTL ring draining to an `expired` keyspace event, a Pub/Sub message fanning out across
+  browser tabs, and a 10-request stampede collapsing into a single origin fetch.
+- **A knowledge base.** Every public symbol is referenced from real code, and the coverage matrix is enforced by a
+  CI export-usage audit (`scripts/audit-library-exports.mjs`): the canonical place to learn how to wire the
+  canonical `forRootAsync`, namespace/tenant isolation, a custom serializer, Pub/Sub, TTL keyspace events, the Lua
+  single-flight lock, and the full standalone/sentinel/cluster topology matrix.
+- **A copy-paste reference.** `apps/api/src/cache/cache.config.ts` exercises every configuration block once, so
+  adopting the library is a matter of lifting the wiring you need.
+
+It is a sibling of [`nest-logger-example`](https://github.com/bymaxone/nest-logger-example) and
+[`nest-storage-example`](https://github.com/bymaxone/nest-storage-example) and follows the same blueprint, voice,
+and quality bar: **100% test coverage**, a **Stryker mutation gate (api 100 · web ≥ 90)**, English-only, and
+Conventional Commits.
+
+---
+
+## 🚀 Quick start
 
 ```bash
 git clone https://github.com/bymaxone/nest-cache-example.git
@@ -47,6 +68,12 @@ pnpm install
 pnpm infra:up            # Redis 7 on 127.0.0.1:6379  (add --profile tools for RedisInsight :5540)
 pnpm dev                 # api → http://localhost:3001 · web → http://localhost:3000
 ```
+
+| Surface                | URL                            |
+| ---------------------- | ------------------------------ |
+| Dashboard (`apps/web`) | <http://localhost:3000>        |
+| API health             | <http://localhost:3001/health> |
+| RedisInsight (tools)   | <http://localhost:5540>        |
 
 > The library is **pre-publish** — it is consumed via a local `file:` link to the sibling `../nest-cache` checkout
 > until it ships to npm. Build that checkout first (`cd ../nest-cache && pnpm install && pnpm build`).
@@ -165,7 +192,7 @@ Redis events to the dashboard over socket.io. Full diagram and API contracts in
 
 > **Coverage rule.** Every public export of `@bymax-one/nest-cache` (the `.` and `./shared` subpaths) is referenced
 > from at least one file under `apps/` — the spec's Feature Coverage Matrix maps each one to where it is used, and an
-> export-usage audit enforces it.
+> export-usage audit enforces it on CI ([`scripts/audit-library-exports.mjs`](scripts/audit-library-exports.mjs)).
 
 ---
 
@@ -350,6 +377,94 @@ context labels, redaction, OTel mixin).
 
 ---
 
-## License
+## 🧱 Tech Stack
 
-MIT © Bymax One. `@bymax-one/nest-cache` is MIT © Bymax One. See [LICENSE](LICENSE).
+<p>
+  <img src="https://img.shields.io/badge/NestJS-11-E0234E?style=flat-square&logo=nestjs&logoColor=white" alt="NestJS 11" />
+  <img src="https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js&logoColor=white" alt="Next.js 16" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React 19" />
+  <img src="https://img.shields.io/badge/TypeScript-strict-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript strict" />
+  <img src="https://img.shields.io/badge/Node.js-24%2B-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node 24+" />
+  <img src="https://img.shields.io/badge/Redis-7-DC382D?style=flat-square&logo=redis&logoColor=white" alt="Redis 7" />
+  <img src="https://img.shields.io/badge/ioredis-5-DC382D?style=flat-square&logo=redis&logoColor=white" alt="ioredis 5" />
+  <img src="https://img.shields.io/badge/Socket.IO-4-010101?style=flat-square&logo=socket.io&logoColor=white" alt="Socket.IO 4" />
+  <img src="https://img.shields.io/badge/Tailwind-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind 4" />
+  <img src="https://img.shields.io/badge/pnpm-10-F69220?style=flat-square&logo=pnpm&logoColor=white" alt="pnpm 10" />
+  <img src="https://img.shields.io/badge/Docker-Compose%20v2-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker Compose v2" />
+  <img src="https://img.shields.io/badge/Jest-30-C21325?style=flat-square&logo=jest&logoColor=white" alt="Jest 30" />
+  <img src="https://img.shields.io/badge/Vitest-3-6E9F18?style=flat-square&logo=vitest&logoColor=white" alt="Vitest 3" />
+  <img src="https://img.shields.io/badge/Testcontainers-Redis-291A3F?style=flat-square" alt="Testcontainers Redis" />
+  <img src="https://img.shields.io/badge/Playwright-1-2EAD33?style=flat-square&logo=playwright&logoColor=white" alt="Playwright 1" />
+  <img src="https://img.shields.io/badge/Stryker-mutation-E74C3C?style=flat-square" alt="Stryker mutation" />
+</p>
+
+| Layer             | Choice                                   | Why                                                                   |
+| ----------------- | ---------------------------------------- | --------------------------------------------------------------------- |
+| Cache library     | `@bymax-one/nest-cache@0.1.0`            | The library this repo demonstrates                                    |
+| Backend runtime   | Node.js >= 24                            | Library minimum; native `node:crypto` and streams                     |
+| Backend framework | NestJS 11                                | Library peer dep                                                      |
+| Cache store       | Redis 7 via `ioredis` 5                  | The library transport; standalone / sentinel / cluster                |
+| Real-time         | socket.io (`@nestjs/platform-socket.io`) | Streams connection / event / expiry feeds to the browser              |
+| Frontend          | Next.js 16 App Router                    | Library peer dep; consumes the `./shared` browser subpath only        |
+| UI                | React 19 + Tailwind 4 + shadcn/ui        | The verbatim Bymax design system (forced dark)                        |
+| Data layer (web)  | TanStack Query 5 + `nuqs`                | Server-state cache + URL-bound Explorer filters                       |
+| Validation        | Zod 4                                    | Env + DTO schemas (no class-validator, no Swagger)                    |
+| Tests (api)       | Jest 30 + supertest + Testcontainers     | Unit + e2e HTTP/WS surface against real `redis:7`, 100% coverage      |
+| Tests (web)       | Vitest 3 (jsdom) + Playwright            | Fast unit runner + self-booting browser journeys                      |
+| Mutation          | Stryker 9                                | `break` gate: api 100, web >= 90 (`lib/**` 100)                       |
+| Container runtime | Docker Compose v2                        | Single-command local + ephemeral test stacks (tools/sentinel/cluster) |
+| Package manager   | pnpm 10                                  | Matches the library; first-class workspace support                    |
+
+---
+
+## 🤝 Contributing
+
+Issues and PRs are welcome. Because this is a reference application, the bar for changes is:
+
+> _"Does this make the demonstration of `@bymax-one/nest-cache` clearer or more complete?"_
+
+Generic refactors that obscure library usage will be declined. See [CONTRIBUTING.md](CONTRIBUTING.md) for the
+full process.
+
+```bash
+# Clone
+git clone https://github.com/bymaxone/nest-cache-example.git
+cd nest-cache-example
+
+# Install (build the sibling ../nest-cache first, see Quick start)
+pnpm install
+
+# Verify
+pnpm typecheck && pnpm lint && pnpm format:check && pnpm --filter api run test:cov
+
+# Run
+pnpm infra:up && pnpm dev
+```
+
+---
+
+## 🔒 Security policy
+
+Please **do not** open a public issue, discussion, or pull request for a security vulnerability. For a
+vulnerability in **this example** (an API route, the dashboard, the build/CI, or a dependency), email
+**support@bymax.one** with `[security] nest-cache-example` in the subject line. For a vulnerability in the
+**library itself** (`@bymax-one/nest-cache`), report it against
+[its repository](https://github.com/bymaxone/nest-cache) instead.
+
+`flushNamespace()` is production-guarded, `getClient()` bypasses namespacing by design, and per-tenant prefixes
+must never leak across tenants; we triage security reports ahead of feature work. See [SECURITY.md](SECURITY.md)
+for the full disclosure process.
+
+---
+
+## 📄 License
+
+[MIT](LICENSE) © [Bymax One](https://bymax.one)
+
+Library source: [`@bymax-one/nest-cache`](https://github.com/bymaxone/nest-cache), MIT.
+
+---
+
+<p align="center">
+  <sub>Built with ❤️ by <a href="https://github.com/bymaxone">Bymax One</a> to demonstrate <a href="https://github.com/bymaxone/nest-cache">@bymax-one/nest-cache</a>.</sub>
+</p>
