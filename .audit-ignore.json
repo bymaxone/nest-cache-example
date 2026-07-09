@@ -1,0 +1,12 @@
+{
+  "ignore": [
+    {
+      "symbol": "BYMAX_CACHE_OPTIONS",
+      "reason": "Internal DI token exposing the library's resolved BymaxCacheModuleOptions provider. This app configures the module via BymaxCacheModuleOptions in cache.config.ts (demonstrated) rather than re-injecting the resolved handle; the token has no consumer-facing call site here."
+    },
+    {
+      "symbol": "BYMAX_CACHE_EVENTS",
+      "reason": "Internal DI token exposing the library's resolved ICacheEvents provider. This app supplies lifecycle observation through BymaxCacheModuleOptions.events (the CacheEventsBridge, demonstrated) rather than re-injecting the resolved handle."
+    }
+  ]
+}

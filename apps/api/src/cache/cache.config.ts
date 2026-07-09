@@ -10,10 +10,13 @@
 import type { ConfigService } from '@nestjs/config'
 import type {
   BymaxCacheModuleOptions,
+  BymaxCacheStandaloneConnection,
   BymaxCacheSentinelConnection,
   BymaxCacheClusterConnection,
   SentinelAddress,
   ClusterNode,
+  ClusterOptions,
+  CacheNamespace,
   ICacheEvents,
 } from '@bymax-one/nest-cache'
 import type { Env } from '../config/env.schema.js'
@@ -44,14 +47,16 @@ export function buildCacheOptions(
       ? new MsgPackSerializer()
       : undefined // undefined → library default JsonSerializer
 
+  // Typed with the library's `CacheNamespace` alias — one logical namespace per
+  // instance; tenants are modeled as key prefixes underneath it (spec §12).
+  const namespace: CacheNamespace = config.get('CACHE_NAMESPACE', { infer: true })
+
   return {
     mode,
-    ...(mode === 'standalone'
-      ? { connection: { url: config.get('REDIS_URL', { infer: true }) } }
-      : {}),
+    ...(mode === 'standalone' ? { connection: buildStandaloneBlock(config) } : {}),
     ...(mode === 'sentinel' ? { sentinel: buildSentinelBlock(config) } : {}),
     ...(mode === 'cluster' ? { cluster: buildClusterBlock(config) } : {}),
-    namespace: config.get('CACHE_NAMESPACE', { infer: true }),
+    namespace,
     keySeparator: config.get('CACHE_KEY_SEPARATOR', { infer: true }),
     ...(serializer !== undefined ? { serializer } : {}),
     events,
@@ -59,6 +64,23 @@ export function buildCacheOptions(
     shutdownTimeoutMs: config.get('SHUTDOWN_TIMEOUT_MS', { infer: true }),
     allowFlushInProduction: config.get('ALLOW_FLUSH_IN_PRODUCTION', { infer: true }),
   }
+}
+
+/**
+ * Builds the standalone connection block from validated env (spec §15.1).
+ *
+ * Typed with the library's `BymaxCacheStandaloneConnection` so it stays
+ * symmetric with `buildSentinelBlock` / `buildClusterBlock`. Only the `url` is
+ * supplied — the discrete `host`/`port` fallbacks are unused because the env
+ * schema always yields a `redis://` URL; `url` wins when both are present.
+ *
+ * @param config - Typed config service over the Zod-validated Env.
+ * @returns The standalone block: `{ url }`.
+ */
+export function buildStandaloneBlock(
+  config: ConfigService<Env, true>,
+): BymaxCacheStandaloneConnection {
+  return { url: config.get('REDIS_URL', { infer: true }) }
 }
 
 /**
@@ -174,8 +196,9 @@ export function buildSentinelBlock(config: ConfigService<Env, true>): BymaxCache
 export function buildClusterBlock(config: ConfigService<Env, true>): BymaxCacheClusterConnection {
   const nodes: ClusterNode[] = parseAddressList(config.get('REDIS_CLUSTER_NODES', { infer: true }))
   const natMap = parseNatMap(config.get('REDIS_CLUSTER_NAT_MAP', { infer: true }))
-  return {
-    nodes,
-    ...(natMap !== undefined ? { options: { natMap } } : {}),
-  }
+  if (natMap === undefined) return { nodes }
+  // Typed with the library's re-exported ioredis `ClusterOptions`; only `natMap`
+  // is set (host-reachable rewrite of the announced slot-map addresses).
+  const options: ClusterOptions = { natMap }
+  return { nodes, options }
 }

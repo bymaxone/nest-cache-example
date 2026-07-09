@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] — 2026-07-09
+
 ### Added
 
-- Initial scaffolding.
+- **Reference API (`apps/api`, NestJS 11)** exercising every public export of
+  `@bymax-one/nest-cache` against Redis 7: read-through catalog cache + data
+  structures (strings, numerics, hashes, sets, pipelines, SCAN, TTL), namespace
+  isolation and prefix-scoped tenants, default JSON and custom MessagePack
+  serialization, Pub/Sub with a socket.io bridge, TTL keyspace-notification
+  events, Lua single-flight cache-stampede collapse, the connection-topology
+  matrix (standalone / sentinel / cluster), and the Cache Admin (Explorer) backend.
+- **Observability dashboard (`apps/web`, Next.js 16)** — 10 pages (Overview,
+  Explorer, Playground, Tenants, Pub/Sub, TTL Live, Stampede, Serializer, Errors,
+  Connection) importing only the zero-dependency `@bymax-one/nest-cache/shared`
+  subpath in the browser bundle.
+- **Global exception filter** mapping all 15 `CacheException` codes to their
+  canonical HTTP status; **Zod DTOs** and JSDoc-documented controllers (no Swagger).
+- **Export-usage audit** (`scripts/audit-library-exports.mjs`, `pnpm audit:exports`)
+  enforcing that every library export is demonstrated under `apps/` or listed in
+  `.audit-ignore.json` with a reason; wired as the `export-usage-check` CI job.
+- **Quality bar** — 100% unit coverage (api Jest + web Vitest), E2E of every HTTP +
+  WebSocket flow (Testcontainers), 18 Playwright journeys, and Stryker mutation
+  testing (api 100%, web ≥90%). Mutation runs post-merge on `main` (and via manual
+  `workflow_dispatch`), only when application source changed, with the incremental
+  state cached across runs — PRs stay gated by coverage + E2E.
+- Public-facing `README.md` (endpoints table, feature-coverage summary, ASCII
+  architecture, curl journeys) and the living docs under `docs/`.

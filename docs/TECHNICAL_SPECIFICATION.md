@@ -721,6 +721,7 @@ the "origin" is an in-memory store with an artificial latency so cache hits are 
 | `GET /tenants/:t/products/:id`                                       | tenant-scoped read              | prefix-scoped `get/set`                              |
 | `DELETE /tenants/:t/cache`                                           | clear one tenant                | `scan` + `delMany`                                   |
 | `POST /tenants/seed-foreign`                                         | seed a foreign namespace        | `getClient()` (raw, un-namespaced)                   |
+| `POST /tenants/prove-isolation`                                      | flush + foreign-key survives    | `flushNamespace()` + foreign-key survival check      |
 | `GET /admin/keys?prefix=&pattern=&strategy=scan\|keys`               | key explorer                    | `scan` / `keys`                                      |
 | `GET /admin/keys/:key`                                               | inspect value + TTL             | `getRaw` + `ttl`                                     |
 | `DELETE /admin/keys/:key`                                            | delete                          | `del`                                                |
@@ -729,7 +730,8 @@ the "origin" is an in-memory store with an artificial latency so cache hits are 
 | `GET /admin/info?section=`                                           | Redis INFO                      | `info(section?)`                                     |
 | `POST /pubsub/publish`                                               | publish a message               | `PubSubService.publish`                              |
 | `POST /pubsub/subscribe` · `DELETE …/subscribe`                      | manage a subscription           | `subscribe` / `psubscribe` / `Unsubscribe`           |
-| `POST /stampede?productId=&concurrency=N`                            | stampede lab                    | `eval` (Lua lock)                                    |
+| `POST /stampede?productId=&concurrency=N&lockMs=`                    | stampede lab                    | `eval` (Lua lock)                                    |
+| `POST /ttl-events/seed`                                              | seed a short-TTL key            | `set(ttl)` → raw `__keyevent@<db>__:expired` feed    |
 | `POST /serializer/roundtrip?codec=json\|msgpack`                     | codec comparison                | `setRaw`/`getRaw` + `get`/`set`                      |
 | `GET /serializer/active`                                             | which codec is injected         | `BYMAX_CACHE_SERIALIZER` (constructor name)          |
 | `POST /serializer/caveat?codec=json\|msgpack`                        | `Date` lossy-vs-intact caveat   | `setRaw`/`getRaw` + `get`/`set`                      |
@@ -1409,10 +1411,12 @@ prompt, completion protocol), matching the sibling examples.
 
 ## 28 · Document Status
 
-> **Document version:** 1.0 — initial technical specification, authored before implementation.
+> **Document version:** 1.1 — reconciled with the shipped implementation.
 > **Library version targeted:** `@bymax-one/nest-cache@0.1.0` (pre-1.0; API verified against shipped
-> `.d.ts`). **Project status:** specification only — no application code yet. **Next step:** derive
-> `docs/DEVELOPMENT_PLAN.md` from §25, then scaffold `docs/tasks/phase-00-*.md`.
+> `.d.ts`). **Project status:** **implemented** — `apps/api` (NestJS 11) and `apps/web` (Next.js 16) are
+> built and green across all quality gates (100% unit coverage, E2E of every HTTP + WebSocket flow, Stryker
+> mutation, and the `pnpm audit:exports` export-usage gate). Every row of the §7 Feature Coverage Matrix is
+> demonstrated under `apps/`.
 >
 > Maintained by **Bymax One** · MIT · This document is the authoritative contract for
 > `nest-cache-example`; when it conflicts with the early `docs/OVERVIEW.md` draft, **this file wins**.

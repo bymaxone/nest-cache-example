@@ -7,18 +7,15 @@
 </p>
 
 <p align="center">
-  <img alt="library" src="https://img.shields.io/badge/%40bymax--one%2Fnest--cache-%5E0.1.0-6E56CF" />
-  <img alt="license" src="https://img.shields.io/badge/license-MIT-green" />
-  <img alt="typescript" src="https://img.shields.io/badge/TypeScript-strict-3178C6" />
-  <img alt="node" src="https://img.shields.io/badge/Node-%3E%3D24-339933" />
-  <img alt="nestjs" src="https://img.shields.io/badge/NestJS-11-E0234E" />
-  <img alt="next" src="https://img.shields.io/badge/Next.js-16-000000" />
-  <img alt="react" src="https://img.shields.io/badge/React-19-61DAFB" />
-  <img alt="redis" src="https://img.shields.io/badge/Redis-7-DC382D" />
-  <img alt="tailwind" src="https://img.shields.io/badge/Tailwind-4-06B6D4" />
-  <img alt="socketio" src="https://img.shields.io/badge/Socket.IO-4-010101" />
-  <img alt="coverage" src="https://img.shields.io/badge/coverage-100%25-brightgreen" />
-  <img alt="mutation" src="https://img.shields.io/badge/Stryker%20mutation-api%20100%25%20%C2%B7%20web%2091.61%25-brightgreen" />
+  <img alt="@bymax-one/nest-cache" src="https://img.shields.io/badge/%40bymax--one%2Fnest--cache-0.1.0-000000?style=flat-square" />
+  <img alt="Node" src="https://img.shields.io/badge/Node-%3E%3D24-000000?style=flat-square&logo=node.js&logoColor=white" />
+  <img alt="pnpm" src="https://img.shields.io/badge/pnpm-%3E%3D10.8-000000?style=flat-square&logo=pnpm&logoColor=white" />
+  <img alt="NestJS" src="https://img.shields.io/badge/NestJS-11-000000?style=flat-square&logo=nestjs&logoColor=white" />
+  <img alt="Next.js" src="https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js&logoColor=white" />
+  <img alt="React" src="https://img.shields.io/badge/React-19-000000?style=flat-square&logo=react&logoColor=white" />
+  <img alt="Redis" src="https://img.shields.io/badge/Redis-7-000000?style=flat-square&logo=redis&logoColor=white" />
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-000000?style=flat-square&logo=typescript&logoColor=white" />
+  <img alt="License" src="https://img.shields.io/badge/License-MIT-000000?style=flat-square" />
 </p>
 
 <p align="center">
@@ -115,6 +112,29 @@ pnpm dev                 # api → http://localhost:3001 · web → http://local
 
 ---
 
+## 🛰️ Endpoints
+
+The API runs on **`http://localhost:3001`**. Routes grouped by area — this is a
+summary; the full catalogue with request/response contracts lives in
+**[TECHNICAL_SPECIFICATION.md §11](docs/TECHNICAL_SPECIFICATION.md)**.
+
+| Area            | Method + path                                                                                                                                 | Purpose                                                                    |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| **Catalog**     | `GET /catalog/products` · `GET /catalog/products/:id` · `GET /catalog/products/:id/ttl` · `POST /catalog/products/:id/{seed,expire,persist}`  | Read-through cache (miss→hit), remaining TTL, `setNx` seed, expire/persist |
+| **Counters**    | `GET /counters/:id/views` · `POST /counters/:id/views/incr` · `POST /counters/:id/stock/decr`                                                 | Atomic numeric `incr`/`decr`                                               |
+| **Collections** | `GET/POST/DELETE /collections/:id/cart[...]` · `GET/POST/DELETE /collections/:id/tags[...]`                                                   | Hashes (carts) and sets (tags)                                             |
+| **Metrics**     | `GET /metrics`                                                                                                                                | App-level hit/miss counters (per prefix)                                   |
+| **Admin**       | `GET /admin/{info,keyspace,keys,keys/:key}` · `POST /admin/{seed,keys/:key/persist,keys/:key/expire}` · `DELETE /admin/{keys/:key,namespace}` | Explorer backend — SCAN/KEYS, INFO, per-key ops, namespace flush           |
+| **Tenants**     | `GET /tenants/:t/products/:id` · `DELETE /tenants/:t/cache` · `POST /tenants/{seed-foreign,prove-isolation}`                                  | Prefix-scoped tenant reads + cross-namespace isolation proof               |
+| **Serializer**  | `POST /serializer/{roundtrip,caveat}` · `GET /serializer/active`                                                                              | Default JSON vs custom MessagePack codec + the active codec name           |
+| **Pub/Sub**     | `POST /pubsub/publish` · `POST/DELETE /pubsub/subscribe` · `POST /pubsub/throw`                                                               | Exact/pattern subscribe, publish fan-out, handler-error isolation          |
+| **TTL Events**  | `POST /ttl-events/seed`                                                                                                                       | Seed a short-TTL key and observe the `expired` keyspace event              |
+| **Stampede**    | `POST /stampede?productId=&concurrency=&lockMs=`                                                                                              | Single-flight burst — N contenders → 1 origin fetch + (N−1) hits           |
+| **Errors**      | `POST /errors/:code`                                                                                                                          | Trigger any of the 15 `CacheException` codes and read its HTTP mapping     |
+| **Health**      | `GET /health`                                                                                                                                 | Probe-safe liveness + round-trip latency                                   |
+
+---
+
 ## 🏗️ Architecture
 
 ```
@@ -143,9 +163,35 @@ pnpm dev                 # api → http://localhost:3001 · web → http://local
 Redis events to the dashboard over socket.io. Full diagram and API contracts in
 **[docs/TECHNICAL_SPECIFICATION.md](docs/TECHNICAL_SPECIFICATION.md)**.
 
-> **Coverage rule.** Every public export of `@bymax-one/nest-cache` (the `.` and `/shared` subpaths) is referenced
+> **Coverage rule.** Every public export of `@bymax-one/nest-cache` (the `.` and `./shared` subpaths) is referenced
 > from at least one file under `apps/` — the spec's Feature Coverage Matrix maps each one to where it is used, and an
 > export-usage audit enforces it.
+
+---
+
+## ✅ Feature coverage
+
+The spec's **[§7 Feature Coverage Matrix](docs/TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix)** is the
+contract: **all 50 rows** — every public export of the `.` and `./shared` subpaths plus each documented behavior — are
+demonstrated somewhere under `apps/`. `scripts/audit-library-exports.mjs` (run via `pnpm audit:exports`, gated in CI
+as `export-usage-check`) parses the library's shipped `.d.ts` and fails if any export is neither referenced in `apps/`
+nor listed in [`.audit-ignore.json`](.audit-ignore.json) with a stated reason.
+
+| Group                          | Demonstrated in                                                                 | Matrix rows |
+| ------------------------------ | ------------------------------------------------------------------------------- | ----------- |
+| Module wiring & options        | `cache/cache.module.ts` · `cache/cache.config.ts`                               | #1–#10      |
+| Read-through & data structures | `catalog/**` · `counters/**` · `collections/**`                                 | #11–#22     |
+| Namespaces & tenants           | `tenants/**` · `admin/**`                                                       | #23–#28     |
+| Serialization                  | `serializer-demo/**` · `cache/msgpack.serializer.ts`                            | #29–#33     |
+| Pub/Sub & real-time            | `pubsub/**` · `events/**`                                                       | #34–#38     |
+| TTL keyspace events            | `ttl-events/**`                                                                 | #39–#40     |
+| Lua & cache stampede           | `stampede/**` · `cache/scripts/**`                                              | #41–#43     |
+| Topologies & error surface     | `cache/cache.config.ts` · `common/cache-exception.filter.ts` · `errors-demo/**` | #44–#49     |
+| Optional logger bridge         | `cache/cache.events.ts` (documented — see below)                                | #50         |
+
+> Two internal DI tokens (`BYMAX_CACHE_OPTIONS`, `BYMAX_CACHE_EVENTS`) are configured through
+> `BymaxCacheModuleOptions` rather than re-injected, so they are listed in `.audit-ignore.json` with a reason — the
+> audit still echoes them so they never disappear silently.
 
 ---
 
@@ -179,6 +225,59 @@ Pub/Sub is an experimental passthrough. See **[TECHNICAL_SPECIFICATION.md §15](
 
 ---
 
+## 🧑‍💻 Try it with curl
+
+Reproduce the three headline behaviors from a terminal — no dashboard required.
+The API is on `http://localhost:3001`; `jq` is optional but makes the JSON
+readable. Bring the stack up first (`pnpm infra:up && pnpm --filter api dev`).
+
+**1 · Miss → hit.** The first read populates the cache from the slow origin; the
+second is served from Redis. Watch `time_total` drop and the metrics counter move.
+
+```bash
+# First read — a cache MISS, pays the ~simulated origin latency.
+curl -s -w '\n⏱  %{time_total}s\n' http://localhost:3001/catalog/products/p1
+
+# Second read — a cache HIT, served from Redis (noticeably faster).
+curl -s -w '\n⏱  %{time_total}s\n' http://localhost:3001/catalog/products/p1
+
+# The per-prefix hit/miss counters reflect the miss then the hit.
+curl -s http://localhost:3001/metrics | jq '.prefixes'
+```
+
+**2 · Stampede collapse.** A **single** request fires `concurrency` contenders
+internally at one uncached product. Exactly one wins the Lua `SET NX PX` lock and
+fetches the origin; the rest read the value it caches — N misses collapse into
+**1 origin fetch + (N−1) hits**.
+
+```bash
+# One request → 10 internal contenders. The burst summary + resolved script SHA1.
+curl -s -X POST 'http://localhost:3001/stampede?productId=p2&concurrency=10&lockMs=2000' \
+  | jq '{summary, sha: .script.sha, contenders: (.timeline | length)}'
+# → summary.originFetches == 1, summary.cacheHits == 9 (a clean single-flight collapse)
+```
+
+**3 · Cross-namespace isolation.** Plant a foreign-namespace key via the raw
+client (the documented **anti-pattern** — real code never writes outside its
+namespace), flush `cache-example:*`, and prove the foreign key survived.
+
+```bash
+# Plant `other-app:demo` OUTSIDE this instance's namespace (raw client).
+curl -s -X POST http://localhost:3001/tenants/seed-foreign | jq
+
+# Seed a cache-example key so the flush has something to delete.
+curl -s -X POST http://localhost:3001/catalog/products/p4/seed >/dev/null
+
+# Flush every `cache-example:*` key (SCAN + UNLINK) — returns the deleted count.
+curl -s -X DELETE http://localhost:3001/admin/namespace | jq
+
+# Consolidated proof: the foreign key survived the namespace flush.
+curl -s -X POST http://localhost:3001/tenants/prove-isolation | jq
+# → { "flushedNamespaceKeys": <n>, "foreignKeySurvived": true }
+```
+
+---
+
 ## 🧪 Tests
 
 ```bash
@@ -191,6 +290,51 @@ pnpm lint && pnpm typecheck && pnpm format:check
 The web E2E auto-boots its own stack (a dedicated test Redis via `docker-compose.test.yml` + the API + the
 dashboard) through Playwright's `webServer`, so `pnpm test:e2e:web` is self-contained. Mutation results by feature
 group are in **[docs/stryker/HISTORY.md](docs/stryker/HISTORY.md)**.
+
+---
+
+## 🪵 Optional: structured logging via `@bymax-one/nest-logger`
+
+> **This is OPTIONAL.** The example runs with the plain Nest `Logger` and has **no**
+> hard dependency on `@bymax-one/nest-logger`. This is the recommended production
+> upgrade — it is **[§7 matrix](docs/TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix) row #50**.
+
+`@bymax-one/nest-cache` emits connection-lifecycle events through the optional
+`ICacheEvents.onEvent` callback. This repo's [`CacheEventsBridge`](apps/api/src/cache/cache.events.ts)
+routes them to the Nest `Logger` and the dashboard. In production you would route the
+same events through `@bymax-one/nest-logger` for structured, correlation-aware logs —
+the level mapped from the event, the payload attached as structured fields:
+
+```ts
+// Production variant of CacheEventsBridge — OPTIONAL, requires @bymax-one/nest-logger.
+import { Injectable } from '@nestjs/common'
+import { InjectLogger, PinoLoggerService } from '@bymax-one/nest-logger'
+import type { ICacheEvents } from '@bymax-one/nest-cache'
+import { CACHE_EVENT_NAMES, type CacheEventName } from '@bymax-one/nest-cache/shared'
+
+@Injectable()
+export class CacheEventsBridge {
+  constructor(@InjectLogger('Cache') private readonly logger: PinoLoggerService) {}
+
+  toCacheEvents(): ICacheEvents {
+    return {
+      onEvent: (event: CacheEventName, data: Record<string, unknown>) => {
+        // Event severity → log level; the secret-free `data` becomes structured fields.
+        if (event === CACHE_EVENT_NAMES.ERROR) {
+          this.logger.errorStructured('CACHE_CONNECTION_ERROR', data, undefined, data)
+        } else {
+          this.logger.info('CACHE_CONNECTION_EVENT', event, undefined, data)
+        }
+      },
+    }
+  }
+}
+```
+
+Wire `BymaxLoggerModule` at bootstrap exactly as the sibling
+**[nest-logger-example](https://github.com/bymaxone/nest-logger-example)** shows — that
+repo is the full reference for the logger library's API (`@InjectLogger`, `PinoLoggerService`,
+context labels, redaction, OTel mixin).
 
 ---
 

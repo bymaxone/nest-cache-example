@@ -33,7 +33,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 >
 > **All 17 phase files are scaffolded** under [`docs/tasks/`](tasks/) — the per-phase totals below are firm.
 >
-> **Overall progress: 122 / 129 tasks done (95%)**
+> **Overall progress: 129 / 129 tasks done (100%)**
 
 | #   | Phase                                     | Tasks file                            | Size | Done / Total | %    | Status |
 | --- | ----------------------------------------- | ------------------------------------- | ---- | ------------ | ---- | ------ |
@@ -56,7 +56,7 @@ This plan mirrors the proven 3-layer structure of the sibling `nest-logger-examp
 | 16  | Unit Tests — 100% coverage (api + web)    | `phase-16-unit-coverage.md`           | XL   | 8 / 8        | 100% | 🟢     |
 | 17  | E2E — every flow (HTTP + WebSocket)       | `phase-17-e2e-flows.md`               | L    | 8 / 8        | 100% | 🟢     |
 | 18  | Mutation Testing — Stryker (near-100%)    | `phase-18-mutation-stryker.md`        | L    | 6 / 6        | 100% | 🟢     |
-| 19  | Docs, README & Export Audit               | `phase-19-docs-readme-audit.md`       | M    | 0 / 7        | 0%   | 🔴     |
+| 19  | Docs, README & Export Audit               | `phase-19-docs-readme-audit.md`       | M    | 7 / 7        | 100% | 🟢     |
 
 ### How to update this dashboard
 
