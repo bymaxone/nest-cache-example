@@ -49,6 +49,7 @@ interface FakeClient {
   ttl(key: string): Promise<number>
   memory(op: 'USAGE', key: string): Promise<number | null>
   scan(cursor: string, m: 'MATCH', pat: string, c: 'COUNT', n: number): Promise<[string, string[]]>
+  keys(pattern: string): Promise<string[]>
   pipeline(): ChainableCommander
 }
 
@@ -115,6 +116,7 @@ function setup() {
         n: number,
       ) => Promise<[string, string[]]>
     >()
+  const clientKeys = jest.fn<(pattern: string) => Promise<string[]>>()
   const clientPipeline = jest.fn<() => ChainableCommander>(() => fakePipeline as ChainableCommander)
   const fakeClient: FakeClient = {
     type: clientType,
@@ -122,6 +124,7 @@ function setup() {
     ttl: clientTtl,
     memory: clientMemory,
     scan: clientScan,
+    keys: clientKeys,
     pipeline: clientPipeline,
   }
 
@@ -175,6 +178,7 @@ function setup() {
     clientTtl,
     clientMemory,
     clientScan,
+    clientKeys,
     clientPipeline,
     getClient,
     pipelineFacade,
@@ -247,20 +251,151 @@ describe('AdminService (unit)', () => {
       expect(scanFacade).toHaveBeenCalledWith('product', '*', 5)
     })
 
-    it('returns an empty list with a null cursor for an empty scan and no tenant/prefix', async () => {
+    it('scans the whole namespace via the raw client when no tenant/prefix is set', async () => {
       /*
-       * Scenario: strategy=scan, no tenant, no prefix, limit 0, scan yields nothing.
-       * Rule it protects: the empty match prefix is `''`, and an empty scan resolves the
-       * cursor to null via `keys.at(-1) ?? null` (no last key to surface).
+       * Scenario: strategy=scan with neither tenant nor prefix (the Explorer landing).
+       * Rule it protects: an empty match prefix must NOT reach the facade `scan` (which
+       * rejects an empty prefix with cache.invalid_key); it enumerates the whole
+       * namespace through the raw client using `${namespacePrefix}${pattern}`, returning
+       * fully-namespaced keys with a null cursor once the scan completes below the limit.
+       */
+      const { service, scanFacade, clientScan } = setup()
+      clientScan.mockResolvedValue(['0', ['cache-example:product:1', 'cache-example:cart:u_7']])
+      const query: KeyQuery = { strategy: 'scan', limit: 200 }
+
+      const result = await service.listKeys(query)
+
+      expect(result).toEqual({
+        keys: ['cache-example:product:1', 'cache-example:cart:u_7'],
+        cursor: null,
+        strategy: 'scan',
+      })
+      expect(clientScan).toHaveBeenCalledWith('0', 'MATCH', 'cache-example:*', 'COUNT', 200)
+      // The facade scan must never be invoked with an empty prefix.
+      expect(scanFacade).not.toHaveBeenCalled()
+    })
+
+    it('pages the raw namespace scan across cursors and returns the last key as cursor at the limit', async () => {
+      /*
+       * Scenario: strategy=scan, no tenant/prefix, limit 3, spread across two SCAN pages.
+       * Rule it protects: the do/while advances the cursor across pages and breaks once
+       * `limit` keys are collected, surfacing the LAST collected key as the next cursor.
+       */
+      const { service, clientScan } = setup()
+      clientScan
+        .mockResolvedValueOnce(['42', ['cache-example:product:1', 'cache-example:product:2']])
+        .mockResolvedValueOnce(['0', ['cache-example:product:3', 'cache-example:product:4']])
+      const query: KeyQuery = { strategy: 'scan', limit: 3 }
+
+      const result = await service.listKeys(query)
+
+      expect(result).toEqual({
+        keys: ['cache-example:product:1', 'cache-example:product:2', 'cache-example:product:3'],
+        cursor: 'cache-example:product:3',
+        strategy: 'scan',
+      })
+      expect(clientScan).toHaveBeenNthCalledWith(1, '0', 'MATCH', 'cache-example:*', 'COUNT', 200)
+      expect(clientScan).toHaveBeenNthCalledWith(2, '42', 'MATCH', 'cache-example:*', 'COUNT', 200)
+    })
+
+    it('uses the raw blocking KEYS command across the namespace when no tenant/prefix is set', async () => {
+      /*
+       * Scenario: strategy=keys with neither tenant nor prefix.
+       * Rule it protects: the O(N) whole-namespace path runs raw `client.keys` against
+       * `${namespacePrefix}${pattern}` (never the facade `keys` with an empty prefix) and
+       * surfaces the dev-only blocking warning with a null cursor.
+       */
+      const { service, keys, clientKeys } = setup()
+      clientKeys.mockResolvedValue(['cache-example:product:1', 'cache-example:tags:1'])
+      const query: KeyQuery = { strategy: 'keys', limit: 200 }
+
+      const result = await service.listKeys(query)
+
+      expect(result).toEqual({
+        keys: ['cache-example:product:1', 'cache-example:tags:1'],
+        cursor: null,
+        strategy: 'keys',
+        warning: KEYS_WARNING,
+      })
+      expect(clientKeys).toHaveBeenCalledWith('cache-example:*')
+      // The facade keys must never be invoked with an empty prefix.
+      expect(keys).not.toHaveBeenCalled()
+    })
+
+    it('resolves a prefixed scan with no results to a null cursor via the at(-1) fallback', async () => {
+      /*
+       * Scenario: strategy=scan, prefix set, limit 0, the facade scan yields nothing.
+       * Rule it protects: when `keys.length >= limit` holds on an EMPTY page (limit 0),
+       * `keys.at(-1)` is undefined and the `?? null` fallback resolves the cursor to
+       * null — the boundary the ternary's nullish branch guards.
        */
       const { service, scanFacade } = setup()
       scanFacade.mockReturnValue(asyncIterableOf([]))
+      const query: KeyQuery = { strategy: 'scan', prefix: 'product', limit: 0 }
+
+      const result = await service.listKeys(query)
+
+      expect(result).toEqual({ keys: [], cursor: null, strategy: 'scan' })
+      expect(scanFacade).toHaveBeenCalledWith('product', '*', 0)
+    })
+
+    it('reports completion from the raw cursor even when the page exactly fills the limit', async () => {
+      /*
+       * Scenario: strategy=scan, no tenant/prefix, limit 3, a single page of exactly 3
+       * keys whose SCAN cursor reaches '0' on the same iteration.
+       * Rule it protects: completion is driven by the raw SCAN cursor ('0'), NOT by
+       * `length >= limit` — a page that exactly fills the limit as the scan completes
+       * must still report a null cursor, so the UI does not fetch a phantom next page.
+       */
+      const { service, clientScan } = setup()
+      clientScan.mockResolvedValue([
+        '0',
+        ['cache-example:product:1', 'cache-example:product:2', 'cache-example:product:3'],
+      ])
+      const query: KeyQuery = { strategy: 'scan', limit: 3 }
+
+      const result = await service.listKeys(query)
+
+      expect(result.cursor).toBeNull()
+      expect(result.keys).toHaveLength(3)
+      expect(clientScan).toHaveBeenCalledWith('0', 'MATCH', 'cache-example:*', 'COUNT', 200)
+    })
+
+    it('keeps a non-null cursor when the raw scan has not exhausted the keyspace', async () => {
+      /*
+       * Scenario: strategy=scan, no tenant/prefix, limit 2, one page whose SCAN cursor is
+       * still non-'0' (more keys remain in the keyspace).
+       * Rule it protects: an unfinished scan (`cursor !== '0'`) surfaces the last key as
+       * the next-page signal, even when the returned page did not overflow the limit.
+       */
+      const { service, clientScan } = setup()
+      clientScan.mockResolvedValue(['7', ['cache-example:product:1', 'cache-example:product:2']])
+      const query: KeyQuery = { strategy: 'scan', limit: 2 }
+
+      const result = await service.listKeys(query)
+
+      expect(result).toEqual({
+        keys: ['cache-example:product:1', 'cache-example:product:2'],
+        cursor: 'cache-example:product:2',
+        strategy: 'scan',
+      })
+    })
+
+    it('resolves an empty over-scanned page to a null cursor via the at(-1) fallback', async () => {
+      /*
+       * Scenario: strategy=scan, no tenant/prefix, limit 0, a non-'0' cursor with an empty
+       * batch (more may exist, but nothing collected this page).
+       * Rule it protects: when the page is empty yet `hasMore` holds, `keys.at(-1)` is
+       * undefined and the `?? null` fallback resolves the cursor to null.
+       */
+      const { service, clientScan } = setup()
+      clientScan.mockResolvedValue(['5', []])
       const query: KeyQuery = { strategy: 'scan', limit: 0 }
 
       const result = await service.listKeys(query)
 
       expect(result).toEqual({ keys: [], cursor: null, strategy: 'scan' })
-      expect(scanFacade).toHaveBeenCalledWith('', '*', 0)
+      expect(clientScan).toHaveBeenCalledWith('0', 'MATCH', 'cache-example:*', 'COUNT', 200)
     })
   })
 
