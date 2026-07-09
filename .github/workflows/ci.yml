@@ -13,6 +13,15 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Cancel superseded runs for the same ref so only the latest commit is verified.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege at the caller; the reusables request no more than this.
+permissions:
+  contents: read
+
 jobs:
   ci:
     uses: bymaxone/.github/.github/workflows/node-ci.yml@v1
@@ -22,10 +31,11 @@ jobs:
       run-export-audit: true
       run-mutation: true
       mutation-source-globs: '^(apps/api/src/|apps/web/lib/|apps/web/components/)'
-    secrets: inherit
 
   security:
+    # Dependency review only applies to a pull request — don't spawn a no-op
+    # job on push / workflow_dispatch.
+    if: github.event_name == 'pull_request'
     uses: bymaxone/.github/.github/workflows/security.yml@v1
     with:
       fail-on-severity: high
-    secrets: inherit
