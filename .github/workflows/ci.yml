@@ -3,7 +3,7 @@
 # The whole pipeline (lint, typecheck, format, coverage, e2e, export audit,
 # mutation) lives in bymaxone/.github so every repo shares one definition.
 # Mutation runs only on a push to main / manual dispatch, never on PRs or a
-# schedule. Pilot: refs point at the reusable's branch; they flip to @v1 on merge.
+# schedule. The reusables are versioned via the @v1 tag on bymaxone/.github.
 name: CI
 
 on:
@@ -15,7 +15,7 @@ on:
 
 jobs:
   ci:
-    uses: bymaxone/.github/.github/workflows/node-ci.yml@feat/reusable-ci-workflows
+    uses: bymaxone/.github/.github/workflows/node-ci.yml@v1
     with:
       library-repo: bymaxone/nest-cache
       has-web: true
@@ -25,7 +25,7 @@ jobs:
     secrets: inherit
 
   security:
-    uses: bymaxone/.github/.github/workflows/security.yml@feat/reusable-ci-workflows
+    uses: bymaxone/.github/.github/workflows/security.yml@v1
     with:
       fail-on-severity: high
     secrets: inherit
