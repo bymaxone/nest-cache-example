@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **CI — mutation testing gate.** Stryker mutation no longer runs on pull
+  requests (PRs stay gated by 100% unit coverage + full E2E). It now runs
+  post-merge on `main` and via manual `workflow_dispatch`, and only when
+  application source changed (`apps/api/src`, `apps/web/lib`,
+  `apps/web/components`) — so docs/config merges spend zero CI minutes on it.
+  The `reports/stryker-incremental.json` state is cached across runs so only
+  changed files are re-mutated. Thresholds are unchanged (api `break: 100`,
+  web `break: 90`).
+
 ## [0.1.0] — 2026-07-09
 
 ### Added
