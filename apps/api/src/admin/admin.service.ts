@@ -163,8 +163,9 @@ export class AdminService {
       return { keys, cursor: null, strategy: 'keys', warning: KEYS_BLOCKING_WARNING }
     }
 
-    // Non-blocking cursor SCAN across the namespace, paged to the requested limit.
-    const keys: string[] = []
+    // Non-blocking cursor SCAN across the namespace, collecting whole batches
+    // until the page limit is reached or the keyspace is fully walked.
+    const collected: string[] = []
     let cursor = '0'
     do {
       const [nextCursor, batch] = await client.scan(
@@ -175,15 +176,19 @@ export class AdminService {
         SCAN_BATCH_HINT,
       )
       cursor = nextCursor
-      for (const key of batch) {
-        keys.push(key)
-        if (keys.length >= limit) break
-      }
-    } while (cursor !== '0' && keys.length < limit)
+      collected.push(...batch)
+    } while (cursor !== '0' && collected.length < limit)
 
+    // Completion is decided by the raw SCAN cursor ('0' = keyspace fully walked),
+    // not by page size alone: a page that exactly fills the limit as the cursor
+    // reaches '0' is still complete, whereas an over-collected batch (cursor '0'
+    // but more matches than the limit) still leaves a further page. This is more
+    // precise than inferring completion from `length >= limit`.
+    const keys = collected.slice(0, limit)
+    const hasMore = cursor !== '0' || collected.length > limit
     return {
       keys,
-      cursor: keys.length >= limit ? (keys.at(-1) ?? null) : null,
+      cursor: hasMore ? (keys.at(-1) ?? null) : null,
       strategy: 'scan',
     }
   }
