@@ -463,7 +463,7 @@ _(Agents append one line per finished task, newest at the bottom.)_
 
 - P19-1 ✅ 2026-07-09 — Implemented the zero-dep export-usage audit (pnpm-aware `.d.ts` resolution, `.audit-ignore.json` with echoed reasons); `pnpm audit:exports` green (38 demonstrated + 2 justified ignores); `export-usage-check` CI job confirmed.
 - P19-2 ✅ 2026-07-09 — Reworked the root README to shields.io flat-square black badges, added the endpoints table and the condensed §7 feature-coverage summary; all internal links resolve, Prettier-clean.
-- P19-3 ✅ 2026-07-09 — Added the "Try it with curl" section with three reproducible journeys (miss→hit + metrics, stampede collapse via `xargs -P`, cross-namespace isolation) against the real `:3001` routes.
+- P19-3 ✅ 2026-07-09 — Added the "Try it with curl" section with three reproducible journeys (miss→hit + metrics, stampede collapse via a single `POST /stampede` burst, cross-namespace isolation) against the real `:3001` routes.
 - P19-4 ✅ 2026-07-09 — Reconciled the living docs (spec §28 + §11.1 routes, DASHBOARD footer) with the shipped apps; confirmed `OVERVIEW.md` carries its superseded banner.
 - P19-5 ✅ 2026-07-09 — Documented the OPTIONAL `@bymax-one/nest-logger` events bridge (matrix row #50) with a faithful `PinoLoggerService` wiring snippet, clearly marked optional and cross-linked to the sibling.
 - P19-6 ✅ 2026-07-09 — Cut the `CHANGELOG.md` `0.1.0` entry; design-system acceptance PASS — `apps/web/app/globals.css` is byte-identical to `nest-logger-example` after project-name normalization and `layout.tsx` shares the Geist + forced-dark chrome (indistinguishable, no drift); web build green.
