@@ -145,7 +145,8 @@ export class AdminService {
    * breakdown uses. Keys returned by the raw client are already fully namespaced.
    *
    * @param pattern - The id glob applied after the namespace prefix (e.g. `*`).
-   * @param limit - Maximum keys to return in this page.
+   * @param limit - Maximum keys per page for the `scan` strategy. The O(N) `keys`
+   *   strategy is not paginated and returns all matches (like the facade `keys` path).
    * @param strategy - `scan` (non-blocking cursor) or `keys` (O(N), dev-only).
    * @returns Fully-namespaced keys and the strategy used; `keys` carries the blocking warning.
    */
@@ -166,26 +167,28 @@ export class AdminService {
     // Non-blocking cursor SCAN across the namespace, collecting whole batches
     // until the page limit is reached or the keyspace is fully walked.
     const collected: string[] = []
-    let cursor = '0'
+    let scanCursor = '0'
     do {
       const [nextCursor, batch] = await client.scan(
-        cursor,
+        scanCursor,
         'MATCH',
         match,
         'COUNT',
         SCAN_BATCH_HINT,
       )
-      cursor = nextCursor
+      scanCursor = nextCursor
       collected.push(...batch)
-    } while (cursor !== '0' && collected.length < limit)
+    } while (scanCursor !== '0' && collected.length < limit)
 
     // Completion is decided by the raw SCAN cursor ('0' = keyspace fully walked),
     // not by page size alone: a page that exactly fills the limit as the cursor
     // reaches '0' is still complete, whereas an over-collected batch (cursor '0'
     // but more matches than the limit) still leaves a further page. This is more
-    // precise than inferring completion from `length >= limit`.
+    // precise than inferring completion from `length >= limit`. The returned
+    // `cursor` field below is a UI next-page sentinel (the last key), distinct
+    // from this raw Redis `scanCursor`.
     const keys = collected.slice(0, limit)
-    const hasMore = cursor !== '0' || collected.length > limit
+    const hasMore = scanCursor !== '0' || collected.length > limit
     return {
       keys,
       cursor: hasMore ? (keys.at(-1) ?? null) : null,
