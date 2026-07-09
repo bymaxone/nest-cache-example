@@ -106,6 +106,16 @@ export class AdminService {
     const pattern = query.pattern ?? '*'
     const limit = query.limit
 
+    // Whole-namespace browse (Explorer landing, or a tenant-only view that was
+    // cleared): with neither a tenant nor an entity prefix, the facade
+    // `scan`/`keys` cannot be used — they reject an empty prefix with
+    // `cache.invalid_key`. Enumerate the whole namespace through the raw client
+    // instead, honouring the Explorer's "empty prefix = all keys" intent. This
+    // mirrors the raw-scan approach in getKeyspaceBreakdown().
+    if (matchPrefix === '') {
+      return this.listNamespaceKeys(pattern, limit, query.strategy)
+    }
+
     if (query.strategy === 'keys') {
       // O(N) — blocks the Redis server. Dev-only; surfaced as a warning to callers.
       const keys = await this.cache.keys(matchPrefix, pattern)
@@ -118,6 +128,59 @@ export class AdminService {
       keys.push(key)
       if (keys.length >= limit) break
     }
+    return {
+      keys,
+      cursor: keys.length >= limit ? (keys.at(-1) ?? null) : null,
+      strategy: 'scan',
+    }
+  }
+
+  /**
+   * Enumerates keys across the whole namespace via the raw client, used when the
+   * Explorer browses with neither a tenant nor an entity prefix set.
+   *
+   * The facade `scan`/`keys` require a non-empty prefix (an empty one raises
+   * `cache.invalid_key`), so "browse everything" goes through `getClient()` with
+   * the `KeyBuilder` namespace prefix — the same raw-scan approach the keyspace
+   * breakdown uses. Keys returned by the raw client are already fully namespaced.
+   *
+   * @param pattern - The id glob applied after the namespace prefix (e.g. `*`).
+   * @param limit - Maximum keys to return in this page.
+   * @param strategy - `scan` (non-blocking cursor) or `keys` (O(N), dev-only).
+   * @returns Fully-namespaced keys and the strategy used; `keys` carries the blocking warning.
+   */
+  private async listNamespaceKeys(
+    pattern: string,
+    limit: number,
+    strategy: 'scan' | 'keys',
+  ): Promise<KeyListResult> {
+    const client = this.cache.getClient()
+    const match = `${this.keyBuilder.getNamespacePrefix()}${pattern}`
+
+    if (strategy === 'keys') {
+      // O(N) — blocks the Redis server. Dev-only; surfaced as a warning to callers.
+      const keys = await client.keys(match)
+      return { keys, cursor: null, strategy: 'keys', warning: KEYS_BLOCKING_WARNING }
+    }
+
+    // Non-blocking cursor SCAN across the namespace, paged to the requested limit.
+    const keys: string[] = []
+    let cursor = '0'
+    do {
+      const [nextCursor, batch] = await client.scan(
+        cursor,
+        'MATCH',
+        match,
+        'COUNT',
+        SCAN_BATCH_HINT,
+      )
+      cursor = nextCursor
+      for (const key of batch) {
+        keys.push(key)
+        if (keys.length >= limit) break
+      }
+    } while (cursor !== '0' && keys.length < limit)
+
     return {
       keys,
       cursor: keys.length >= limit ? (keys.at(-1) ?? null) : null,

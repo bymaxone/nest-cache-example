@@ -105,6 +105,34 @@ describe('admin / explorer HTTP flows (real Redis)', () => {
     expect(viaScan.body.keys.length).toBeGreaterThanOrEqual(5)
   })
 
+  it('GET /admin/keys with no prefix browses the whole namespace (Explorer landing)', async () => {
+    /*
+     * Scenario: the Explorer lands with neither a tenant nor a prefix selected.
+     * Rule it protects: an empty prefix must NOT surface the library's
+     * `cache.invalid_key` (which the facade scan/keys raise for an empty prefix);
+     * the endpoint enumerates the whole namespace via the raw client and returns
+     * fully-namespaced keys with a 200 — so the landing view lists keys instead of
+     * an error. Both strategies are exercised.
+     */
+    await httpAgent(api.app).post('/admin/seed').query({ count: 5 })
+
+    const scanAll = await httpAgent(api.app)
+      .get('/admin/keys')
+      .query({ strategy: 'scan', limit: 100 })
+    expect(scanAll.status).toBe(200)
+    expect(scanAll.body.strategy).toBe('scan')
+    expect(scanAll.body.keys.length).toBeGreaterThanOrEqual(5)
+    expect(scanAll.body.keys).toEqual(
+      expect.arrayContaining([expect.stringMatching(/^cache-example:product:/)]),
+    )
+
+    const keysAll = await httpAgent(api.app).get('/admin/keys').query({ strategy: 'keys' })
+    expect(keysAll.status).toBe(200)
+    expect(keysAll.body.strategy).toBe('keys')
+    expect(keysAll.body.warning).toBe(KEYS_BLOCKING_WARNING)
+    expect(keysAll.body.keys.length).toBeGreaterThanOrEqual(5)
+  })
+
   it('GET /admin/keys/:key inspects a seeded key and 404s an absent key', async () => {
     /*
      * Scenario: drill into one key, then probe a missing one.
