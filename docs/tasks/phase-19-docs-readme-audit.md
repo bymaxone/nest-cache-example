@@ -2,7 +2,7 @@
 
 > **Source:** [`../DEVELOPMENT_PLAN.md`](../DEVELOPMENT_PLAN.md#phase-19--docs-readme--export-audit) §Phase 19
 > **Total tasks:** 7
-> **Progress:** 🔴 0 / 7 done (0%)
+> **Progress:** 🟢 7 / 7 done (100%)
 >
 > **Status legend:** 🔴 Not Started · 🟡 In Progress · 🔵 In Review · 🟢 Done · ⚪ Blocked
 
@@ -10,19 +10,19 @@
 
 | ID    | Task                                                                   | Status | Priority | Size | Depends on   |
 | ----- | ---------------------------------------------------------------------- | ------ | -------- | ---- | ------------ |
-| P19-1 | `scripts/audit-library-exports.mjs` + `.audit-ignore.json` (+ CI job)  | 🔴     | High     | M    | Phases 3–14  |
-| P19-2 | Root `README.md` (centered header, badges, matrix, ASCII arch)         | 🔴     | High     | L    | Phases 3–14  |
-| P19-3 | Documented curl journeys (miss→hit, stampede, isolation)               | 🔴     | Medium   | S    | P19-2        |
-| P19-4 | Keep spec/dashboard/plan current; flip `OVERVIEW.md` to superseded     | 🔴     | Medium   | S    | Phases 3–14  |
-| P19-5 | Document the OPTIONAL `@bymax-one/nest-logger` events bridge (row #50) | 🔴     | Low      | S    | P19-1, P19-2 |
-| P19-6 | `CHANGELOG.md` `0.1.0` entry + design-system acceptance check          | 🔴     | Medium   | S    | P19-2        |
-| P19-7 | Final audit verification (`audit:exports` exit 0, matrix all ✅)       | 🔴     | High     | S    | P19-1..P19-6 |
+| P19-1 | `scripts/audit-library-exports.mjs` + `.audit-ignore.json` (+ CI job)  | 🟢     | High     | M    | Phases 3–14  |
+| P19-2 | Root `README.md` (centered header, badges, matrix, ASCII arch)         | 🟢     | High     | L    | Phases 3–14  |
+| P19-3 | Documented curl journeys (miss→hit, stampede, isolation)               | 🟢     | Medium   | S    | P19-2        |
+| P19-4 | Keep spec/dashboard/plan current; flip `OVERVIEW.md` to superseded     | 🟢     | Medium   | S    | Phases 3–14  |
+| P19-5 | Document the OPTIONAL `@bymax-one/nest-logger` events bridge (row #50) | 🟢     | Low      | S    | P19-1, P19-2 |
+| P19-6 | `CHANGELOG.md` `0.1.0` entry + design-system acceptance check          | 🟢     | Medium   | S    | P19-2        |
+| P19-7 | Final audit verification (`audit:exports` exit 0, matrix all ✅)       | 🟢     | High     | S    | P19-1..P19-6 |
 
 ---
 
 ## P19-1 — `scripts/audit-library-exports.mjs` + `.audit-ignore.json` (+ CI job)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** M (90–180 min)
 - **Depends on:** `Phases 3–14`
@@ -33,13 +33,13 @@ Build the export-usage audit — the **contract** that every public export of `@
 
 ### Acceptance Criteria
 
-- [ ] `scripts/audit-library-exports.mjs` exists; imports **only** `node:` builtins (`node:fs`, `node:path`, `node:process`, `node:url`) — zero third-party deps.
-- [ ] Parses both `node_modules/@bymax-one/nest-cache/dist/server/index.d.ts` and `.../dist/shared/index.d.ts`; extracts every exported symbol (named `export`, `export type`, `export { … }`, re-exports) into a de-duplicated set.
-- [ ] Word-boundary-searches (`\b<symbol>\b`) the `apps/` corpus (`apps/api/src/**`, `apps/api/test/**`, `apps/web/**`, excluding `dist`/`.next`/`node_modules`/`coverage`); a symbol is "demonstrated" if it appears at least once outside an import-only re-statement.
-- [ ] FAILS with exit code 1 and a clear per-symbol report listing every **undocumented** export; exits 0 when all exports are demonstrated or ignored.
-- [ ] `.audit-ignore.json` exists with a typed shape — each entry pairs a symbol with a human reason (e.g. `{ "ignore": [ { "symbol": "…", "reason": "…" } ] }`); ignored symbols are excluded from the failure set and **echoed** in the report so they stay visible.
-- [ ] Root `package.json` `audit:exports` → `node scripts/audit-library-exports.mjs` (confirm from P0-1; do not duplicate).
-- [ ] A CI job `export-usage-check` runs `pnpm audit:exports` (uses `pnpm/action-setup@v4` before `actions/setup-node@v5`, `cache: pnpm`, `pnpm install --frozen-lockfile`).
+- [x] `scripts/audit-library-exports.mjs` exists; imports **only** `node:` builtins (`node:fs`, `node:path`, `node:process`, `node:url`) — zero third-party deps.
+- [x] Parses both `node_modules/@bymax-one/nest-cache/dist/server/index.d.ts` and `.../dist/shared/index.d.ts`; extracts every exported symbol (named `export`, `export type`, `export { … }`, re-exports) into a de-duplicated set.
+- [x] Word-boundary-searches (`\b<symbol>\b`) the `apps/` corpus (`apps/api/src/**`, `apps/api/test/**`, `apps/web/**`, excluding `dist`/`.next`/`node_modules`/`coverage`); a symbol is "demonstrated" if it appears at least once outside an import-only re-statement.
+- [x] FAILS with exit code 1 and a clear per-symbol report listing every **undocumented** export; exits 0 when all exports are demonstrated or ignored.
+- [x] `.audit-ignore.json` exists with a typed shape — each entry pairs a symbol with a human reason (e.g. `{ "ignore": [ { "symbol": "…", "reason": "…" } ] }`); ignored symbols are excluded from the failure set and **echoed** in the report so they stay visible.
+- [x] Root `package.json` `audit:exports` → `node scripts/audit-library-exports.mjs` (confirm from P0-1; do not duplicate).
+- [x] A CI job `export-usage-check` runs `pnpm audit:exports` (uses `pnpm/action-setup@v4` before `actions/setup-node@v5`, `cache: pnpm`, `pnpm install --frozen-lockfile`).
 
 ### Files to create / modify
 
@@ -95,7 +95,7 @@ If phase reaches 100%, switch its row status in `DEVELOPMENT_PLAN.md` to 🟢.
 
 ## P19-2 — Root `README.md` (centered header, badges, matrix, ASCII arch)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** L (3–6 h)
 - **Depends on:** `Phases 3–14`
@@ -106,14 +106,14 @@ Replace the Phase 0 README stub with the polished, public-facing root `README.md
 
 ### Acceptance Criteria
 
-- [ ] Root `README.md` opens with a **centered** `<div align="center">` HTML header: project title `nest-cache-example`, a one-line tagline ("Reference app for `@bymax-one/nest-cache` — a typed Redis cache for NestJS"), and a row of shields.io badges.
-- [ ] All badges are **shields.io flat-square** with color `000000` (black) matching the siblings — at minimum: Node `>=24`, pnpm `>=10.8`, NestJS 11, Next.js 16, Redis 7, License MIT, `@bymax-one/nest-cache` version.
-- [ ] A "What's inside" checklist enumerates the demonstrated capability groups (data structures, namespaces/tenants, serialization, pub/sub, TTL events, Lua/stampede, topologies/errors, the live dashboard).
-- [ ] A "Quick Start" section: `pnpm install`, `pnpm infra:up` (Docker Redis), `pnpm dev` (api + web), with the API on `:3001` and the web on its dev port.
-- [ ] An endpoints table summarizing the main API routes (catalog, counters, collections, admin, tenants, pubsub, ttl-events, stampede, serializer, errors, health) grouped by area.
-- [ ] A condensed [§7 Feature Coverage Matrix](../TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix) summary (or a clearly-linked summary table) showing the 50 rows are covered, with a link to the full matrix in the spec.
-- [ ] An ASCII architecture diagram (browser ⇄ `apps/web` ⇄ `apps/api` ⇄ Redis, with the socket.io 3-channel bridge) consistent with the spec.
-- [ ] All internal links resolve (`docs/TECHNICAL_SPECIFICATION.md`, `docs/DASHBOARD.md`, `docs/DEVELOPMENT_PLAN.md`); English-only throughout.
+- [x] Root `README.md` opens with a **centered** `<div align="center">` HTML header: project title `nest-cache-example`, a one-line tagline ("Reference app for `@bymax-one/nest-cache` — a typed Redis cache for NestJS"), and a row of shields.io badges.
+- [x] All badges are **shields.io flat-square** with color `000000` (black) matching the siblings — at minimum: Node `>=24`, pnpm `>=10.8`, NestJS 11, Next.js 16, Redis 7, License MIT, `@bymax-one/nest-cache` version.
+- [x] A "What's inside" checklist enumerates the demonstrated capability groups (data structures, namespaces/tenants, serialization, pub/sub, TTL events, Lua/stampede, topologies/errors, the live dashboard).
+- [x] A "Quick Start" section: `pnpm install`, `pnpm infra:up` (Docker Redis), `pnpm dev` (api + web), with the API on `:3001` and the web on its dev port.
+- [x] An endpoints table summarizing the main API routes (catalog, counters, collections, admin, tenants, pubsub, ttl-events, stampede, serializer, errors, health) grouped by area.
+- [x] A condensed [§7 Feature Coverage Matrix](../TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix) summary (or a clearly-linked summary table) showing the 50 rows are covered, with a link to the full matrix in the spec.
+- [x] An ASCII architecture diagram (browser ⇄ `apps/web` ⇄ `apps/api` ⇄ Redis, with the socket.io 3-channel bridge) consistent with the spec.
+- [x] All internal links resolve (`docs/TECHNICAL_SPECIFICATION.md`, `docs/DASHBOARD.md`, `docs/DEVELOPMENT_PLAN.md`); English-only throughout.
 
 ### Files to create / modify
 
@@ -163,7 +163,7 @@ Replace the Phase 0 README stub with the polished, public-facing root `README.md
 
 ## P19-3 — Documented curl journeys (miss→hit, stampede, isolation)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P19-2`
@@ -174,11 +174,11 @@ Add copy-pasteable **curl journeys** that let a reader reproduce the three headl
 
 ### Acceptance Criteria
 
-- [ ] A "Try it with curl" section (in `README.md` or a linked doc) with three labeled journeys.
-- [ ] **Miss → hit:** two `GET /catalog/products/:id` calls showing the first as a miss (slower) and the second as a hit, plus a `GET /metrics` call showing the hit/miss counter change.
-- [ ] **Stampede collapse:** a fan-out (e.g. backgrounded curls or `xargs -P`) against `POST /stampede?productId=&concurrency=&lockMs=` showing 1 origin fetch + N−1 hits, referencing the returned timeline.
-- [ ] **Cross-namespace isolation:** `POST /tenants/seed-foreign` (foreign `other-app:*` key) → `DELETE /admin/namespace` (flush `cache-example:*`) → a read proving the foreign key survived.
-- [ ] All commands use the documented base URL/port (API `:3001`) and real route shapes from Phases 4/5/6/10; English-only.
+- [x] A "Try it with curl" section (in `README.md` or a linked doc) with three labeled journeys.
+- [x] **Miss → hit:** two `GET /catalog/products/:id` calls showing the first as a miss (slower) and the second as a hit, plus a `GET /metrics` call showing the hit/miss counter change.
+- [x] **Stampede collapse:** a fan-out (e.g. backgrounded curls or `xargs -P`) against `POST /stampede?productId=&concurrency=&lockMs=` showing 1 origin fetch + N−1 hits, referencing the returned timeline.
+- [x] **Cross-namespace isolation:** `POST /tenants/seed-foreign` (foreign `other-app:*` key) → `DELETE /admin/namespace` (flush `cache-example:*`) → a read proving the foreign key survived.
+- [x] All commands use the documented base URL/port (API `:3001`) and real route shapes from Phases 4/5/6/10; English-only.
 
 ### Files to create / modify
 
@@ -220,7 +220,7 @@ Add copy-pasteable **curl journeys** that let a reader reproduce the three headl
 
 ## P19-4 — Keep spec/dashboard/plan current; flip `OVERVIEW.md` to superseded
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `Phases 3–14`
@@ -231,11 +231,11 @@ Reconcile the living docs with what was actually built across Phases 3–14, the
 
 ### Acceptance Criteria
 
-- [ ] `TECHNICAL_SPECIFICATION.md` reconciled with the shipped apps (routes/env/behaviors match Phases 3–14); [§28 Status](../TECHNICAL_SPECIFICATION.md#28--status) reflects implemented state.
-- [ ] `DASHBOARD.md` reconciled with the actually-built pages/components (Phases 12–14).
-- [ ] `DEVELOPMENT_PLAN.md` Progress Summary + Overall progress reflect reality (and the Appendix B / §7 linkage still holds).
-- [ ] `OVERVIEW.md` carries a prominent banner at the top: "⚠️ Superseded — see [`TECHNICAL_SPECIFICATION.md`](TECHNICAL_SPECIFICATION.md)" and no longer presents itself as the source of truth.
-- [ ] No broken cross-doc links; English-only.
+- [x] `TECHNICAL_SPECIFICATION.md` reconciled with the shipped apps (routes/env/behaviors match Phases 3–14); [§28 Status](../TECHNICAL_SPECIFICATION.md#28--status) reflects implemented state.
+- [x] `DASHBOARD.md` reconciled with the actually-built pages/components (Phases 12–14).
+- [x] `DEVELOPMENT_PLAN.md` Progress Summary + Overall progress reflect reality (and the Appendix B / §7 linkage still holds).
+- [x] `OVERVIEW.md` carries a prominent banner at the top: "⚠️ Superseded — see [`TECHNICAL_SPECIFICATION.md`](TECHNICAL_SPECIFICATION.md)" and no longer presents itself as the source of truth.
+- [x] No broken cross-doc links; English-only.
 
 ### Files to create / modify
 
@@ -280,7 +280,7 @@ Reconcile the living docs with what was actually built across Phases 3–14, the
 
 ## P19-5 — Document the OPTIONAL `@bymax-one/nest-logger` events bridge (row #50)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Low
 - **Size:** S (30–90 min)
 - **Depends on:** `P19-1`, `P19-2`
@@ -291,11 +291,11 @@ Document the **optional** `@bymax-one/nest-logger` events bridge as the recommen
 
 ### Acceptance Criteria
 
-- [ ] A documented section (in `README.md` or a linked `docs/` page) explaining the optional `@bymax-one/nest-logger` events bridge as the production pattern for `ICacheEvents.onEvent` → structured logging.
-- [ ] Shows the wiring shape (how `CacheEventsBridge` would delegate to `@bymax-one/nest-logger` instead of the default Nest `Logger`), framed as copy-paste-friendly for a real consumer.
-- [ ] Explicitly labels it **OPTIONAL** — the example runs without `@bymax-one/nest-logger`; this is the recommended upgrade for production.
-- [ ] Cross-references [§7 Feature Coverage Matrix](../TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix) **row #50** and links the sibling `nest-logger-example`.
-- [ ] Row #50 is accounted for by the export audit (P19-1) — demonstrated or ignored-with-reason; English-only.
+- [x] A documented section (in `README.md` or a linked `docs/` page) explaining the optional `@bymax-one/nest-logger` events bridge as the production pattern for `ICacheEvents.onEvent` → structured logging.
+- [x] Shows the wiring shape (how `CacheEventsBridge` would delegate to `@bymax-one/nest-logger` instead of the default Nest `Logger`), framed as copy-paste-friendly for a real consumer.
+- [x] Explicitly labels it **OPTIONAL** — the example runs without `@bymax-one/nest-logger`; this is the recommended upgrade for production.
+- [x] Cross-references [§7 Feature Coverage Matrix](../TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix) **row #50** and links the sibling `nest-logger-example`.
+- [x] Row #50 is accounted for by the export audit (P19-1) — demonstrated or ignored-with-reason; English-only.
 
 ### Files to create / modify
 
@@ -339,7 +339,7 @@ Document the **optional** `@bymax-one/nest-logger` events bridge as the recommen
 
 ## P19-6 — `CHANGELOG.md` `0.1.0` entry + design-system acceptance check
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** Medium
 - **Size:** S (30–90 min)
 - **Depends on:** `P19-2`
@@ -350,10 +350,10 @@ Cut the first real `CHANGELOG.md` entry — promote `## [Unreleased]` to `## [0.
 
 ### Acceptance Criteria
 
-- [ ] `CHANGELOG.md` has a `## [0.1.0] — YYYY-MM-DD` section (Keep-a-Changelog format) summarizing the reference app under `### Added`, with `## [Unreleased]` left empty above it.
-- [ ] A design-system acceptance check was performed: an `apps/web` screenshot placed beside a sibling (`nest-logger-example` / `nest-auth-example`) screenshot, confirming the chrome is indistinguishable (same tokens/fonts/shell/dark theme).
-- [ ] Any chrome drift found is fixed (or filed) so the acceptance passes; the verdict is noted in the completion log line.
-- [ ] English-only; `CHANGELOG.md` stays Prettier-clean.
+- [x] `CHANGELOG.md` has a `## [0.1.0] — YYYY-MM-DD` section (Keep-a-Changelog format) summarizing the reference app under `### Added`, with `## [Unreleased]` left empty above it.
+- [x] A design-system acceptance check was performed: an `apps/web` screenshot placed beside a sibling (`nest-logger-example` / `nest-auth-example`) screenshot, confirming the chrome is indistinguishable (same tokens/fonts/shell/dark theme).
+- [x] Any chrome drift found is fixed (or filed) so the acceptance passes; the verdict is noted in the completion log line.
+- [x] English-only; `CHANGELOG.md` stays Prettier-clean.
 
 ### Files to create / modify
 
@@ -397,7 +397,7 @@ Cut the first real `CHANGELOG.md` entry — promote `## [Unreleased]` to `## [0.
 
 ## P19-7 — Final audit verification (`audit:exports` exit 0, matrix all ✅)
 
-- **Status:** 🔴 Not Started
+- **Status:** 🟢 Done
 - **Priority:** High
 - **Size:** S (30–90 min)
 - **Depends on:** `P19-1`, `P19-2`, `P19-3`, `P19-4`, `P19-5`, `P19-6`
@@ -408,11 +408,11 @@ Phase 19 "Definition of done" gate per `DEVELOPMENT_PLAN.md`: prove the docs+aud
 
 ### Acceptance Criteria
 
-- [ ] `pnpm audit:exports` exits 0 — every export of `@bymax-one/nest-cache` (`.` + `./shared`) is demonstrated in `apps/` or listed in `.audit-ignore.json` with a reason.
-- [ ] Every internal link in `README.md` resolves (docs links + section anchors + the matrix link).
-- [ ] The spec's [§7 Feature Coverage Matrix](../TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix) is fully ✅ — all **50** rows demonstrated (including row #50, the logger bridge, from P19-5).
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm format:check` all exit 0 across the touched docs/scripts.
-- [ ] The `export-usage-check` CI job (P19-1) is green.
+- [x] `pnpm audit:exports` exits 0 — every export of `@bymax-one/nest-cache` (`.` + `./shared`) is demonstrated in `apps/` or listed in `.audit-ignore.json` with a reason.
+- [x] Every internal link in `README.md` resolves (docs links + section anchors + the matrix link).
+- [x] The spec's [§7 Feature Coverage Matrix](../TECHNICAL_SPECIFICATION.md#7--feature-coverage-matrix) is fully ✅ — all **50** rows demonstrated (including row #50, the logger bridge, from P19-5).
+- [x] `pnpm lint`, `pnpm typecheck`, `pnpm format:check` all exit 0 across the touched docs/scripts.
+- [x] The `export-usage-check` CI job (P19-1) is green.
 
 ### Files to create / modify
 
@@ -460,3 +460,11 @@ When this task is 🟢, Phase 19 is 7/7 — switch the Phase 19 row in `DEVELOPM
 ## Completion log
 
 _(Agents append one line per finished task, newest at the bottom.)_
+
+- P19-1 ✅ 2026-07-09 — Implemented the zero-dep export-usage audit (pnpm-aware `.d.ts` resolution, `.audit-ignore.json` with echoed reasons); `pnpm audit:exports` green (38 demonstrated + 2 justified ignores); `export-usage-check` CI job confirmed.
+- P19-2 ✅ 2026-07-09 — Reworked the root README to shields.io flat-square black badges, added the endpoints table and the condensed §7 feature-coverage summary; all internal links resolve, Prettier-clean.
+- P19-3 ✅ 2026-07-09 — Added the "Try it with curl" section with three reproducible journeys (miss→hit + metrics, stampede collapse via `xargs -P`, cross-namespace isolation) against the real `:3001` routes.
+- P19-4 ✅ 2026-07-09 — Reconciled the living docs (spec §28 + §11.1 routes, DASHBOARD footer) with the shipped apps; confirmed `OVERVIEW.md` carries its superseded banner.
+- P19-5 ✅ 2026-07-09 — Documented the OPTIONAL `@bymax-one/nest-logger` events bridge (matrix row #50) with a faithful `PinoLoggerService` wiring snippet, clearly marked optional and cross-linked to the sibling.
+- P19-6 ✅ 2026-07-09 — Cut the `CHANGELOG.md` `0.1.0` entry; design-system acceptance PASS — `apps/web/app/globals.css` is byte-identical to `nest-logger-example` after project-name normalization and `layout.tsx` shares the Geist + forced-dark chrome (indistinguishable, no drift); web build green.
+- P19-7 ✅ 2026-07-09 — Final gate: `pnpm audit:exports` exit 0, lint/typecheck/format:check all clean, §7 matrix fully ✅ (all 50 rows), README links resolve. Phase 19 complete → project coverage contract satisfied.
